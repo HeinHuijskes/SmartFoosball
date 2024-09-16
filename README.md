@@ -2,3 +2,5 @@
 Smart Foosball Design Project 1A 2024
 
 To install dependencies, run `poetry install`
+
+Wie dit leest trekt een bak
