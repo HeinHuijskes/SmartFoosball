@@ -36,8 +36,4 @@ See [POSTGRES.md](info/POSTGRES.md).
 Copy the file `env.example.py` and rename the copy to `env.py`. This sets up the needed variables in a way that is not tracked by git, so that your password is not shared.
 
 ## Run
-Run `installDatabases.py` to initialize the BaseTide databases. You can leave this out if it is not desired, or if you can't install the necessary postgresql extensions. 
-
-Run `run.py` to run general metrics on those databases as well as the test databases. This file can be easily modified to change it's output. Comment out any of the lines in the `metrics` or `example_datbases` variables in order to skip running it. 
-
-Run any file in the `tests` folder to test some behaviour of the repository.
+T.B.D.
