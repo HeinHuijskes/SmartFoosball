@@ -1,0 +1,6 @@
+body { font-family: 'Inter'; font-weight: 200; font-size: 22px;
+        margin: 0; padding: 0;}
+h1 { font-weight: 200; text-align: center}
+p {text-align: center}
+.feedpage {color: black; background-color: transparent; text-decoration: transparent; font-size: 36px }
+.feedpage:hover { color: grey}
