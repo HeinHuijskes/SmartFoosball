@@ -4,6 +4,6 @@ from imageProcessing.test_aruco_video import *
 
 # Run database test on PyCharm
 # test()
-# testDetect()
+testDetect()
 
-display()
+# display()

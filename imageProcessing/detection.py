@@ -4,14 +4,21 @@ import numpy as np
 from imageProcessing.misc import MODE, CONTOUR
 from imageProcessing.misc import RED, GREEN, BLUE, WHITE, BLACK, CORK
 
+aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_1000)
+parameters = cv2.aruco.DetectorParameters()
+detector = cv2.aruco.ArucoDetector(aruco_dict, parameters)
+
 class Detection():
     def __init__(self):
         self.foos_men_min = 250
         self.foos_men_max = 1500
+        self.corners = [[], [], [], []]
+        self.frames = 0
 
     def run(self, frame, mode = MODE['NORMAL']):
 
         frame = self.scale(frame, 0.5)
+        frame = self.aruco(frame)
 
         frame = self.applyMode(mode, frame)
         return self.foosMenDetection(frame)
@@ -30,9 +37,55 @@ class Detection():
 
         return cv2.bitwise_and(frame, frame, mask = mask)
 
-    def aruco(self, frame) -> list[tuple[int, int]]:
+    def aruco(self, frame, calibration_time = 30):
         '''Detects aruco, returns the bounding box of the foosball table'''
-        pass
+
+        frame = cv2.flip(frame, 1)
+        if self.frames == 0:
+            height, width, _ = frame.shape
+            self.min_x = 0
+            self.max_x = width
+            self.min_y = 0
+            self.max_y = height
+
+        elif self.frames < calibration_time: # TODO: Make in line with measured FPS
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            inverted = cv2.bitwise_not(gray)
+            cv2.convertScaleAbs(inverted, inverted, 3)
+            (corners, ids, rejected) = detector.detectMarkers(inverted)
+            ids = ids.flatten()
+            cv2.aruco.drawDetectedMarkers(frame, corners, ids)
+
+            for (marker, id) in zip(corners, ids): 
+                corner = marker.reshape((4, 2))
+                (tl, tr, br, bl) = corner
+                cx = (tl[0] + br[0]) / 2
+                cy = (tl[1] + br[1]) / 2
+                if len(corners[0][0]) == 4:
+                    self.corners[id].append((cx, cy))
+        
+        elif self.frames == calibration_time:
+            result = []
+            for corner in self.corners:
+                average_x = sum([x for (x,y) in corner]) / len(corner)
+                average_y = sum([y for (x,y) in corner]) / len(corner)
+                result.append((average_x.item(), average_y.item()))
+            self.corners = result
+            print(f'Corner confidence: {len(corner)*10000//100/calibration_time}% ({len(corner)} corners detected in {calibration_time} frames)')
+            self.min_x = int(self.corners[1][0])
+            self.max_x = int(self.corners[2][0])
+            self.min_y = int(self.corners[1][1])
+            self.max_y = int(self.corners[2][1])
+            print(frame.shape)
+            print(self.corners)
+        
+        elif self.frames > 1000:
+            self.frames = 1
+
+        frame = frame[max(self.min_y,0):self.max_y, self.min_x:max(self.max_x,0)]
+        self.frames += 1
+
+        return frame
     
     def ballDetection(self, frame, colour = CORK) -> tuple[tuple[int, int], int]:
         '''Finds the ball, returns the coordinate, and the confidence of the found ball in amount of pixels'''

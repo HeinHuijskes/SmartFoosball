@@ -20,12 +20,12 @@ desired_aruco_dictionary = "DICT_ARUCO_ORIGINAL"
 
 
 def get_playing_field_coordinates(arucos):
-    for (id, corners) in arucos.items():
+    for (id, corners) in arucos:
         print(id, corners)
 
 
 
-def main():
+def display():
     """
     Main method of the program.
     """
@@ -38,7 +38,7 @@ def main():
     detector = cv2.aruco.ArucoDetector(aruco_dict, parameters)
 
     # Start the video stream
-    cap = cv2.VideoCapture('../data/video/20240917_110357.mp4')
+    cap = cv2.VideoCapture('data/video/latest - Trim.mp4')
     # cap = cv2.VideoCapture(0)
 
 
@@ -91,6 +91,6 @@ def main():
     cv2.destroyAllWindows()
 
 
-if __name__ == '__main__':
-    print(__doc__)
-    main()
+# if __name__ == '__main__':
+#     print(__doc__)
+#     main()

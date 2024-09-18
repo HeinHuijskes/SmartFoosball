@@ -20,7 +20,7 @@ RED = [
 ]
 GREEN = []
 BLUE = [
-    np.array([100, 100, 0], np.uint8), # Lower
+    np.array([100, 125, 0], np.uint8), # Lower
     np.array([150, 255, 255], np.uint8), # Upper
 ]
 WHITE = [
