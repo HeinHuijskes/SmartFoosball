@@ -20,11 +20,10 @@ passed = False
 MAX_BUFFER_SIZE = 10  # in seconds
 
 
-if not camera:
-    camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-    # camera.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, 640)
-    # camera.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, 480)
-    print("Camera initialized successfully.")
+camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+print("Camera initialized successfully.")
+
+
 
 def generate_frames2():
     while True:
@@ -189,7 +188,7 @@ def index():
         if playback == 0:
             return render_template('feedpage.html', link='/video_feed', )
         else:
-            return render_template('index.html', link='/delayed_video_feed', )
+            return render_template('index.html', link='/video_feed', )
     return render_template('index.html', link='/video_feed')
 
 
@@ -207,5 +206,3 @@ def video_feed():
 def feedpage():
     return render_template('feedpage.html')
 
-if __name__ == '__main__':
-    app.run(debug=True, threaded=True)
