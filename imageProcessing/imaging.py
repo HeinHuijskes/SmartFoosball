@@ -14,7 +14,10 @@ def init_camera():
         while True:
             ret, frame = camera.read()
             if ret:
-                cv2.imshow(frame)
+                cv2.imshow('', frame)
+
+            if cv2.waitKey(1) & 0xff==ord('q'):
+                break
 
 
 if __name__ == '__main__':
