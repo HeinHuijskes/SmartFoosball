@@ -28,20 +28,28 @@ if not camera:
 
 def generate_frames2():
     while True:
-        ret, frame = camera.read()
-        if not ret or frame is None:
-            print("ret or frame none")
-            continue
-        if cv2.waitKey(1) & 0xff == ord('q'):
-            break
+        # ret, frame = camera.read()
+        frame = cv2.imread('C:/Users/sophie/progamapps/Pycharm_Projects/SmartFoosball/website/Fas_inzoom_fooseman.png')
+        if frame is None or frame.size == 0:
+            print("frame none ")
+        # if not ret or frame is None:
+        #     print("ret or frame none")
+        #     continue
+        # if ret:
+        #     cv2.imshow('', frame) #test screen locally
+        # if cv2.waitKey(1) & 0xff == ord('q'):
+        #     break
+
         ret, jpeg = cv2.imencode('.jpg',frame)
+        print(camera.isOpened())
+        if frame is None or frame.size == 0:
+            print("frame error")
         if not ret:
             print("ret not true")
         if ret:
             yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                    jpeg.tobytes() + b'\r\n')
-    camera.release()
-    cv2.destroyAllWindows()
+
 
 def initialize_camera():
     global camera
