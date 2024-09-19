@@ -2,10 +2,10 @@ import cv2
 
 camera = None
 
+
 def init_camera():
     global camera
     if not camera:
-        # camera = cv2.VideoCapture(0)  # Use just 0 for default camera
         camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
         camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
@@ -19,6 +19,7 @@ def init_camera():
             # Wait for 1ms and check if the user pressed 'q' to exit
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
+
 
 if __name__ == '__main__':
     try:
