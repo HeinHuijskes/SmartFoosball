@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> THE SMART FOOSBALL TABLE</title>
+    <link href='https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,200;1,14..32,200&display=swap' rel='stylesheet'>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div style="position: fixed; margin-left: 10%">
+    <a style="color: black; background-color: transparent; text-decoration: transparent;" href="index.html"> <p>&larr;</p></a>
+
+</div>
+<div >
+    <h1>Live camera feed</h1>
+</div>
+<div class="centerbox" style="margin: auto; max-width: 75%;">
+    <div style="background-color: lightgray;padding: 20px; height: 400px; margin: auto;margin-top: 50px; text-align: center;">
+        <p style="padding-top: 180px"> No ongoing match</p> <!-- half of the height of the div box - font-size -->
+        <img src="{{ url_for('video_feed') }}" alt="Video Feed">
+<!--        <video id="remoteVideo" autoplay></video>-->
+<!--        <a href="{{ url_for('video_feed') }}" target="_self">Link to Video Feed</a>-->
+    </div>
+    <!-- two div boxes that split the space under the live feed-->
+    <div style="background-color: transparent; width: 50%">
+        <p style="text-align: left">Match score </p>
+
+    </div>
+    <div style="width: 50%">
+    </div>
+</div>
+<div>
+
+</div>
+</body>
+</html>
