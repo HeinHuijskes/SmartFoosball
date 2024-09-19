@@ -6,6 +6,7 @@ import time
 import queue
 from flask import request
 
+
 app = Flask(__name__)
 
 # Initialize the camera and frame buffer
@@ -18,6 +19,29 @@ passed = False
 
 MAX_BUFFER_SIZE = 10  # in seconds
 
+
+if not camera:
+    camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+    # camera.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, 640)
+    # camera.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, 480)
+    print("Camera initialized successfully.")
+
+def generate_frames2():
+    while True:
+        ret, frame = camera.read()
+        if not ret or frame is None:
+            print("ret or frame none")
+            continue
+        if cv2.waitKey(1) & 0xff == ord('q'):
+            break
+        ret, jpeg = cv2.imencode('.jpg',frame)
+        if not ret:
+            print("ret not true")
+        if ret:
+            yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                   jpeg.tobytes() + b'\r\n')
+    camera.release()
+    cv2.destroyAllWindows()
 
 def initialize_camera():
     global camera
@@ -38,7 +62,9 @@ def initialize_queue():
     start_time = time.time()
     while not passed:
         ret, frame = camera.read()
-
+        if not ret:
+            print("ret false")
+            continue
         if ret:
             # frame_buffer.put(frame)
             # frame_time.append(time.time())
@@ -57,7 +83,9 @@ def capture_frames():
         try:
             ret, frame = camera.read()
             # cv2.imshow('preview',frame)
-
+            if not ret:
+                print("not ret")
+                continue
             if ret:
                 current_frame = frame
                 # frame_buffer.put(frame)
@@ -72,7 +100,11 @@ def capture_frames():
 def generate_frames():
     global current_frame
     while True:
+        if current_frame is None:
+            continue
         ret, jpeg = cv2.imencode('.jpg', current_frame)
+        if not ret:
+            print("ret not true")
         if ret:
             yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                    jpeg.tobytes() + b'\r\n')
@@ -134,7 +166,7 @@ def index():
     if request.method == 'POST':
         playback = request.args.get('playback', default=15, type=int)
         if playback == 0:
-            return render_template('index.html', link='/video_feed', )
+            return render_template('feedpage.html', link='/video_feed', )
         else:
             return render_template('index.html', link='/delayed_video_feed', )
     return render_template('index.html', link='/video_feed')
@@ -142,7 +174,7 @@ def index():
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(generate_frames2(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 @app.route('/delayed_video_feed')
@@ -150,3 +182,9 @@ def delayed_video_feed():
     global playback
     return Response(delayed_frames(playback), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/feedpage.html')
+def feedpage():
+    return render_template('feedpage.html')
+
+if __name__ == '__main__':
+    app.run(debug=True)
