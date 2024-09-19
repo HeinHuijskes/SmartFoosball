@@ -1,5 +1,5 @@
 from imageProcessing.detection import Detection
-from database.database import *
+# from database.database import *
 import cv2
 from imageProcessing.misc import *
 
@@ -11,7 +11,7 @@ class Game:
         self.score_red = 0
         self.score_blue = 0
         self.detector = Detection()
-        self.mode = MODE.NORMAL
+        self.mode = Mode.NORMAL
         # database = 
 
     def showFrame(self, frame):
@@ -21,13 +21,15 @@ class Game:
             if key == ord('q'):
                 exit(0)
             elif key == ord('r'):
-                mode = 'RED'
+                self.mode = Mode.RED
             elif key == ord('b'):
-                mode = 'BLUE'
+                self.mode = Mode.BLUE
             elif key == ord('f'):
-                mode = 'FUNK'
+                self.mode = Mode.FUNK
             elif key == ord('n'):
-                mode = 'NORMAL'
+                self.mode = Mode.NORMAL
+            elif key == ord('d'):
+                self.mode = Mode.DISCO
 
     def kalmanFilter(self):
         pass
