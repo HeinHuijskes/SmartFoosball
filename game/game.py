@@ -31,6 +31,8 @@ class Game:
                 self.mode = Mode.NORMAL
             elif key == ord('d'):
                 self.mode = Mode.DISCO
+            elif key == ord('o'):
+                self.mode = Mode.ORANGE
 
     def kalmanFilter(self):
         pass
@@ -39,7 +41,7 @@ class Game:
         pass
 
     def run(self):
-        video = cv2.VideoCapture('data/video/shakiestcam.mp4')
+        video = cv2.VideoCapture('data/video/tafelvoetbal_oranjebal.mp4')
         nextFrame = True
         while nextFrame:
             nextFrame, frame = video.read()
@@ -61,7 +63,8 @@ class Game:
                 print("frame none")
                 continue
             frame = self.detector.run(frame, self.mode)
-            if DEBUG: self.showFrame(frame)
+            # cv2.imshow('test', frame)
+            self.showFrame(frame)
             #encode frame for website
             ret, jpeg = cv2.imencode('.jpg', frame)
             if frame is None or frame.size == 0:
