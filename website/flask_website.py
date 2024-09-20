@@ -2,6 +2,8 @@ from flask import Flask, render_template, Response
 import cv2
 from flask import request
 
+from game.game import Game
+
 global app
 
 
@@ -12,6 +14,7 @@ class Website:
         self.app = Flask(__name__)
         self.add_routes()
         self.camera = None
+        self.game = Game()
 
     def run(self):
         self.camera = cv2.VideoCapture(1, cv2.CAP_DSHOW)
@@ -19,26 +22,17 @@ class Website:
         self.app.run(debug=True, threaded=True, use_reloader=False)
 
 
-    def generate_frames2(self):
-        while True:
-            ret, frame = self.camera.read()
-            if not ret or frame is None:
-                print("ret or frame none")
-                continue
-            print(" frame is type", frame.dtype)
-            print("frame is type", type(frame))
-
-            ret, jpeg = cv2.imencode('.jpg', frame)
-            cv2.imwrite("frame.jpg", jpeg)
-            print(self.camera.isOpened())
-            if frame is None or frame.size == 0:
-                print("frame error")
-            if not ret:
-                print("ret not true")
-            if ret:
-                frame = jpeg.tobytes()
-                yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
-                       frame + b'\r\n')
+    def generate_frames2(self, frame):
+        ret, jpeg = cv2.imencode('.jpg', frame)
+        cv2.imwrite("frame.jpg", jpeg)
+        if frame is None or frame.size == 0:
+            print("frame error")
+        if not ret:
+            print("ret not true")
+        if ret:
+            frame = jpeg.tobytes()
+            yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+            frame + b'\r\n')
         self.camera.release()
         cv2.destroyAllWindows()
 
@@ -56,7 +50,7 @@ class Website:
 
         @self.app.route('/video_feed')
         def video_feed():
-            return Response(self.generate_frames2(), mimetype='multipart/x-mixed-replace; boundary=frame')
+            return Response(self.game.run_camera(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
         @self.app.route('/feedpage.html')
         def feedpage():

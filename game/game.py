@@ -2,6 +2,7 @@ from imageProcessing.detection import Detection
 # from database.database import *
 import cv2
 from imageProcessing.misc import *
+from hardware.camera import *
 
 DEBUG = True
 
@@ -50,3 +51,22 @@ class Game:
         
         video.release()
         cv2.destroyAllWindows()
+
+    def run_camera(self):
+
+        camera = Camera(1)
+        while True:
+            frame = camera.get_frame()
+            if frame is None:
+                print("frame none")
+                continue
+            frame = self.detector.run(frame, self.mode)
+            if DEBUG: self.showFrame(frame)
+            #encode frame for website
+            ret, jpeg = cv2.imencode('.jpg', frame)
+            if frame is None or frame.size == 0:
+                print("frame error")
+            if ret:
+                frame = jpeg.tobytes()
+                yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                       frame + b'\r\n')

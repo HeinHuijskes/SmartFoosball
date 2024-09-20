@@ -32,7 +32,7 @@ class Detection:
         # Detect corners and crop the frame
         frame = self.aruco(frame)
         # Scale the frame to fit within one laptop screen
-        frame = self.scale(frame, 0.5)
+        frame = self.scale(frame, 1)
         # Apply colour mode for different colour detection highlights
         frame = self.applyMode(mode, frame)
         # Run foosmen detection and apply to frame
@@ -108,22 +108,23 @@ class Detection:
         cv2.convertScaleAbs(inverted, inverted, 3)
         # Detect ArUco markers
         (corners, ids, rejected) = detector.detectMarkers(inverted)
-        ids = ids.flatten()
-        # cv2.aruco.drawDetectedMarkers(frame, corners, ids)
+        if ids:
+            ids = ids.flatten()
+            # cv2.aruco.drawDetectedMarkers(frame, corners, ids)
 
-        for (marker, marker_id) in zip(corners, ids):
-            # Reshape corner to a usable array of 4 corners, each with 2 coordinates (x,y)
-            corner = marker.reshape((4, 2))
-            maximum = 0
-            for (x, y) in corner:
-                # Calculate the distance to the centre of the screen for every corner
-                distance = math.sqrt((x - self.mid_x) ** 2 + (y - self.mid_y) ** 2)
-                if distance > maximum:
-                    maximum = distance
-                    cx = x
-                    cy = y
-            if len(corners[0][0]) == 4:
-                self.corners[marker_id].append([cx, cy])
+            for (marker, marker_id) in zip(corners, ids):
+                # Reshape corner to a usable array of 4 corners, each with 2 coordinates (x,y)
+                corner = marker.reshape((4, 2))
+                maximum = 0
+                for (x, y) in corner:
+                    # Calculate the distance to the centre of the screen for every corner
+                    distance = math.sqrt((x - self.mid_x) ** 2 + (y - self.mid_y) ** 2)
+                    if distance > maximum:
+                        maximum = distance
+                        cx = x
+                        cy = y
+                if len(corners[0][0]) == 4:
+                    self.corners[marker_id].append([cx, cy])
 
     def calibrate(self, calibration_time):
         """Calibrate frame and rotate according to aruco corners"""
