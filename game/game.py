@@ -54,7 +54,7 @@ class Game:
 
     def run_camera(self):
 
-        camera = Camera(1)
+        camera = Camera(0)
         while True:
             frame = camera.get_frame()
             if frame is None:
