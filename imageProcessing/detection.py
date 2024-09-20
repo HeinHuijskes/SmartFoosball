@@ -37,7 +37,7 @@ class Detection:
         frame = self.applyMode(mode, frame)
         # Run foosmen detection and apply to frame
         return self.foosMenDetection(frame)
-    
+
     def applyMode(self, mode, frame):
         """Apply different colour modes to the frame. Options are BLUE, RED, FUNK, and NORMAL"""
         if mode == Mode.BLUE:
@@ -78,7 +78,7 @@ class Detection:
             self.frames = 0
             self.corners = [[], [], [], []]
 
-        elif self.frames > calibration_time*20:
+        elif self.frames > calibration_time * 20:
             # After a set amount of time, always run calibration again
             self.frames = 0
             self.corners = [[], [], [], []]
@@ -98,7 +98,7 @@ class Detection:
         min_x, max_x = self.min_x, max(self.max_x, 0)
 
         return frame[min_y:max_y, min_x:max_x]
-    
+
     def measureCorners(self, frame):
         """Find the ArUco corners on a frame and store them"""
         # Convert to grayscale, invert colours
@@ -108,7 +108,7 @@ class Detection:
         cv2.convertScaleAbs(inverted, inverted, 3)
         # Detect ArUco markers
         (corners, ids, rejected) = detector.detectMarkers(inverted)
-        if ids:
+        if ids is not None:
             ids = ids.flatten()
             # cv2.aruco.drawDetectedMarkers(frame, corners, ids)
 
@@ -139,7 +139,7 @@ class Detection:
             # Calculate the amount of cdetected
             detected_corners = sum([len(corner) for corner in self.corners])
             frames = self.frames - 1
-            confidence = min(detected_corners/4 * 10000 // 100 / frames, 100)
+            confidence = min(detected_corners / 4 * 10000 // 100 / frames, 100)
             # TODO: Fix corner amount not being correct but still working for some reason
             print(
                 f'Corner confidence: {confidence}% ({detected_corners} corners detected in {frames} frames)'
@@ -184,7 +184,7 @@ class Detection:
 
         return frame
 
-    def contour_frame(self, frame, mask, area_min = 100, area_max = 1000, contour_colour=Contour.BLACK):
+    def contour_frame(self, frame, mask, area_min=100, area_max=1000, contour_colour=Contour.BLACK):
         """Colour all contours in a mask depending on a minimum and maximum area.
         Return the frame with contour lines."""
         contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -205,11 +205,11 @@ class Detection:
         kernel = np.ones((5, 5), "uint8")
         mask = cv2.dilate(mask, kernel)
         return mask
-    
+
     def scale(self, frame, scaler=0.5):
         """Resize a frame according to preference in order to fit onto a laptop screen"""
         height, width, _ = frame.shape
-        resize = (math.ceil(width*scaler), math.ceil(height*scaler))
+        resize = (math.ceil(width * scaler), math.ceil(height * scaler))
         frame = cv2.resize(frame, resize)
         return frame
 
