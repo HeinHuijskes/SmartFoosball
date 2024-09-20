@@ -17,8 +17,8 @@ class Detection:
 
     def __init__(self):
         # Minimum and maximum amount of pixels to consider a set of pixels a foos-man
-        self.foos_men_min = 150
-        self.foos_men_max = 1500
+        self.foos_men_min = 500
+        self.foos_men_max = 3000
 
         # Parameters for video calibration
         # The corners of the playing field, frames since calibration, and angle rotation matrix
@@ -177,10 +177,11 @@ class Detection:
 
     def foosMenDetection(self, frame):
         """Looks for blue and red, and returns their outlines on the frame."""
+        # cv2.convertScaleAbs(frame, frame, 2)
         blue_mask = self.colour_mask(frame, Colour.BLUE)
         red_mask = self.colour_mask(frame, Colour.RED)
-        frame = self.contour_frame(frame, blue_mask, self.foos_men_min, self.foos_men_max, Contour.RED)
-        frame = self.contour_frame(frame, red_mask, self.foos_men_min, self.foos_men_max, Contour.BLUE)
+        frame = self.contour_frame(frame, blue_mask, self.foos_men_min, self.foos_men_max, Contour.BLUE)
+        frame = self.contour_frame(frame, red_mask, self.foos_men_min, self.foos_men_max, Contour.RED)
 
         return frame
 

@@ -5,7 +5,7 @@ from enum import Enum
 class Colour:
     """HSV Colour ranges for detecting different colours"""
     RED = [
-        np.array([150, 60, 0], np.uint8),  # Lower
+        np.array([150, 50, 0], np.uint8),  # Lower
         np.array([200, 255, 255], np.uint8),  # Upper
     ]
     GREEN = []
