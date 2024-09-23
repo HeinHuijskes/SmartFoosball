@@ -39,8 +39,13 @@ class Detection:
         frame = self.scale(frame, 1)
         # Apply colour mode for different colour detection highlights
         frame = self.applyMode(mode, frame)
+        # Draw the ball tracer each frame
+        frame = self.draw_ball_positions(frame)
         # Run foosmen detection and apply to frame
-        return self.foosMenDetection(frame)
+        frame = self.foosMenDetection(frame)
+        # Run ball detection and apply to frame
+        frame, coordinates = self.ballDetection(frame, Colour.ORANGE)
+        return frame
 
     def applyMode(self, mode, frame):
         """Apply different colour modes to the frame. Options are BLUE, RED, FUNK, and NORMAL"""
@@ -242,12 +247,14 @@ class Detection:
         """Colour all contours in a mask depending on a minimum and maximum area.
         Return the frame with contour lines."""
         contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contour_list = []
         for pic, contour in enumerate(contours):
             area = cv2.contourArea(contour)
-            if area >= area_min and area <= area_max:
+            if area_min <= area <= area_max:
                 x, y, w, h = cv2.boundingRect(contour)
                 frame = cv2.rectangle(frame, (x, y), (x + w, y + h), contour_colour, 2)
-        return frame
+                contour_list.append(contour)
+        return frame, contour_list
 
     def colour_mask(self, frame, colour):
         """Obtain the mask of colours in a frame."""
