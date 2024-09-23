@@ -54,18 +54,16 @@ class Game:
         video.release()
         cv2.destroyAllWindows()
 
-    def run_camera(self):
-
-        camera = Camera(0)
-        while True:
-            frame = camera.get_frame()
-            if frame is None:
-                print("frame none")
-                continue
+    def run_camera(self, video_feed):
+        nextFrame = True
+        while nextFrame:
+            nextFrame, frame = video_feed.read()
+            if not nextFrame:
+                break
             frame = self.detector.run(frame, self.mode)
             # cv2.imshow('test', frame)
             self.showFrame(frame)
-            #encode frame for website
+            # encode frame for website
             ret, jpeg = cv2.imencode('.jpg', frame)
             if frame is None or frame.size == 0:
                 print("frame error")
@@ -73,3 +71,41 @@ class Game:
                 frame = jpeg.tobytes()
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        frame + b'\r\n')
+
+
+
+        # if camera:
+        #     # video_feed = Camera(0)
+        #     while True:
+        #         _, frame = video_feed.read()
+        #         if frame is None:
+        #             print("frame none")
+        #             continue
+        #         frame = self.detector.run(frame, self.mode)
+        #         # cv2.imshow('test', frame)
+        #         self.showFrame(frame)
+        #         #encode frame for website
+        #         ret, jpeg = cv2.imencode('.jpg', frame)
+        #         if frame is None or frame.size == 0:
+        #             print("frame error")
+        #         if ret:
+        #             frame = jpeg.tobytes()
+        #             yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+        #                    frame + b'\r\n')
+        # else:
+        #     nextFrame = True
+        #     while nextFrame:
+        #         nextFrame, frame = video_feed.read()
+        #         if not nextFrame:
+        #             break
+        #         frame = self.detector.run(frame, self.mode)
+        #         # cv2.imshow('test', frame)
+        #         self.showFrame(frame)
+        #         # encode frame for website
+        #         ret, jpeg = cv2.imencode('.jpg', frame)
+        #         if frame is None or frame.size == 0:
+        #             print("frame error")
+        #         if ret:
+        #             frame = jpeg.tobytes()
+        #             yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+        #                    frame + b'\r\n')

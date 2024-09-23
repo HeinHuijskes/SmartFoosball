@@ -17,8 +17,13 @@ class Website:
         self.game = Game()
 
     def run(self):
-        self.camera = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+        self.camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         print("Camera initialized successfully.")
+        self.app.run(debug=True, threaded=True, use_reloader=False)
+
+    def run_video(self):
+        self.camera = cv2.VideoCapture('../data/video/tafelvoetbal_oranjebal.mp4')
+        print("Video capture initialized successfully.")
         self.app.run(debug=True, threaded=True, use_reloader=False)
 
 
@@ -50,7 +55,7 @@ class Website:
 
         @self.app.route('/video_feed')
         def video_feed():
-            return Response(self.game.run_camera(), mimetype='multipart/x-mixed-replace; boundary=frame')
+            return Response(self.game.run_camera(self.camera), mimetype='multipart/x-mixed-replace; boundary=frame')
 
         @self.app.route('/feedpage.html')
         def feedpage():
