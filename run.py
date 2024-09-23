@@ -1,9 +1,8 @@
-from database.tests.coordinateDatbaseTest import *
-from imageProcessing.detection import *
-from imageProcessing.test_aruco_video import *
+from game.game import *
+from website.flask_website import *
 
-# Run database test on PyCharm
-# test()
-testDetect()
+newgame = Game()
+newgame.run()
 
-# display()
+#website = Website()
+#website.run()

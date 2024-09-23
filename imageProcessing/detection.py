@@ -17,8 +17,8 @@ class Detection:
 
     def __init__(self):
         # Minimum and maximum amount of pixels to consider a set of pixels a foos-man
-        self.foos_men_min = 150
-        self.foos_men_max = 1500
+        self.foos_men_min = 400
+        self.foos_men_max = 3000
 
         # Parameters for video calibration
         # The corners of the playing field, frames since calibration, and angle rotation matrix
@@ -32,12 +32,12 @@ class Detection:
         # Detect corners and crop the frame
         frame = self.aruco(frame)
         # Scale the frame to fit within one laptop screen
-        frame = self.scale(frame, 0.5)
+        frame = self.scale(frame, 1)
         # Apply colour mode for different colour detection highlights
         frame = self.applyMode(mode, frame)
         # Run foosmen detection and apply to frame
         return self.foosMenDetection(frame)
-    
+
     def applyMode(self, mode, frame):
         """Apply different colour modes to the frame. Options are BLUE, RED, FUNK, and NORMAL"""
         if mode == Mode.BLUE:
@@ -46,13 +46,16 @@ class Detection:
         elif mode == Mode.RED:
             # Get the red colour mask
             mask = self.colour_mask(frame, Colour.RED)
+        elif mode == Mode.ORANGE:
+            mask = self.colour_mask(frame, Colour.ORANGE)
         elif mode == Mode.FUNK:
             # Combine the red and blue colour masks
             red_mask = self.colour_mask(frame, Colour.RED)
             blue_mask = self.colour_mask(frame, Colour.BLUE)
-            mask = red_mask | blue_mask
+            orange_mask = self.colour_mask(frame, Colour.ORANGE)
+            mask = red_mask | blue_mask | orange_mask
         elif mode == Mode.DISCO:
-            frame = self.applyMode(random.choice([Mode.BLUE, Mode.RED, Mode.FUNK, Mode.NORMAL]), frame)
+            frame = self.applyMode(random.choice([Mode.BLUE, Mode.RED, Mode.ORANGE, Mode.FUNK, Mode.NORMAL]), frame)
             return frame
         else:
             # Apply no colour masks
@@ -63,7 +66,7 @@ class Detection:
     def aruco(self, frame, calibration_time=5):
         """Detects aruco, returns the bounding box of the foosball table"""
         # Flip the frame (debug for selfie camera mode) TODO: remove
-        frame = cv2.flip(frame, 1)
+        # frame = cv2.flip(frame, 1)
 
         if self.frames == 0:
             # At the start of a stream, always set the dimensions to the full frame
@@ -78,7 +81,7 @@ class Detection:
             self.frames = 0
             self.corners = [[], [], [], []]
 
-        elif self.frames > calibration_time*20:
+        elif self.frames > calibration_time * 20:
             # After a set amount of time, always run calibration again
             self.frames = 0
             self.corners = [[], [], [], []]
@@ -98,7 +101,7 @@ class Detection:
         min_x, max_x = self.min_x, max(self.max_x, 0)
 
         return frame[min_y:max_y, min_x:max_x]
-    
+
     def measureCorners(self, frame):
         """Find the ArUco corners on a frame and store them"""
         # Convert to grayscale, invert colours
@@ -108,22 +111,23 @@ class Detection:
         cv2.convertScaleAbs(inverted, inverted, 3)
         # Detect ArUco markers
         (corners, ids, rejected) = detector.detectMarkers(inverted)
-        ids = ids.flatten()
-        # cv2.aruco.drawDetectedMarkers(frame, corners, ids)
+        if ids is not None:
+            ids = ids.flatten()
+            cv2.aruco.drawDetectedMarkers(frame, corners, ids)
 
-        for (marker, marker_id) in zip(corners, ids):
-            # Reshape corner to a usable array of 4 corners, each with 2 coordinates (x,y)
-            corner = marker.reshape((4, 2))
-            maximum = 0
-            for (x, y) in corner:
-                # Calculate the distance to the centre of the screen for every corner
-                distance = math.sqrt((x - self.mid_x) ** 2 + (y - self.mid_y) ** 2)
-                if distance > maximum:
-                    maximum = distance
-                    cx = x
-                    cy = y
-            if len(corners[0][0]) == 4:
-                self.corners[marker_id].append([cx, cy])
+            for (marker, marker_id) in zip(corners, ids):
+                # Reshape corner to a usable array of 4 corners, each with 2 coordinates (x,y)
+                corner = marker.reshape((4, 2))
+                maximum = 0
+                for (x, y) in corner:
+                    # Calculate the distance to the centre of the screen for every corner
+                    distance = math.sqrt((x - self.mid_x) ** 2 + (y - self.mid_y) ** 2)
+                    if distance > maximum:
+                        maximum = distance
+                        cx = x
+                        cy = y
+                if len(corners[0][0]) == 4:
+                    self.corners[marker_id].append([cx, cy])
 
     def calibrate(self, calibration_time):
         """Calibrate frame and rotate according to aruco corners"""
@@ -138,7 +142,7 @@ class Detection:
             # Calculate the amount of cdetected
             detected_corners = sum([len(corner) for corner in self.corners])
             frames = self.frames - 1
-            confidence = min(detected_corners/4 * 10000 // 100 / frames, 100)
+            confidence = min(detected_corners / 4 * 10000 // 100 / frames, 100)
             # TODO: Fix corner amount not being correct but still working for some reason
             print(
                 f'Corner confidence: {confidence}% ({detected_corners} corners detected in {frames} frames)'
@@ -172,18 +176,22 @@ class Detection:
 
     def ballDetection(self, frame, colour=Colour.CORK) -> tuple[tuple[int, int], int]:
         """Finds the ball, returns the coordinate, and the confidence of the found ball in amount of pixels"""
+        # TODO: ff invullen
         pass
 
     def foosMenDetection(self, frame):
         """Looks for blue and red, and returns their outlines on the frame."""
+        # cv2.convertScaleAbs(frame, frame, 2)
         blue_mask = self.colour_mask(frame, Colour.BLUE)
         red_mask = self.colour_mask(frame, Colour.RED)
-        frame = self.contour_frame(frame, blue_mask, self.foos_men_min, self.foos_men_max, Contour.RED)
-        frame = self.contour_frame(frame, red_mask, self.foos_men_min, self.foos_men_max, Contour.BLUE)
+        orange_mask = self.colour_mask(frame, Colour.ORANGE)
+        frame = self.contour_frame(frame, blue_mask, self.foos_men_min, self.foos_men_max, Contour.BLUE)
+        frame = self.contour_frame(frame, red_mask, self.foos_men_min, self.foos_men_max, Contour.RED)
+        frame = self.contour_frame(frame, orange_mask, self.foos_men_min, 100000, Contour.ORANGE)
 
         return frame
 
-    def contour_frame(self, frame, mask, area_min = 100, area_max = 1000, contour_colour=Contour.BLACK):
+    def contour_frame(self, frame, mask, area_min=100, area_max=1000, contour_colour=Contour.BLACK):
         """Colour all contours in a mask depending on a minimum and maximum area.
         Return the frame with contour lines."""
         contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -204,11 +212,11 @@ class Detection:
         kernel = np.ones((5, 5), "uint8")
         mask = cv2.dilate(mask, kernel)
         return mask
-    
+
     def scale(self, frame, scaler=0.5):
         """Resize a frame according to preference in order to fit onto a laptop screen"""
         height, width, _ = frame.shape
-        resize = (math.ceil(width*scaler), math.ceil(height*scaler))
+        resize = (math.ceil(width * scaler), math.ceil(height * scaler))
         frame = cv2.resize(frame, resize)
         return frame
 
