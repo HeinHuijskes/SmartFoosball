@@ -33,6 +33,8 @@ class Game:
                 self.mode = Mode.DISCO
             elif key == ord('o'):
                 self.mode = Mode.ORANGE
+            elif key == ord('s'):
+                self.detector.max_ball_speed = 0
 
     def kalmanFilter(self):
         pass

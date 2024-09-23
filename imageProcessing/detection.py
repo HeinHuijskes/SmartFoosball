@@ -19,10 +19,16 @@ class Detection:
         # Minimum and maximum amount of pixels to consider a set of pixels a foos-man
         self.foos_men_min = 400
         self.foos_men_max = 3000
+        self.table_length = 126  # cm
+        self.pixel_width_cm = 0
+        self.fps = 60
+
+        # Ball variables
         self.ball_min = 500
         self.ball_max = 2500
-        self.ball_positions = []
         self.ball_frames = 10
+        self.ball_positions = [[]]*(self.ball_frames+1)
+        self.max_ball_speed = 0
 
         # Parameters for video calibration
         # The corners of the playing field, frames since calibration, and angle rotation matrix
@@ -109,7 +115,12 @@ class Detection:
         min_y, max_y = max(self.min_y, 0), self.max_y
         min_x, max_x = self.min_x, max(self.max_x, 0)
 
-        return frame[min_y:max_y, min_x:max_x]
+        frame = frame[min_y:max_y, min_x:max_x]
+        if len(self.rotate_matrix) > 0:
+            height, width, _ = frame.shape
+            self.pixel_width_cm = self.table_length / width
+            # TODO detect fps dynamically
+        return frame
 
     def measureCorners(self, frame):
         """Find the ArUco corners on a frame and store them"""
@@ -207,7 +218,7 @@ class Detection:
             frame = cv2.circle(frame, (x, y), 1, Contour.RED, 2)
             # frame = cv2.circle(frame, (150, height//2), 15, Contour.BLUE, 3)
 
-            self.add_ball_position((x, y))
+            self.add_ball_position([x, y])
 
         else:
             self.add_ball_position([])
@@ -215,20 +226,35 @@ class Detection:
         return frame, (0, 0)
 
     def add_ball_position(self, position):
+        old_position = self.ball_positions[-1]
+        if len(position) != 0 and len(old_position) != 0:
+            pixel_speed = math.sqrt((position[0]-old_position[0])**2 + (position[1]-old_position[1])**2)
+            position += [pixel_speed]
+            if pixel_speed > self.max_ball_speed and self.pixel_width_cm is not 0:
+                speed = pixel_speed * self.pixel_width_cm / 100 * self.fps * 3.6
+                print(speed, pixel_speed)
+                if speed < 75:  # TODO: Remove the need for this restraint
+                    self.max_ball_speed = pixel_speed
         self.ball_positions.append(position)
-        if len(self.ball_positions) >= self.ball_frames:
-            self.ball_positions = self.ball_positions[1:self.ball_frames]
         return
 
     def draw_ball_positions(self, frame):
-        old_position = []
-        if len(self.ball_positions) > 0:
-            old_position = self.ball_positions[0]
-        for position in self.ball_positions[1:]:
+        # print(self.ball_positions)
+        old_position = self.ball_positions[-self.ball_frames]
+        for position in self.ball_positions[-self.ball_frames:]:
             if len(position) == 0 or len(old_position) == 0:
                 continue
-            frame = cv2.line(frame, old_position, position, Contour.BLACK, 2)
+            colour = Contour.BLACK
+            # if len(position) > 2:
+            #     colour = [c*min((position[2])/100, 1)//1 for c in colour]
+            #     print(colour)
+            frame = cv2.line(frame, old_position[:2], position[:2], colour, 2)
             old_position = position
+        height, width, _ = frame.shape
+
+        speed = self.max_ball_speed * self.pixel_width_cm / 100 * self.fps * 100 // 1 / 100
+        speed_kmh = speed*3.6*100//1/100
+        cv2.putText(frame, f'Max speed: {speed} m/s ({speed_kmh} km/h)', (width//4, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
         return frame
 
     def foosMenDetection(self, frame):
