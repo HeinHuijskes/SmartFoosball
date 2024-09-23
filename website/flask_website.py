@@ -55,3 +55,11 @@ class Website:
         @self.app.route('/feedpage.html')
         def feedpage():
             return render_template('feedpage.html')
+
+        @self.app.route('/index.html')
+        def indexhtml():
+            return render_template('index.html')
+
+        @self.app.route('/css/styles.css')
+        def cssstyles():
+            return render_template('css/styles.css')

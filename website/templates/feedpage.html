@@ -3,9 +3,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/styles.css">
     <title> THE SMART FOOSBALL TABLE</title>
     <link href='https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,200;1,14..32,200&display=swap' rel='stylesheet'>
-    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        body { font-family: 'Inter'; font-weight: 200; font-size: 22px;
+        margin: 0; padding: 0;}
+        h1 { font-weight: 200; text-align: center}
+        p {text-align: center}
+        img {max-width: 100%; max-height: 100%}
+    </style>
 </head>
 <body>
 <div style="position: fixed; margin-left: 10%">
@@ -17,8 +24,9 @@
 </div>
 <div class="centerbox" style="margin: auto; max-width: 75%;">
     <div style="background-color: lightgray;padding: 20px; height: 400px; margin: auto;margin-top: 50px; text-align: center;">
-        <p style="padding-top: 180px"> No ongoing match</p> <!-- half of the height of the div box - font-size -->
-        <img src="{{ url_for('video_feed') }}" alt="Video Feed">
+         <img src="{{ url_for('video_feed') }}" alt="Video Feed">
+         <p style="padding-top: 180px"> No ongoing match</p> <!-- half of the height of the div box - font-size -->
+
 <!--        <video id="remoteVideo" autoplay></video>-->
 <!--        <a href="{{ url_for('video_feed') }}" target="_self">Link to Video Feed</a>-->
     </div>
