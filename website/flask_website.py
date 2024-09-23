@@ -55,7 +55,7 @@ class Website:
 
         @self.app.route('/video_feed')
         def video_feed():
-            return Response(self.game.run_camera(self.camera), mimetype='multipart/x-mixed-replace; boundary=frame')
+            return Response(self.game.run_website(self.camera), mimetype='multipart/x-mixed-replace; boundary=frame')
 
         @self.app.route('/feedpage.html')
         def feedpage():
