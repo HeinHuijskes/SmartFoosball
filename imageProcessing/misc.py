@@ -21,7 +21,7 @@ class Colour:
     CORK = []
     ORANGE = [
         np.array([20, 50, 50], np.uint8),  # Lower
-        np.array([60, 255, 255], np.uint8),  # Upper
+        np.array([50, 255, 255], np.uint8),  # Upper
     ]
 
 

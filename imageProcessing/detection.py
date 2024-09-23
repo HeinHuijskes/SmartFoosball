@@ -19,6 +19,10 @@ class Detection:
         # Minimum and maximum amount of pixels to consider a set of pixels a foos-man
         self.foos_men_min = 400
         self.foos_men_max = 3000
+        self.ball_min = 500
+        self.ball_max = 2500
+        self.ball_positions = []
+        self.ball_frames = 10
 
         # Parameters for video calibration
         # The corners of the playing field, frames since calibration, and angle rotation matrix
@@ -174,20 +178,63 @@ class Detection:
         self.max_y = height
         self.mid_y = math.ceil(height * 0.5)
 
-    def ballDetection(self, frame, colour=Colour.CORK) -> tuple[tuple[int, int], int]:
-        """Finds the ball, returns the coordinate, and the confidence of the found ball in amount of pixels"""
-        # TODO: ff invullen
-        pass
+    def ballDetection(self, frame, colour):
+        """Finds the ball, returns the frame and found ball coordinates"""
+        orange_mask = self.colour_mask(frame, colour)
+        frame, contours = self.contour_frame(frame, orange_mask, self.ball_min, self.ball_max, Contour.ORANGE)
+        max_size = 0
+        biggest = None
+        height, width, _ = frame.shape
+
+        for contour in contours:
+            x, y, w, h = cv2.boundingRect(contour)
+            if x < 150 or x > width - 150:
+                continue
+
+            area = cv2.contourArea(contour)
+            if area > max_size:
+                biggest = contour
+                max_size = area
+
+        if biggest is not None:
+            x, y, w, h = cv2.boundingRect(biggest)
+            x, y = x+w//2, y+h//2
+            frame = cv2.circle(frame, (x, y), 1, Contour.RED, 2)
+            # frame = cv2.circle(frame, (150, height//2), 15, Contour.BLUE, 3)
+
+            self.add_ball_position((x, y))
+
+        else:
+            self.add_ball_position([])
+
+        return frame, (0, 0)
+
+    def add_ball_position(self, position):
+        self.ball_positions.append(position)
+        if len(self.ball_positions) >= self.ball_frames:
+            self.ball_positions = self.ball_positions[1:self.ball_frames]
+        return
+
+    def draw_ball_positions(self, frame):
+        old_position = []
+        if len(self.ball_positions) > 0:
+            old_position = self.ball_positions[0]
+        for position in self.ball_positions[1:]:
+            if len(position) == 0 or len(old_position) == 0:
+                continue
+            frame = cv2.line(frame, old_position, position, Contour.BLACK, 2)
+            old_position = position
+        return frame
 
     def foosMenDetection(self, frame):
         """Looks for blue and red, and returns their outlines on the frame."""
         # cv2.convertScaleAbs(frame, frame, 2)
         blue_mask = self.colour_mask(frame, Colour.BLUE)
         red_mask = self.colour_mask(frame, Colour.RED)
-        orange_mask = self.colour_mask(frame, Colour.ORANGE)
-        frame = self.contour_frame(frame, blue_mask, self.foos_men_min, self.foos_men_max, Contour.BLUE)
-        frame = self.contour_frame(frame, red_mask, self.foos_men_min, self.foos_men_max, Contour.RED)
-        frame = self.contour_frame(frame, orange_mask, self.foos_men_min, 100000, Contour.ORANGE)
+
+        frame, _ = self.contour_frame(frame, blue_mask, self.foos_men_min, self.foos_men_max, Contour.BLUE)
+        frame, _ = self.contour_frame(frame, red_mask, self.foos_men_min, self.foos_men_max, Contour.RED)
+
 
         return frame
 
