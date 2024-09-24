@@ -22,6 +22,9 @@ class Detection:
         self.table_length = 126  # cm
         self.pixel_width_cm = 0
         self.fps = 60
+        self.zoom_levels = [1, 1.5, 2, 4, 6, 8, 10]  # amount of x zoom
+        self.zoom = 0  # counter for choosing a zoom level
+        self.last_known_ball_position = [0, 0]
 
         # Ball variables
         self.ball_min = 500
@@ -36,25 +39,26 @@ class Detection:
         self.frames = 0
         self.rotate_matrix = []
         self.min_x, self.max_x, self.min_y, self.max_y = 0, 0, 0, 0
-        self.mid_x, mid_y = 0, 0
+        self.mid_x, self.mid_y = 0, 0
 
     def run(self, frame, mode=Mode.NORMAL):
         # Detect corners and crop the frame
         frame = self.aruco(frame)
         # Scale the frame to fit within one laptop screen
         frame = self.scale(frame, 1)
-        # Apply colour mode for different colour detection highlights
-        frame = self.applyMode(mode, frame)
         # Draw the ball tracer each frame
         frame = self.draw_ball_positions(frame)
         # Run foosmen detection and apply to frame
         frame = self.foosMenDetection(frame)
         # Run ball detection and apply to frame
-        frame, coordinates = self.ballDetection(frame, Colour.ORANGE)
+        frame = self.ballDetection(frame, Colour.ORANGE)
+        # Apply colour mode for different colour detection highlights
+        frame = self.applyMode(mode, frame)
         return frame
 
-    def applyMode(self, mode, frame):
+    def applyMode(self, mode, frame_normal):
         """Apply different colour modes to the frame. Options are BLUE, RED, FUNK, and NORMAL"""
+        frame = self.zoom_in(frame_normal)
         if mode == Mode.BLUE:
             # Get the blue colour mask
             mask = self.colour_mask(frame, Colour.BLUE)
@@ -70,13 +74,32 @@ class Detection:
             orange_mask = self.colour_mask(frame, Colour.ORANGE)
             mask = red_mask | blue_mask | orange_mask
         elif mode == Mode.DISCO:
-            frame = self.applyMode(random.choice([Mode.BLUE, Mode.RED, Mode.ORANGE, Mode.FUNK, Mode.NORMAL]), frame)
+            # Currently double zooms due to messy code order (not too bad, this is an unimportant mode anyway)
+            frame = self.applyMode(random.choice([Mode.BLUE, Mode.RED, Mode.ORANGE, Mode.FUNK, Mode.NORMAL]), frame_normal)
             return frame
         else:
             # Apply no colour masks
             return frame
 
         return cv2.bitwise_and(frame, frame, mask=mask)
+    
+    def zoom_in(self, frame):
+        if self.zoom == 0:
+            return frame
+
+        height, width, _ = frame.shape
+        coords = self.last_known_ball_position
+        size = int(width / self.zoom_levels[self.zoom])
+
+        min_x, max_x = coords[0] - size, coords[0] + size
+        min_x = max(min(min_x, max_x - size*2), 0)
+        max_x = min(max(max_x, min_x + size*2), width)
+
+        min_y, max_y, = coords[1] - size, coords[1] + size
+        min_y = max(min(min_y, max_y - size*2), 0)
+        max_y = min(max(max_y, min_y + size*2), height)
+
+        return frame[min_y:max_y, min_x:max_x]
 
     def aruco(self, frame, calibration_time=5):
         """Detects aruco, returns the bounding box of the foosball table"""
@@ -219,11 +242,12 @@ class Detection:
             # frame = cv2.circle(frame, (150, height//2), 15, Contour.BLUE, 3)
 
             self.add_ball_position([x, y])
+            self.last_known_ball_position = [x, y]
 
         else:
             self.add_ball_position([])
 
-        return frame, (0, 0)
+        return frame
 
     def add_ball_position(self, position):
         old_position = self.ball_positions[-1]
@@ -232,7 +256,7 @@ class Detection:
             position += [pixel_speed]
             if pixel_speed > self.max_ball_speed and self.pixel_width_cm is not 0:
                 speed = pixel_speed * self.pixel_width_cm / 100 * self.fps * 3.6
-                print(speed, pixel_speed)
+                # print(speed, pixel_speed)
                 if speed < 75:  # TODO: Remove the need for this restraint
                     self.max_ball_speed = pixel_speed
         self.ball_positions.append(position)

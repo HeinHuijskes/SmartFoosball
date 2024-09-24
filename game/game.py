@@ -35,6 +35,10 @@ class Game:
                 self.mode = Mode.ORANGE
             elif key == ord('s'):
                 self.detector.max_ball_speed = 0
+            elif key == ord('z'):
+                self.detector.zoom += 1
+                if self.detector.zoom >= len(self.detector.zoom_levels):
+                    self.detector.zoom = 0
 
     def kalmanFilter(self):
         pass
@@ -43,18 +47,19 @@ class Game:
         pass
 
     def run(self):
-        video = cv2.VideoCapture('data/video/tafelvoetbal_oranjebal.mp4')
-        nextFrame = True
-        while nextFrame:
-            nextFrame, frame = video.read()
-            if nextFrame == False:
-                break
-            frame = self.detector.run(frame, self.mode)
+        while True:
+            video = cv2.VideoCapture('data/video/tafelvoetbal_oranjebal.mp4')
+            nextFrame = True
+            while nextFrame:
+                nextFrame, frame = video.read()
+                if nextFrame == False:
+                    break
+                frame = self.detector.run(frame, self.mode)
+                
+                if DEBUG: self.showFrame(frame)
             
-            if DEBUG: self.showFrame(frame)
-        
-        video.release()
-        cv2.destroyAllWindows()
+            # video.release()
+            # cv2.destroyAllWindows()
 
     def run_website(self, video_feed):
         nextFrame = True

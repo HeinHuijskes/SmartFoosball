@@ -44,3 +44,4 @@ class Mode(Enum):
     FUNK = 'FUNK'
     DISCO = 'DISCO'
     ORANGE = 'ORANGE'
+    ZOOM = 'ZOOM'
