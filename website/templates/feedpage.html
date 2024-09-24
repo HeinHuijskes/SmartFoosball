@@ -25,6 +25,7 @@
 <div class="centerbox" style="margin: auto; max-width: 75%;">
     <div style="background-color: lightgray;padding: 20px; height: 400px; margin: auto;margin-top: 50px; text-align: center;">
          <img src="{{ url_for('video_feed') }}" alt="Video Feed">
+            <TODO> NO ONGOING MATCH NOR IMG SRC</TODO>
          <p style="padding-top: 180px"> No ongoing match</p> <!-- half of the height of the div box - font-size -->
 
 <!--        <video id="remoteVideo" autoplay></video>-->
@@ -33,6 +34,7 @@
     <!-- two div boxes that split the space under the live feed-->
     <div style="background-color: transparent; width: 50%">
         <p style="text-align: left">Match score </p>
+        <p style="text-align: left; font-weight: 400"> {{scoreL}} - {{scoreR}}</p>
 
     </div>
     <div style="width: 50%">

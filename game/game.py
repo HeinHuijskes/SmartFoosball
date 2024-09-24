@@ -8,12 +8,12 @@ DEBUG = True
 
 
 class Game:
-    def __init__(self) -> None:
+    def __init__(self, website) -> None:
         self.score_red = 0
         self.score_blue = 0
         self.detector = Detection()
         self.mode = Mode.NORMAL
-        # database = 
+        self.website = website
 
     def showFrame(self, frame):
         cv2.imshow('smol', frame)
@@ -70,3 +70,8 @@ class Game:
                 frame = jpeg.tobytes()
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        frame + b'\r\n')
+
+    def add_goal(self, Left):
+        "pass True if one goal should be added to the score of the left goal, else 1 will be added to the right goal"
+        self.website.add_goal(Left)
+

@@ -3,6 +3,7 @@ import cv2
 from flask import request
 
 from game.game import Game
+from hardware.hardware import *
 
 global app
 
@@ -14,7 +15,10 @@ class Website:
         self.app = Flask(__name__)
         self.add_routes()
         self.camera = None
-        self.game = Game()
+        self.game = Game(self)
+        self.scoreL = 0
+        self.scoreR = 0
+        self.arduino = Arduino(self, self.game)
 
     def run(self):
         self.camera = cv2.VideoCapture(1, cv2.CAP_DSHOW)
@@ -36,6 +40,12 @@ class Website:
         self.camera.release()
         cv2.destroyAllWindows()
 
+    def add_goal(self, Left):
+        "If Left is true, one goal will be added to the score of the left goal, else 1 will be added to the right goal"
+        if Left:
+            self.scoreL = self.scoreL + 1
+        else: self.scoreR = self.scoreR + 1
+
     def add_routes(self):
         @self.app.route('/', methods=['GET', 'POST'])
         def index():
@@ -54,7 +64,8 @@ class Website:
 
         @self.app.route('/feedpage.html')
         def feedpage():
-            return render_template('feedpage.html')
+            # self.arduino.run()
+            return render_template('feedpage.html', scoreL = self.scoreL, scoreR= self.scoreR)
 
         @self.app.route('/index.html')
         def indexhtml():
@@ -63,3 +74,9 @@ class Website:
         @self.app.route('/css/styles.css')
         def cssstyles():
             return render_template('css/styles.css')
+
+        @self.app.route('/score')
+        def score():
+
+            return render_template('feedpage.html', scoreL = self.scoreL, scoreR= self.scoreR)
+
