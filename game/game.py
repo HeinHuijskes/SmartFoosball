@@ -75,3 +75,7 @@ class Game:
         "pass True if one goal should be added to the score of the left goal, else 1 will be added to the right goal"
         self.website.add_goal(Left)
 
+#TOdo see if you can call de app.route('...') to referesh page or potentially
+#referesh div box or in the websitre run function add it as file to watch
+
+

@@ -77,6 +77,5 @@ class Website:
 
         @self.app.route('/score')
         def score():
-
             return render_template('feedpage.html', scoreL = self.scoreL, scoreR= self.scoreR)
 
