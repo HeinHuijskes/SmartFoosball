@@ -28,8 +28,8 @@ class Detection:
         self.last_known_ball_position = [0, 0]
 
         # Ball variables
-        self.ball_min = 500
-        self.ball_max = 1500
+        self.ball_min = 300
+        self.ball_max = 700
         self.ball_frames = 10
         self.ball_positions = [[]]*(self.ball_frames+1)
         self.max_ball_speed = 0
@@ -251,20 +251,32 @@ class Detection:
             self.last_known_ball_position = [x, y]
 
         else:
-            self.add_ball_position([])
+            self.kalman()
 
         return frame
+
+    def kalman(self):
+        last_position = self.ball_positions[-1]
+        if len(last_position) < 3:
+            self.add_ball_position([])
+            return
+        
+        # print(last_position)
+        speed_vector = last_position[3]
+        prediction = [last_position[0] + speed_vector[0], last_position[1] + speed_vector[1], last_position[2], speed_vector]
+        self.add_ball_position(prediction)
 
     def add_ball_position(self, position):
         old_position = self.ball_positions[-1]
         if len(position) != 0 and len(old_position) != 0:
             pixel_speed = math.sqrt((position[0]-old_position[0])**2 + (position[1]-old_position[1])**2)
-            position += [pixel_speed]
+            position.append(pixel_speed)
             if pixel_speed > self.max_ball_speed and self.pixel_width_cm is not 0:
                 speed = pixel_speed * self.pixel_width_cm / 100 * self.fps * 3.6
                 # print(speed, pixel_speed)
                 if speed < 75:  # TODO: Remove the need for this restraint
                     self.max_ball_speed = pixel_speed
+            position.append((position[0]-old_position[0], position[1]-old_position[1]))
         self.ball_positions.append(position)
         return
 

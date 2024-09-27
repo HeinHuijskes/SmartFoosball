@@ -19,7 +19,7 @@ class Colour:
     ]
     BLACK = []
     CORK = [
-        np.array([10, 50, 150], np.uint8),  # Lower
+        np.array([14, 50, 150], np.uint8),  # Lower
         np.array([50, 255, 255], np.uint8),  # Upper
     ]
 

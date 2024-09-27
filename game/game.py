@@ -53,8 +53,8 @@ class Game:
                     self.skip_frames = self.detector.fps//3*int(chr(key))
                 elif key == ord('='):
                     self.skip_frames = 1
-                elif key == ord('-'):
-                    self.skip_frames = -1
+                # elif key == ord('-'):
+                #     self.skip_frames = -1
 
     def kalmanFilter(self):
         pass
@@ -67,39 +67,49 @@ class Game:
             video = cv2.VideoCapture('data/video/quite long.mp4')
             nextFrame = True
             while nextFrame:
+
                 if not self.paused:
                     nextFrame, frame = self.getFrame(video)
                     frame = self.detector.run(frame, self.mode)
+
                 elif self.skip_frames > 0:
                     for i in range(0, self.skip_frames):
                         nextFrame, frame = self.getFrame(video)
                         if nextFrame == False: break
                     frame = self.detector.run(frame, self.mode)
                     self.skip_frames = 0
-                elif self.skip_frames < 0 and 0 < len(self.back_frames) < self.max_back_frames:
-                    self.front_frames.append(frame)
-                    frame = self.back_frames[-1]
-                    self.back_frames = self.back_frames[:-1]
-                    self.skip_frames = 0
+
+                else:
+                    # Paused and mode change, only show the change
+                    self.showFrame(self.detector.applyMode(self.mode, frame))
+                    continue
+
+                # elif self.skip_frames < 0 and 0 < len(self.back_frames) < self.max_back_frames:
+                #     print(len(self.back_frames))
+                #     self.front_frames.append(frame)
+                #     frame = self.back_frames[-1]
+                #     frame = self.detector.run(frame, self.mode)
+                #     self.back_frames = self.back_frames[:-1]
+                #     self.skip_frames = 0
+
                 if nextFrame == False:
-                    break
-                
+                    break                
                 if DEBUG: self.showFrame(frame)
             
             # video.release()
             # cv2.destroyAllWindows()
 
     def getFrame(self, video_feed):
-        if len(self.front_frames) > 0:
-            self.back_frames.append(frame)
-            frame = self.front_frames[-1]
-            self.front_frames = self.front_frames[:-1]
-            return frame
+        # if len(self.front_frames) > 0:
+        #     self.back_frames.append(frame)
+        #     frame = self.front_frames[-1]
+        #     self.front_frames = self.front_frames[:-1]
+        #     return frame
         self.time += 1
-        if len(self.back_frames) >= self.max_back_frames:
-            self.back_frames = self.back_frames[len(self.back_frames)-self.max_back_frames+1:]
+        # if len(self.back_frames) >= self.max_back_frames:
+        #     self.back_frames = self.back_frames[len(self.back_frames)-self.max_back_frames+1:]
         nextFrame, frame = video_feed.read()
-        if nextFrame: self.back_frames.append(frame)
+        # if nextFrame: self.back_frames.append(frame)
         return nextFrame, frame
 
     def run_website(self, video_feed):
