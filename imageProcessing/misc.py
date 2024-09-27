@@ -18,7 +18,11 @@ class Colour:
         np.array([255, 25, 255], np.uint8),  # Upper
     ]
     BLACK = []
-    CORK = []
+    CORK = [
+        np.array([10, 50, 150], np.uint8),  # Lower
+        np.array([50, 255, 255], np.uint8),  # Upper
+    ]
+
     ORANGE = [
         np.array([20, 50, 50], np.uint8),  # Lower
         np.array([50, 255, 255], np.uint8),  # Upper

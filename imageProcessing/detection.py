@@ -15,7 +15,8 @@ DEBUG = True
 class Detection:
     """Class for object detection in a frame, based on colour differences."""
 
-    def __init__(self):
+    def __init__(self, game):
+        self.game = game
         # Minimum and maximum amount of pixels to consider a set of pixels a foos-man
         self.foos_men_min = 400
         self.foos_men_max = 3000
@@ -28,7 +29,7 @@ class Detection:
 
         # Ball variables
         self.ball_min = 500
-        self.ball_max = 2500
+        self.ball_max = 1500
         self.ball_frames = 10
         self.ball_positions = [[]]*(self.ball_frames+1)
         self.max_ball_speed = 0
@@ -51,9 +52,11 @@ class Detection:
         # Run foosmen detection and apply to frame
         frame = self.foosMenDetection(frame)
         # Run ball detection and apply to frame
-        frame = self.ballDetection(frame, Colour.ORANGE)
+        frame = self.ballDetection(frame, Colour.CORK)
         # Apply colour mode for different colour detection highlights
         frame = self.applyMode(mode, frame)
+        # Draw info texts on screen
+        frame = self.drawTexts(frame)
         return frame
 
     def applyMode(self, mode, frame_normal):
@@ -66,7 +69,7 @@ class Detection:
             # Get the red colour mask
             mask = self.colour_mask(frame, Colour.RED)
         elif mode == Mode.ORANGE:
-            mask = self.colour_mask(frame, Colour.ORANGE)
+            mask = self.colour_mask(frame, Colour.CORK)
         elif mode == Mode.FUNK:
             # Combine the red and blue colour masks
             red_mask = self.colour_mask(frame, Colour.RED)
@@ -99,7 +102,10 @@ class Detection:
         min_y = max(min(min_y, max_y - size*2), 0)
         max_y = min(max(max_y, min_y + size*2), height)
 
-        return frame[min_y:max_y, min_x:max_x]
+        frame = frame[min_y:max_y, min_x:max_x]
+        # frame = self.scale(frame, 1/self.zoom_levels[self.zoom])
+
+        return frame
 
     def aruco(self, frame, calibration_time=5):
         """Detects aruco, returns the bounding box of the foosball table"""
@@ -274,11 +280,19 @@ class Detection:
             #     print(colour)
             frame = cv2.line(frame, old_position[:2], position[:2], colour, 2)
             old_position = position
+        return frame
+    
+    def drawTexts(self, frame):
         height, width, _ = frame.shape
-
         speed = self.max_ball_speed * self.pixel_width_cm / 100 * self.fps * 100 // 1 / 100
         speed_kmh = speed*3.6*100//1/100
         cv2.putText(frame, f'Max speed: {speed} m/s ({speed_kmh} km/h)', (width//4, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
+
+        time = self.game.time
+        seconds = time // self.fps
+        minutes = time // (self.fps*60)
+        frames = time % self.fps
+        cv2.putText(frame, f'Time: {minutes}m {seconds}s {frames}f', (width//4*3, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
         return frame
 
     def foosMenDetection(self, frame):
@@ -317,45 +331,45 @@ class Detection:
         mask = cv2.dilate(mask, kernel)
         return mask
 
-    def scale(self, frame, scaler=0.5):
+    def scale(self, frame, scaler=2):
         """Resize a frame according to preference in order to fit onto a laptop screen"""
         height, width, _ = frame.shape
-        resize = (math.ceil(width * scaler), math.ceil(height * scaler))
+        resize = (math.ceil(width / scaler), math.ceil(height / scaler))
         frame = cv2.resize(frame, resize)
         return frame
 
 
-def testDetect():
-    """Test detection functionality from a video file"""
-    detection = Detection()
-    # Load video file
-    video = cv2.VideoCapture('data/video/shakiestcam.mp4')
-    mode = Mode.NORMAL
+# def testDetect():
+#     """Test detection functionality from a video file"""
+#     detection = Detection()
+#     # Load video file
+#     video = cv2.VideoCapture('data/video/shakiestcam.mp4')
+#     mode = Mode.NORMAL
 
-    # Loop over all the frames
-    nextFrame = True
-    while nextFrame:
-        nextFrame, frame = video.read()
-        if nextFrame == False:
-            break
-        frame = detection.run(frame, mode)
+#     # Loop over all the frames
+#     nextFrame = True
+#     while nextFrame:
+#         nextFrame, frame = video.read()
+#         if nextFrame == False:
+#             break
+#         frame = detection.run(frame, mode)
 
-        cv2.imshow('smol', frame)
-        # Detect a key and select display mode for next frame accordingly
-        key = cv2.waitKey(1)
-        if key:
-            if key == ord('q'):
-                break
-            elif key == ord('r'):
-                mode = Mode.RED
-            elif key == ord('b'):
-                mode = Mode.BLUE
-            elif key == ord('f'):
-                mode = Mode.FUNK
-            elif key == ord('n'):
-                mode = Mode.NORMAL
-            elif key == ord('d'):
-                mode = Mode.DISCO
+#         cv2.imshow('smol', frame)
+#         # Detect a key and select display mode for next frame accordingly
+#         key = cv2.waitKey(1)
+#         if key:
+#             if key == ord('q'):
+#                 break
+#             elif key == ord('r'):
+#                 mode = Mode.RED
+#             elif key == ord('b'):
+#                 mode = Mode.BLUE
+#             elif key == ord('f'):
+#                 mode = Mode.FUNK
+#             elif key == ord('n'):
+#                 mode = Mode.NORMAL
+#             elif key == ord('d'):
+#                 mode = Mode.DISCO
 
-    video.release()
-    cv2.destroyAllWindows()
+#     video.release()
+#     cv2.destroyAllWindows()
