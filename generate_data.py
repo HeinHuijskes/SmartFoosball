@@ -1,5 +1,6 @@
 import cv2
 from imageProcessing.detection import Detection
+from random import choice
 
 frame_count = 200
 video = cv2.VideoCapture('./data/video/quite long.mp4')
@@ -55,13 +56,15 @@ while True:
              break
         elif key == ord("c") or key == 13 or skip:
             skip = False
-            with open(f'./datasets/custom/labels/train/{frame_count}.txt', 'w') as text_file:
+            location = ['train', 'val']
+            location = choice(location)
+            with open(f'./datasets/custom/labels/{location}/{frame_count}.txt', 'w') as text_file:
                 if len(refPt) == 2:
                     text_file.write(f'1, {refPt[0][0]} {refPt[0][1]} {refPt[1][0]} {refPt[1][1]}')
                     refPt = []
                 else:
                     text_file.write(' ')
-            cv2.imwrite(f'./datasets/custom/images/train/{frame_count}.jpg', clone)
+            cv2.imwrite(f'./datasets/custom/images/{location}/{frame_count}.jpg', clone)
             break
         cv2.imshow("frame", frame)
 
