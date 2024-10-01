@@ -18,8 +18,8 @@ class Detection:
     def __init__(self, game):
         self.game = game
         # Minimum and maximum amount of pixels to consider a set of pixels a foos-man
-        self.foos_men_min = 400
-        self.foos_men_max = 3000
+        self.foos_men_min = 500
+        self.foos_men_max = 5000
         self.table_length = 126  # cm
         self.pixel_width_cm = 0
         self.fps = 60
@@ -28,8 +28,8 @@ class Detection:
         self.last_known_ball_position = [0, 0]
 
         # Ball variables
-        self.ball_min = 300
-        self.ball_max = 700
+        self.ball_min = 100
+        self.ball_max = 1000
         self.ball_frames = 10
         self.ball_positions = [[]]*(self.ball_frames+1)
         self.max_ball_speed = 0
@@ -43,6 +43,7 @@ class Detection:
         self.mid_x, self.mid_y = 0, 0
 
     def run(self, frame, mode=Mode.NORMAL):
+        cv2.rotate(frame, cv2.ROTATE_180, frame)
         # Detect corners and crop the frame
         frame = self.aruco(frame)
         # Scale the frame to fit within one laptop screen
@@ -251,7 +252,8 @@ class Detection:
             self.last_known_ball_position = [x, y]
 
         else:
-            self.kalman()
+            self.add_ball_position([])
+            # self.kalman()
 
         return frame
 
