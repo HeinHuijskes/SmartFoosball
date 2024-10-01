@@ -15,13 +15,15 @@ class Website:
         self.app = Flask(__name__)
         self.add_routes()
         self.camera = None
+        self.camera_id = 0
         self.game = Game(self)
         self.scoreL = 0
         self.scoreR = 0
         self.arduino = Arduino(self, self.game)
 
-    def run(self):
-        self.camera = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+    def run(self, camera_id):
+        self.camera_id = camera_id
+        self.camera = cv2.VideoCapture(camera_id, cv2.CAP_DSHOW)
         print("Camera initialized successfully.")
         self.app.run(debug=True, threaded=True, use_reloader=False)
 
@@ -60,7 +62,8 @@ class Website:
 
         @self.app.route('/video_feed')
         def video_feed():
-            return Response(self.game.run_camera(), mimetype='multipart/x-mixed-replace; boundary=frame')
+            # print("returns: ", self.game.run_camera(self.camera_id))
+            return Response(self.game.run_camera(self.camera_id), mimetype='multipart/x-mixed-replace; boundary=frame')
 
         @self.app.route('/feedpage.html')
         def feedpage():

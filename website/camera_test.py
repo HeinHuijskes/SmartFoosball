@@ -2,4 +2,5 @@ from flask_website import *
 
 website = Website()
 
-website.run()
+website.run(1)
+

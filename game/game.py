@@ -4,6 +4,7 @@ import cv2
 from imageProcessing.misc import *
 from hardware.camera import *
 
+
 DEBUG = True
 
 
@@ -52,14 +53,20 @@ class Game:
         video.release()
         cv2.destroyAllWindows()
 
-    def run_camera(self):
+    def run_camera(self, camera_id):
 
-        camera = Camera(0)
+        camera = Camera(camera_id)
         while True:
             frame = camera.get_frame()
             if frame is None:
                 print("frame none")
+                img = cv2.imread("Error.jpg")
+                ret, jpeg = cv2.imencode('.jpg', img)
+                yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                       jpeg.tobytes() + b'\r\n')
                 continue
+                #TODO test with camera(1) so webcam can be plugged in while running websie to see if it switches images
+                # continue
             frame = self.detector.run(frame, self.mode)
             if DEBUG: self.showFrame(frame)
             #encode frame for website
