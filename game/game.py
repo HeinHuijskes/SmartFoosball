@@ -54,29 +54,19 @@ class Game:
         cv2.destroyAllWindows()
 
     def run_camera(self, camera_id):
-
         camera = Camera(camera_id)
         while True:
             frame = camera.get_frame()
             if frame is None:
                 print("frame none")
-                img = cv2.imread("Error.jpg")
-                ret, jpeg = cv2.imencode('.jpg', img)
-                yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
-                       jpeg.tobytes() + b'\r\n')
-                continue
-                #TODO test with camera(1) so webcam can be plugged in while running websie to see if it switches images
-                # continue
+                frame = cv2.imread("Error_mirrored.jpg")
             frame = self.detector.run(frame, self.mode)
             if DEBUG: self.showFrame(frame)
             #encode frame for website
             ret, jpeg = cv2.imencode('.jpg', frame)
-            if frame is None or frame.size == 0:
-                print("frame error")
             if ret:
-                frame = jpeg.tobytes()
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
-                       frame + b'\r\n')
+                       jpeg.tobytes() + b'\r\n')
 
     def add_goal(self, Left):
         "pass True if one goal should be added to the score of the left goal, else 1 will be added to the right goal"
