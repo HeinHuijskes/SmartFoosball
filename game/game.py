@@ -20,13 +20,22 @@ class Game:
         self.back_frames = []
         self.front_frames = []
         self.max_back_frames = self.detector.fps
+        self.video_frames = []
         # database = 
 
     def showFrame(self, frame):
         cv2.imshow('smol', frame)
+        self.video_frames.append(frame.copy())
         key = cv2.waitKey(1)
         if key:
             if key == ord('q'):
+                height, width, _ = self.video_frames[0].shape
+                result = cv2.VideoWriter('ExampleVideo.avi',cv2.VideoWriter_fourcc(*'MJPG'), fps=60, frameSize=(width, height))
+                for i, f in enumerate(self.video_frames):
+                    print(f'Printed frame {i}')
+                    result.write(f)
+                result.release()
+                print('Succesfully released video')
                 exit(0)
             elif key == ord('r'):
                 self.mode = Mode.RED
