@@ -26,7 +26,6 @@ class Website:
         print("Video capture initialized successfully.")
         self.app.run(debug=True, threaded=True, use_reloader=False)
 
-
     def generate_frames2(self, frame):
         ret, jpeg = cv2.imencode('.jpg', frame)
         cv2.imwrite("frame.jpg", jpeg)
@@ -37,21 +36,21 @@ class Website:
         if ret:
             frame = jpeg.tobytes()
             yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
-            frame + b'\r\n')
+                   frame + b'\r\n')
         self.camera.release()
         cv2.destroyAllWindows()
 
     def add_routes(self):
         @self.app.route('/', methods=['GET', 'POST'])
         def index():
-                global playback
-                if request.method == 'POST':
-                    playback = request.args.get('playback', default=15, type=int)
-                    if playback == 0:
-                        return render_template('feedpage.html', link='/video_feed', )
-                    else:
-                        return render_template('index.html', link='/video_feed', )
-                return render_template('index.html', link='/video_feed')
+            global playback
+            if request.method == 'POST':
+                playback = request.args.get('playback', default=15, type=int)
+                if playback == 0:
+                    return render_template('feedpage.html', link='/video_feed', )
+                else:
+                    return render_template('index.html', link='/video_feed', )
+            return render_template('index.html', link='/video_feed')
 
         @self.app.route('/video_feed')
         def video_feed():

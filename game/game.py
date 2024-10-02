@@ -70,11 +70,14 @@ class Game:
             if frame is None or frame.size == 0:
                 print("frame error")
             if ret:
-                goal_team = self.arduino.get_goal()
+                goal_team, reset = self.arduino.get_goal_or_reset()
                 if goal_team == Team.BLUE:
                     self.score_blue += 1
                 elif goal_team == Team.RED:
                     self.score_red += 1
+                elif reset:
+                    pass
+                # TODO make reset function for game
 
                 frame = jpeg.tobytes()
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +

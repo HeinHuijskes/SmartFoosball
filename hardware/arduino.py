@@ -13,6 +13,7 @@ class Arduino:
     def __init__(self, com_port='COM3'):
         self.serialConnection = serial.Serial(com_port, 9600)
         self.goal = None
+        self.reset = False
         self.thread = Thread(target=self.loop, daemon=True)
         self.lock = Lock()
         self.thread.start()
@@ -26,16 +27,20 @@ class Arduino:
                 self.goal = Team.RED
             elif line == ('Goal blue'):
                 self.goal = Team.BLUE
+            elif line == "reset":
+                self.reset = True
 
             self.lock.release()
 
-    def get_goal(self):
+    def get_goal_or_reset(self):
         self.lock.acquire()
         goal = self.goal
         self.goal = None
+        reset = self.reset
+        self.reset = False
         self.lock.release()
 
-        return goal
+        return goal, reset
 
     def get_line(self):
         line = self.serialConnection.readline()
