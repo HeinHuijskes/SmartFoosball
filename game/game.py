@@ -1,3 +1,4 @@
+from hardware.arduino import Arduino, Team
 from imageProcessing.detection import Detection
 # from database.database import *
 import cv2
@@ -13,6 +14,7 @@ class Game:
         self.score_blue = 0
         self.detector = Detection()
         self.mode = Mode.NORMAL
+        self.arduino = Arduino()
         # database = 
 
     def showFrame(self, frame):
@@ -68,15 +70,13 @@ class Game:
             if frame is None or frame.size == 0:
                 print("frame error")
             if ret:
+                goal_team = self.arduino.get_goal()
+                if goal_team == Team.BLUE:
+                    self.score_blue += 1
+                elif goal_team == Team.RED:
+                    self.score_red += 1
+
                 frame = jpeg.tobytes()
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        frame + b'\r\n')
 
-    # miss moet team een enum zijn
-    def increase_score(self, team):
-        if team == "blue":
-            self.score_blue += 1
-        elif team == "red":
-            self.score_red += 1
-        else:
-            raise ValueError("results: team must be blue or red")
