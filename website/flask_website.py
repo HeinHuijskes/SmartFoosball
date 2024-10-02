@@ -70,6 +70,11 @@ class Website:
             def video_feed():
                 return Response(self.game.run_camera(self.camera_id), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+            @self.app.route('/delayed_video_feed')
+            def delayed_video_feed():
+                return Response(self.game.buffer_frames(),
+                                mimetype='multipart/x-mixed-replace; boundary=frame')
+
             @self.app.route('/feedpage.html')
             def feedpage():
                 # self.arduino.run()

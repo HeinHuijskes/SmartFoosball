@@ -1,3 +1,5 @@
+from collections import deque
+
 from imageProcessing.detection import Detection
 # from database.database import *
 import cv2
@@ -15,6 +17,9 @@ class Game:
         self.detector = Detection()
         self.mode = Mode.NORMAL
         self.website = website
+        self.fps = 60
+        self.delaysec = 5
+        self.buffer = deque(maxlen=(self.fps * self.delaysec))
 
     def showFrame(self, frame):
         cv2.imshow('smol', frame)
@@ -64,7 +69,14 @@ class Game:
             if DEBUG: self.showFrame(frame)
             #encode frame for website
             ret, jpeg = cv2.imencode('.jpg', frame)
+            self.buffer.append(jpeg)
             if ret:
+                yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                       jpeg.tobytes() + b'\r\n')
+    def buffer_frames(self):
+        while True:
+            bframes = self.buffer.copy()
+            for jpeg in bframes:
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        jpeg.tobytes() + b'\r\n')
 
