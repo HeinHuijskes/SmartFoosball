@@ -4,8 +4,6 @@ env.py
 data/video/*
 !data/video/README.md
 yolov8n.pt
-runs/
-datasets/custom/images/train/
-datasets/custom/images/val/
-datasets/custom/labels/train/
-datasets/custom/labels/val/
+runs/detect/*
+!runs/detect/train1
+datasets

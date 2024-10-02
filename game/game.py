@@ -4,7 +4,7 @@ import cv2
 from imageProcessing.misc import *
 from hardware.camera import *
 
-DEBUG = True
+DEBUG = False
 
 
 class Game:
@@ -21,21 +21,13 @@ class Game:
         self.front_frames = []
         self.max_back_frames = self.detector.fps
         self.video_frames = []
-        # database = 
+        self.calibration_frames = 5
 
     def showFrame(self, frame):
         cv2.imshow('smol', frame)
-        self.video_frames.append(frame.copy())
         key = cv2.waitKey(1)
         if key:
             if key == ord('q'):
-                height, width, _ = self.video_frames[0].shape
-                result = cv2.VideoWriter('ExampleVideo.avi',cv2.VideoWriter_fourcc(*'MJPG'), fps=60, frameSize=(width, height))
-                for i, f in enumerate(self.video_frames):
-                    print(f'Printed frame {i}')
-                    result.write(f)
-                result.release()
-                print('Succesfully released video')
                 exit(0)
             elif key == ord('r'):
                 self.mode = Mode.RED
@@ -51,6 +43,9 @@ class Game:
                 self.mode = Mode.ORANGE
             elif key == ord('s'):
                 self.detector.max_ball_speed = 0
+            # elif key == ord('c'):
+            #     self.detector.corners = [[]]*4
+            #     self.calibrate()
             elif key == ord('z'):
                 self.detector.zoom += 1
                 if self.detector.zoom >= len(self.detector.zoom_levels):
@@ -65,27 +60,44 @@ class Game:
                 # elif key == ord('-'):
                 #     self.skip_frames = -1
 
-    def kalmanFilter(self):
-        pass
-
     def stream(self):
         pass
 
+    def calibrate(self):
+        nextFrame, frame = self.video.read()
+        height, width, _ = frame.shape
+        self.detector.setDimensions(frame)
+        self.video.set(cv2.CAP_PROP_FRAME_WIDTH, int(width*1.3))  # Dimension of Iris' camera
+        self.video.set(cv2.CAP_PROP_FRAME_HEIGHT, int(height))  # Dimension of Iris' camera
+        for i in range(0, self.calibration_frames):
+            nextFrame, frame = self.video.read()
+            cv2.rotate(frame, cv2.ROTATE_180, frame)
+            self.detector.aruco(frame)
+        self.detector.calibrate(frame)
+
     def run(self):
         while True:
-            video = cv2.VideoCapture('data/video/best yet.mp4')
+            self.video = cv2.VideoCapture('data/video/best yet.mp4')
+            # self.video = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+            self.calibrate()
             nextFrame = True
             while nextFrame:
-
                 if not self.paused:
-                    nextFrame, frame = self.getFrame(video)
-                    frame = self.detector.run(frame, self.mode)
+                    nextFrame, frame = self.getFrame()
+                    if DEBUG:
+                        frame = self.detector.run_debug(frame, self.mode)
+                    else:
+                        frame = self.detector.run(frame)
 
                 elif self.skip_frames > 0:
                     for i in range(0, self.skip_frames):
-                        nextFrame, frame = self.getFrame(video)
-                        if nextFrame == False: break
-                    frame = self.detector.run(frame, self.mode)
+                        nextFrame, frame = self.getFrame()
+                        if not nextFrame:
+                            break
+                        if DEBUG:
+                            frame = self.detector.run_debug(frame, self.mode)
+                        else:
+                            frame = self.detector.run(frame)
                     self.skip_frames = 0
 
                 else:
@@ -93,32 +105,17 @@ class Game:
                     self.showFrame(self.detector.applyMode(self.mode, frame))
                     continue
 
-                # elif self.skip_frames < 0 and 0 < len(self.back_frames) < self.max_back_frames:
-                #     print(len(self.back_frames))
-                #     self.front_frames.append(frame)
-                #     frame = self.back_frames[-1]
-                #     frame = self.detector.run(frame, self.mode)
-                #     self.back_frames = self.back_frames[:-1]
-                #     self.skip_frames = 0
-
-                if nextFrame == False:
+                if not nextFrame:
                     break                
-                if DEBUG: self.showFrame(frame)
-            
-            # video.release()
-            # cv2.destroyAllWindows()
+                self.showFrame(frame)
 
-    def getFrame(self, video_feed):
-        # if len(self.front_frames) > 0:
-        #     self.back_frames.append(frame)
-        #     frame = self.front_frames[-1]
-        #     self.front_frames = self.front_frames[:-1]
-        #     return frame
+    def getFrame(self):
         self.time += 1
-        # if len(self.back_frames) >= self.max_back_frames:
-        #     self.back_frames = self.back_frames[len(self.back_frames)-self.max_back_frames+1:]
-        nextFrame, frame = video_feed.read()
-        # if nextFrame: self.back_frames.append(frame)
+        nextFrame, frame = self.video.read()
+        if nextFrame:
+            # frame = cv2.warpAffine(frame, self.detector.rotate_matrix, frame.shape[1::-1], flags=cv2.INTER_LINEAR)
+            frame = frame[self.detector.min_y:self.detector.max_y, self.detector.min_x:self.detector.max_x]
+        frame = self.detector.scale(frame, 1)
         return nextFrame, frame
 
     def run_website(self, video_feed):
@@ -127,7 +124,7 @@ class Game:
             nextFrame, frame = video_feed.read()
             if not nextFrame:
                 break
-            frame = self.detector.run(frame, self.mode)
+            frame = self.detector.run_debug(frame, self.mode)
             # cv2.imshow('test', frame)
             self.showFrame(frame)
             # encode frame for website

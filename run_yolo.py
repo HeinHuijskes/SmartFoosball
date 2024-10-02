@@ -3,7 +3,7 @@ import cv2
 import math
 from imageProcessing.detection import Detection
 
-model = YOLO("./runs/detect/train19/weights/best.pt")
+model = YOLO("runs/detect/train1/weights/best.pt")
 video = cv2.VideoCapture('data/video/quite long.mp4')
 detector = Detection(None)
 frame_count = 200

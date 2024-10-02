@@ -2,14 +2,9 @@ import cv2
 import math
 import random
 import numpy as np
-
+from ultralytics import YOLO
+import time
 from imageProcessing.misc import Mode, Contour, Colour
-
-aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_1000)
-parameters = cv2.aruco.DetectorParameters()
-detector = cv2.aruco.ArucoDetector(aruco_dict, parameters)
-
-DEBUG = True
 
 
 class Detection:
@@ -26,6 +21,7 @@ class Detection:
         self.zoom_levels = [1, 1.5, 2, 4, 6, 8, 10]  # amount of x zoom
         self.zoom = 0  # counter for choosing a zoom level
         self.last_known_ball_position = [0, 0]
+        self.time = 0
 
         # Ball variables
         self.ball_min = 100
@@ -41,8 +37,35 @@ class Detection:
         self.rotate_matrix = []
         self.min_x, self.max_x, self.min_y, self.max_y = 0, 0, 0, 0
         self.mid_x, self.mid_y = 0, 0
+        self.time = time.perf_counter()
 
-    def run(self, frame, mode=Mode.NORMAL):
+        # Settings
+        self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_1000)
+        self.parameters = cv2.aruco.DetectorParameters()
+        self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.parameters)
+        self.model = YOLO("./runs/detect/train1/weights/best.pt")
+        self.model.to('cuda')
+        self.classNames = ["balls"]
+
+    def timer(self):
+        own_time = self.game.time
+        seconds = own_time // self.fps
+        minutes = own_time // (self.fps * 60)
+        frames = own_time % self.fps
+        actual_time = time.perf_counter() - self.time
+        print(f'Difference: {seconds - actual_time}')
+
+    def run(self, frame):
+        # frame = self.scale(frame, 0.5)
+        # frame = self.aruco(frame)
+        frame = self.ballDetectionYOLO(frame)
+        frame = self.draw_ball_positions(frame)
+        frame = self.drawTexts(frame)
+        # if self.game.time % 25 == 0:
+        #     self.timer()
+        return frame
+
+    def run_debug(self, frame, mode=Mode.NORMAL):
         cv2.rotate(frame, cv2.ROTATE_180, frame)
         # Detect corners and crop the frame
         frame = self.aruco(frame)
@@ -52,8 +75,11 @@ class Detection:
         frame = self.draw_ball_positions(frame)
         # Run foosmen detection and apply to frame
         frame = self.foosMenDetection(frame)
+
         # Run ball detection and apply to frame
-        frame = self.ballDetection(frame, Colour.CORK)
+        # frame = self.ballDetectionMask(frame, Colour.CORK)
+        frame = self.ballDetectionYOLO(frame)
+
         # Apply colour mode for different colour detection highlights
         frame = self.applyMode(mode, frame)
         # Draw info texts on screen
@@ -108,51 +134,7 @@ class Detection:
 
         return frame
 
-    def aruco(self, frame, calibration_time=5):
-        """Detects aruco, returns the bounding box of the foosball table"""
-        # Flip the frame (debug for selfie camera mode) TODO: remove
-        # frame = cv2.flip(frame, 1)
-
-        if self.frames == 0:
-            # At the start of a stream, always set the dimensions to the full frame
-            self.setDimensions(frame)
-
-        elif self.frames < calibration_time:
-            # While under a margin (calibration_time), measure ArUco codes every frame to calibrate
-            self.measureCorners(frame)
-
-        elif min([len(corner) for corner in self.corners]) < 1 and self.frames == calibration_time:
-            # If not enough corners have been detected, but calibration is done, run calibration again
-            self.frames = 0
-            self.corners = [[], [], [], []]
-
-        elif self.frames > calibration_time * 20:
-            # After a set amount of time, always run calibration again
-            self.frames = 0
-            self.corners = [[], [], [], []]
-
-        elif self.frames == calibration_time:
-            # When calibration time is done and enough corners are detected, use the data to (re)calibrate the screen
-            self.calibrate(calibration_time)
-
-        # Rotate frame according to rotation matrix set during calibration, if one exists
-        if len(self.rotate_matrix) > 0:
-            frame = cv2.warpAffine(frame, self.rotate_matrix, frame.shape[1::-1], flags=cv2.INTER_LINEAR)
-
-        # Count the frames to track calibration time
-        self.frames += 1
-        # Set the boundaries for the screen
-        min_y, max_y = max(self.min_y, 0), self.max_y
-        min_x, max_x = self.min_x, max(self.max_x, 0)
-
-        frame = frame[min_y:max_y, min_x:max_x]
-        if len(self.rotate_matrix) > 0:
-            height, width, _ = frame.shape
-            self.pixel_width_cm = self.table_length / width
-            # TODO detect fps dynamically
-        return frame
-
-    def measureCorners(self, frame):
+    def aruco(self, frame):
         """Find the ArUco corners on a frame and store them"""
         # Convert to grayscale, invert colours
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -160,10 +142,10 @@ class Detection:
         # Up the contrast
         cv2.convertScaleAbs(inverted, inverted, 3)
         # Detect ArUco markers
-        (corners, ids, rejected) = detector.detectMarkers(inverted)
+        (corners, ids, rejected) = self.detector.detectMarkers(inverted)
         if ids is not None:
             ids = ids.flatten()
-            cv2.aruco.drawDetectedMarkers(frame, corners, ids)
+            # cv2.aruco.drawDetectedMarkers(frame, corners, ids)
 
             for (marker, marker_id) in zip(corners, ids):
                 # Reshape corner to a usable array of 4 corners, each with 2 coordinates (x,y)
@@ -179,24 +161,25 @@ class Detection:
                 if len(corners[0][0]) == 4:
                     self.corners[marker_id].append([cx, cy])
 
-    def calibrate(self, calibration_time):
+    def calibrate(self, frame):
         """Calibrate frame and rotate according to aruco corners"""
         result = []
         # Calculate the average positions of the stored inside corners
+        print(self.corners)
         for corner in self.corners:
+            if len(corner) == 0:
+                print('NO CORNERS!')
+                return
             average_x = sum([x for (x, y) in corner]) / len(corner)
             average_y = sum([y for (x, y) in corner]) / len(corner)
             result.append((average_x.item(), average_y.item()))
 
-        if DEBUG:
-            # Calculate the amount of cdetected
-            detected_corners = sum([len(corner) for corner in self.corners])
-            frames = self.frames - 1
-            confidence = min(detected_corners / 4 * 10000 // 100 / frames, 100)
-            # TODO: Fix corner amount not being correct but still working for some reason
-            print(
-                f'Corner confidence: {confidence}% ({detected_corners} corners detected in {frames} frames)'
-            )
+        # Calculate the amount of cdetected
+        detected_corners = sum([len(corner) for corner in self.corners])
+        confidence = min(detected_corners / 4 * 10000 // 100 / 5, 100)
+        print(
+            f'Corner confidence: {confidence}% ({detected_corners} corners detected in {5} frames)'
+        )
 
         self.corners = result
 
@@ -205,12 +188,18 @@ class Detection:
         self.max_x = int(max(self.corners[3][0], self.corners[0][0]))
         self.min_y = int(min(self.corners[2][1], self.corners[3][1]))
         self.max_y = int(max(self.corners[1][1], self.corners[0][1]))
+        print(self.corners)
 
         # Calculate the angle of the playing field compared to the x-axis
         angle = -int(math.degrees(
             math.atan(abs(self.corners[2][1] - self.corners[3][1]) / abs(self.corners[2][0] - self.corners[3][0]))))
         # Calculate a rotation matrix according to the rotation angle
         self.rotate_matrix = cv2.getRotationMatrix2D((self.mid_x, self.mid_y), angle, 1)
+
+        frame = cv2.warpAffine(frame, self.rotate_matrix, frame.shape[1::-1], flags=cv2.INTER_LINEAR)
+        frame = frame[self.min_y:self.max_y, self.min_x:self.max_x]
+        height, width, _ = frame.shape
+        self.pixel_width_cm = self.table_length / width
 
     def setDimensions(self, frame):
         """Sets the dimensions and middle point of the video feed"""
@@ -224,7 +213,28 @@ class Detection:
         self.max_y = height
         self.mid_y = math.ceil(height * 0.5)
 
-    def ballDetection(self, frame, colour):
+    def ballDetectionYOLO(self, frame):
+        position = []
+        result = self.model.predict(frame, verbose=False)
+        if result and result[0].boxes:
+            boxes = result[0].boxes
+            box = boxes[0]
+
+            x1, y1, x2, y2 = box.xyxy[0]
+            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+            w, h = x2 - x1, y2 - y1
+            # frame = cv2.rectangle(frame, (x1, y1), (x1 + w, y1 + h), (0, 0, 255), 2)
+            # conf = math.ceil((box.conf[0] * 100)) / 100
+            # cls = box.cls[0]
+            # name = classNames[int(cls)]
+            # cv2.putText(frame, f'{name} {conf}', (max(0, x1), max(35, y1)), 1, 1, (0, 0, 255), 2, cv2.LINE_AA)
+
+            # frame = cv2.circle(frame, (x1+w//2, y1+h//2), 1, Contour.RED, 2)
+            position = [x1 + w // 2, y1 + h // 2]
+        self.add_ball_position(position)
+        return frame
+
+    def ballDetectionMask(self, frame, colour):
         """Finds the ball, returns the frame and found ball coordinates"""
         orange_mask = self.colour_mask(frame, colour)
         frame, contours = self.contour_frame(frame, orange_mask, self.ball_min, self.ball_max, Contour.ORANGE)
@@ -273,11 +283,11 @@ class Detection:
         if len(position) != 0 and len(old_position) != 0:
             pixel_speed = math.sqrt((position[0]-old_position[0])**2 + (position[1]-old_position[1])**2)
             position.append(pixel_speed)
-            if pixel_speed > self.max_ball_speed and self.pixel_width_cm is not 0:
-                speed = pixel_speed * self.pixel_width_cm / 100 * self.fps * 3.6
+            if pixel_speed > self.max_ball_speed and self.pixel_width_cm != 0:
+                # speed = pixel_speed * self.pixel_width_cm / 100 * self.fps * 3.6
                 # print(speed, pixel_speed)
-                if speed < 75:  # TODO: Remove the need for this restraint
-                    self.max_ball_speed = pixel_speed
+                # if speed < 75:  # TODO: Remove the need for this restraint
+                self.max_ball_speed = pixel_speed
             position.append((position[0]-old_position[0], position[1]-old_position[1]))
         self.ball_positions.append(position)
         return
@@ -351,39 +361,3 @@ class Detection:
         resize = (math.ceil(width / scaler), math.ceil(height / scaler))
         frame = cv2.resize(frame, resize)
         return frame
-
-
-# def testDetect():
-#     """Test detection functionality from a video file"""
-#     detection = Detection()
-#     # Load video file
-#     video = cv2.VideoCapture('data/video/shakiestcam.mp4')
-#     mode = Mode.NORMAL
-
-#     # Loop over all the frames
-#     nextFrame = True
-#     while nextFrame:
-#         nextFrame, frame = video.read()
-#         if nextFrame == False:
-#             break
-#         frame = detection.run(frame, mode)
-
-#         cv2.imshow('smol', frame)
-#         # Detect a key and select display mode for next frame accordingly
-#         key = cv2.waitKey(1)
-#         if key:
-#             if key == ord('q'):
-#                 break
-#             elif key == ord('r'):
-#                 mode = Mode.RED
-#             elif key == ord('b'):
-#                 mode = Mode.BLUE
-#             elif key == ord('f'):
-#                 mode = Mode.FUNK
-#             elif key == ord('n'):
-#                 mode = Mode.NORMAL
-#             elif key == ord('d'):
-#                 mode = Mode.DISCO
-
-#     video.release()
-#     cv2.destroyAllWindows()
