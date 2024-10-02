@@ -48,9 +48,9 @@ class Game:
             if nextFrame == False:
                 break
             frame = self.detector.run(frame, self.mode)
-            
+
             if DEBUG: self.showFrame(frame)
-        
+
         video.release()
         cv2.destroyAllWindows()
 
@@ -71,3 +71,12 @@ class Game:
                 frame = jpeg.tobytes()
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        frame + b'\r\n')
+
+    # miss moet team een enum zijn
+    def increase_score(self, team):
+        if team == "blue":
+            self.score_blue += 1
+        elif team == "red":
+            self.score_red += 1
+        else:
+            raise ValueError("results: team must be blue or red")
