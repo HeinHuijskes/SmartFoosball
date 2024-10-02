@@ -6,6 +6,7 @@ import threading
 from game.game import Game
 from hardware.hardware import *
 from waitress import serve
+from hardware.aduino import Arduino
 
 global app
 
@@ -27,20 +28,11 @@ class Website:
             self.camera_id = camera_id
             self.camera = cv2.VideoCapture(camera_id, cv2.CAP_DSHOW)
             print("Camera initialized successfully.")
-            # self.app.run(debug=True, threaded=True, use_reloader=False)
-            t1 = threading.Thread(target=self.arduino_run2, args=(self.arduino,))
-            t2 = threading.Thread(target=self.run_serve)
+            #start arduino class
+            t1 = threading.Thread(target=self.arduino.run,)
             t1.start()
-            t2.start()
-            t1.join()
-            t2.join()
-            # serve(self.app, host='0.0.0.0', port=5000)
-            print("hi")
+            self.app.run(debug=True, threaded=True, use_reloader=False)
 
-        def run_serve(self):
-            serve(self.app, host='0.0.0.0', port=5000)
-        def arduino_run2(self, arduino):
-            arduino.run()
 
         def generate_frames2(self, frame):
             ret, jpeg = cv2.imencode('.jpg', frame)
@@ -76,10 +68,6 @@ class Website:
 
             @self.app.route('/video_feed')
             def video_feed():
-                # t1 = threading.Thread(target=self.arduino_run2, args=(self.arduino,))
-                # t1.start()
-                # t1.join()
-                # print("returns: ", self.game.run_camera(self.camera_id))
                 return Response(self.game.run_camera(self.camera_id), mimetype='multipart/x-mixed-replace; boundary=frame')
 
             @self.app.route('/feedpage.html')
