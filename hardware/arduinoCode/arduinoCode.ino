@@ -26,8 +26,8 @@ void loop() {
 	  // Serial.println(valueBlue, DEC); // light intensity
     // counter +=1;
 
-    Serial.print("Gooooooaaaalllll number ");
-    Serial.println(blueGoals);
+    Serial.println("Goal red");
+//     Serial.println(blueGoals);
     blueGoals += 1;
     counter = 0;
     while(analogRead(sensorPinBlue) >= 950){
