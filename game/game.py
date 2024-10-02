@@ -64,7 +64,7 @@ class Game:
 
     def run(self):
         while True:
-            video = cv2.VideoCapture('data/video/quite long.mp4')
+            video = cv2.VideoCapture('data/video/best yet.mp4')
             nextFrame = True
             while nextFrame:
 

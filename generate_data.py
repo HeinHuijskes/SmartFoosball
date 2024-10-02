@@ -3,7 +3,7 @@ from imageProcessing.detection import Detection
 from random import choice
 
 frame_count = 200
-video = cv2.VideoCapture('./data/video/quite long.mp4')
+video = cv2.VideoCapture('./data/video/best yet.mp4')
 
 refPt = []
 cropping = False
@@ -27,6 +27,7 @@ def mouse_click(event, x, y, flags, param):
 # Skip over frames
 for i in range(0, frame_count):
     next, frame = video.read()
+    cv2.rotate(frame, cv2.ROTATE_180, frame)
     detector.aruco(frame)
     # cv2.imshow('init', frame)
 min_x, max_x, min_y, max_y = detector.min_x, detector.max_x, detector.min_y, detector.max_y
@@ -41,6 +42,7 @@ while True:
         next, frame = video.read()
         frame_count += 1
     if not next: break
+    cv2.rotate(frame, cv2.ROTATE_180, frame)
     frame = frame[min_y:max_y, min_x:max_x]
     
     clone = frame.copy()
