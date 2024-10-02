@@ -6,6 +6,7 @@ class Arduino:
         self.game = game
 
     def run(self):
+        print("hi")
         if keyboard.read_key() == "s":
             print("pressed s")
             self.game.add_goal(True)
