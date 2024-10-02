@@ -10,10 +10,11 @@ class Arduino:
         self.game = game
 
     def run(self):
-        time.sleep(5)
-        print("pressed s")
-        self.game.add_goal(True)
-        time.sleep(0.1)
+        while True:
+            time.sleep(5)
+            print("added goal")
+            self.game.add_goal(True)
+            time.sleep(0.1)
 
     def key_press(self):
         if keyboard.read_key() == "s" :
