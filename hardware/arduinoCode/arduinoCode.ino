@@ -1,13 +1,15 @@
 int sensorPinBlue = 34; //define analog pin 2
-// int sensorPinRed = 35; //define analog pin 3
+int buttonPin = 3;
 int valueBlue = 0;
-// int valueRed = 0;
 int counter = 0;
 int blueGoals = 0;
 
 
 void setup() {
 	Serial.begin(9600);
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, HIGH);
+  pinMode(buttonPin, INPUT_PULLUP);
 }
 
 void loop() {
@@ -20,5 +22,9 @@ void loop() {
     while(analogRead(sensorPinBlue) >= 950){
 
     }
+  }
+
+  if (digitalRead(buttonPin)) {
+    Serial.println("reset");
   }
 }

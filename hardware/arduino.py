@@ -20,7 +20,8 @@ class Arduino:
 
     def loop(self):
         while True:
-            self.lock.acquire()
+            if self.serialConnection.in_waiting:
+                self.lock.acquire()
 
             line = self.get_line()
             if line == ('Goal red'):
@@ -30,7 +31,7 @@ class Arduino:
             elif line == "reset":
                 self.reset = True
 
-            self.lock.release()
+                self.lock.release()
 
     def get_goal_or_reset(self):
         self.lock.acquire()

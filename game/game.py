@@ -1,4 +1,5 @@
 from hardware.arduino import Arduino, Team
+from colorama import Fore, Back, Style
 from imageProcessing.detection import Detection
 # from database.database import *
 import cv2
@@ -50,6 +51,7 @@ class Game:
             if nextFrame == False:
                 break
             frame = self.detector.run(frame, self.mode)
+            self.check_goal()
 
             if DEBUG: self.showFrame(frame)
 
@@ -70,16 +72,20 @@ class Game:
             if frame is None or frame.size == 0:
                 print("frame error")
             if ret:
-                goal_team, reset = self.arduino.get_goal_or_reset()
-                if goal_team == Team.BLUE:
-                    self.score_blue += 1
-                elif goal_team == Team.RED:
-                    self.score_red += 1
-                elif reset:
-                    pass
-                # TODO make reset function for game
+                self.check_goal()
 
                 frame = jpeg.tobytes()
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        frame + b'\r\n')
 
+    def check_goal(self):
+        goal_team, reset = self.arduino.get_goal()
+        if goal_team == Team.BLUE:
+            self.score_blue += 1
+            print(Fore.BLUE, "blue:", self.score_blue, Fore.RED, "red:", self.score_red, Style.RESET_ALL)
+        elif goal_team == Team.RED:
+            self.score_red += 1
+            print(Fore.BLUE, "blue:", self.score_blue, Fore.RED, "red:", self.score_red, Style.RESET_ALL)
+        elif reset:
+            pass
+        # TODO make reset function for game
