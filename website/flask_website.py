@@ -1,4 +1,4 @@
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, jsonify
 import cv2
 from flask import request
 import threading
@@ -86,4 +86,8 @@ class Website:
             @self.app.route('/score')
             def score():
                 return render_template('feedpage.html', scoreL = self.scoreL, scoreR= self.scoreR)
+
+            @self.app.route('/update_score')
+            def update_score():
+                return jsonify(scoreL = self.scoreL, scoreR= self.scoreR)
 
