@@ -5,7 +5,7 @@ import threading
 
 from game.game import Game
 from hardware.hardware import *
-from hardware.aduino import Arduino
+from hardware.arduino import Arduino
 
 global app
 
