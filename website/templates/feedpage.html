@@ -24,13 +24,7 @@
         // Fetch the score every 5 seconds
         setInterval(fetchScore, 500);
         // to update speed
-        function fetchSpeed() {
-            $.getJSON("/update_speed", function(data) {
-                $('#speed').html('<p style="text-align: left; font-weight: 400">' + data.max_speed+ '</p>');
-            });
-        }
-        // Fetch the score every 5 seconds
-        setInterval(fetchSpeed, 500);
+
     </script>
 </head>
 <body>
@@ -81,4 +75,12 @@
 
 </div>
 </body>
+<script>
+    function fetchSpeed() {
+            $.getJSON("/update_speed", function(data) {
+                $('#speed').html('<p style="text-align: left; font-weight: 400">' + data.max_speed+ '</p>');
+            });
+        }
+        // Fetch the score every 5 seconds
+        setInterval(fetchSpeed, 500);</script>
 </html>

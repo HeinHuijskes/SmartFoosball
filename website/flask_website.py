@@ -68,12 +68,11 @@ class Website:
 
             @self.app.route('/video_feed')
             def video_feed():
-                frame, self.max_speed = self.game.run_camera(self.camera_id)
-                cv2.imshow(" s", frame)
-                return Response(frame, mimetype='multipart/x-mixed-replace; boundary=frame')
+                return Response(self.game.run_camera(self.camera_id), mimetype='multipart/x-mixed-replace; boundary=frame')
 
             @self.app.route('/delayed_video_feed')
             def delayed_video_feed():
+                print("error")
                 return Response(self.game.buffer_frames(),
                                 mimetype='multipart/x-mixed-replace; boundary=frame')
 
@@ -100,5 +99,6 @@ class Website:
 
             @self.app.route('/update_speed')
             def update_speed():
-                return jsonify(maximum_speed=self.max_speed)
+                self.max_speed = self.game.get_max_speed()
+                return jsonify(max_speed=self.max_speed)
 

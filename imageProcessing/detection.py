@@ -59,8 +59,9 @@ class Detection:
     def run(self, frame):
         # frame = self.scale(frame, 0.5)
         # frame = self.aruco(frame)
-        frame = self.ballDetectionYOLO(frame)
-        frame = self.draw_ball_positions(frame)
+        #uncommented for lack of working
+        # frame = self.ballDetectionYOLO(frame)
+        # frame = self.draw_ball_positions(frame)
         frame, max_speed = self.drawTexts(frame)
         # if self.game.time % 25 == 0:
         #     self.timer()
@@ -308,16 +309,18 @@ class Detection:
         return frame
     
     def drawTexts(self, frame):
-        height, width, _ = frame.shape
-        speed = self.max_ball_speed * self.pixel_width_cm / 100 * self.fps * 100 // 1 / 100
-        speed_kmh = speed*3.6*100//1/100
-        cv2.putText(frame, f'Max speed: {speed} m/s ({speed_kmh} km/h)', (width//4, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
-
-        time = self.game.time
-        seconds = time // self.fps % 60
-        minutes = time // (self.fps*60)
-        frames = time % self.fps
-        cv2.putText(frame, f'Time: {minutes}m {seconds}s {frames}f', (width//4*3, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
+        speed = random.randint(0,1000)
+        #uncommented for lack of working
+        # height, width, _ = frame.shape
+        # speed = self.max_ball_speed * self.pixel_width_cm / 100 * self.fps * 100 // 1 / 100
+        # speed_kmh = speed*3.6*100//1/100
+        # cv2.putText(frame, f'Max speed: {speed} m/s ({speed_kmh} km/h)', (width//4, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
+        #
+        # time = self.game.time
+        # seconds = time // self.fps % 60
+        # minutes = time // (self.fps*60)
+        # frames = time % self.fps
+        # cv2.putText(frame, f'Time: {minutes}m {seconds}s {frames}f', (width//4*3, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
         return frame, speed
 
     def foosMenDetection(self, frame):

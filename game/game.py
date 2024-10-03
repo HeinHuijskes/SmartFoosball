@@ -29,6 +29,7 @@ class Game:
         self.fps = 60
         self.delaysec = 5
         self.buffer = deque(maxlen=(self.fps * self.delaysec))
+        self.max_speed = [1]
 
 
     def showFrame(self, frame):
@@ -157,8 +158,10 @@ class Game:
             ret, jpeg = cv2.imencode('.jpg', frame)
             self.buffer.append(jpeg)
             if ret:
+
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
-                       jpeg.tobytes() + b'\r\n'), max_speed
+                       jpeg.tobytes() + b'\r\n')
+                self.max_speed.append(max_speed)
     def buffer_frames(self):
             bframes = self.buffer.copy()
             for jpeg in bframes:
@@ -169,6 +172,12 @@ class Game:
     def add_goal(self, Left):
         "pass True if one goal should be added to the score of the left goal, else 1 will be added to the right goal"
         self.website.add_goal(Left)
+
+    def get_max_speed(self):
+        maxspd = self.max_speed
+        self.max_speed = [maxspd[0]]
+        return sum(maxspd)/ len(maxspd)
+
 
 #TOdo see if you can call de app.route('...') to referesh page or potentially
 #referesh div box or in the websitre run function add it as file to watch
