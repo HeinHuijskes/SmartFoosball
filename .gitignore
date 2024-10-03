@@ -3,3 +3,7 @@ __pycache__/
 env.py
 data/video/*
 !data/video/README.md
+yolov8n.pt
+runs/detect/*
+!runs/detect/train1
+datasets
