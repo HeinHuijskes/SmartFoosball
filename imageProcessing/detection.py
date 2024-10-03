@@ -314,7 +314,7 @@ class Detection:
         cv2.putText(frame, f'Max speed: {speed} m/s ({speed_kmh} km/h)', (width//4, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
 
         time = self.game.time
-        seconds = time // self.fps
+        seconds = time // self.fps % 60
         minutes = time // (self.fps*60)
         frames = time % self.fps
         cv2.putText(frame, f'Time: {minutes}m {seconds}s {frames}f', (width//4*3, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)

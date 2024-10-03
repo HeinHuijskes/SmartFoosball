@@ -20,6 +20,9 @@ Poetry was used to manage dependencies. Run:
 pip install poetry
 poetry install
 ``` 
+Also run:
+```pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 --upgrade --force-reinstall```
+Good luck.
 
 This should install all necessary dependencies for you, so you can skip the steps below. To add a new dependency, simply run `poetry add package-name`, to add package `package-name`.
 
