@@ -22,7 +22,7 @@ class Website:
         self.app.run(debug=True, threaded=True, use_reloader=False)
 
     def run_video(self):
-        self.camera = cv2.VideoCapture('../data/video/tafelvoetbal_oranjebal.mp4')
+        self.camera = cv2.VideoCapture('./data/video/tafelvoetbal_oranjebal.mp4')
         print("Video capture initialized successfully.")
         self.app.run(debug=True, threaded=True, use_reloader=False)
 
