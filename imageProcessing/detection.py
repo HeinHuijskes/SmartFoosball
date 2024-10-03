@@ -44,7 +44,7 @@ class Detection:
         self.parameters = cv2.aruco.DetectorParameters()
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.parameters)
         self.model = YOLO("./runs/detect/train1/weights/best.pt")
-        self.model.to('cuda')
+        # self.model.to('cuda')
         print(self.model.device)
         self.classNames = ["balls"]
 

@@ -7,7 +7,7 @@ import cv2
 from imageProcessing.misc import *
 from hardware.camera import *
 
-DEBUG = False
+DEBUG = True
 
 
 class Game:
@@ -160,7 +160,6 @@ class Game:
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        jpeg.tobytes() + b'\r\n'), max_speed
     def buffer_frames(self):
-        while True:
             bframes = self.buffer.copy()
             for jpeg in bframes:
                 time.sleep(0.01)

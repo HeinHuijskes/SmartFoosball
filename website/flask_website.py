@@ -69,6 +69,7 @@ class Website:
             @self.app.route('/video_feed')
             def video_feed():
                 frame, self.max_speed = self.game.run_camera(self.camera_id)
+                cv2.imshow(" s", frame)
                 return Response(frame, mimetype='multipart/x-mixed-replace; boundary=frame')
 
             @self.app.route('/delayed_video_feed')
@@ -98,6 +99,6 @@ class Website:
                 return jsonify(scoreL = self.scoreL, scoreR= self.scoreR)
 
             @self.app.route('/update_speed')
-            def update_score():
+            def update_speed():
                 return jsonify(maximum_speed=self.max_speed)
 

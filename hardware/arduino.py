@@ -15,26 +15,27 @@ class Arduino:
     def __init__(self, website, game, com_port='COM3'):
         self.website = website
         self.game = game
-        self.serialConnection = serial.Serial(com_port, 9600)
+        # self.serialConnection = serial.Serial(com_port, 9600)
         # self.lock = Lock()
 
     def run(self):
         while True:
-            if self.serialConnection.in_waiting:
-                line = self.get_line()
-
-                # red is left
-                if line == 'Goal red':
-                    print("red goal")
-                    self.game.add_goal(True)
-                    time.sleep(0.1)
-                elif line == 'Goal blue':
-                    print("blue goal")
-                    self.game.add_goal(False)
-                    time.sleep(0.1)
-                elif line == "reset":
-                    pass
-    #             TODO add this funciton again
+            arduino = "not connected"
+    #         # if self.serialConnection.in_waiting:
+    #             line = self.get_line()
+    #
+    #             # red is left
+    #             if line == 'Goal red':
+    #                 print("red goal")
+    #                 self.game.add_goal(True)
+    #                 time.sleep(0.1)
+    #             elif line == 'Goal blue':
+    #                 print("blue goal")
+    #                 self.game.add_goal(False)
+    #                 time.sleep(0.1)
+    #             elif line == "reset":
+    #                 pass
+    # #             TODO add this funciton again
 
     def key_press(self):
         if keyboard.read_key() == "s":
@@ -42,6 +43,7 @@ class Arduino:
             self.game.add_goal(True)
 
     def get_line(self):
-        line = self.serialConnection.readline()
-        line = line.decode('ascii').strip()
-        return line
+        arduino = "not connected"
+        # line = self.serialConnection.readline()
+        # line = line.decode('ascii').strip()
+        # return line
