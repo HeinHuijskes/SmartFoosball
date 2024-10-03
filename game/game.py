@@ -1,3 +1,4 @@
+import time
 from collections import deque
 
 from imageProcessing.detection import Detection
@@ -77,6 +78,7 @@ class Game:
         while True:
             bframes = self.buffer.copy()
             for jpeg in bframes:
+                time.sleep(0.01)
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        jpeg.tobytes() + b'\r\n')
 
