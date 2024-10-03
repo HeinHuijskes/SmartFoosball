@@ -61,10 +61,10 @@ class Detection:
         # frame = self.aruco(frame)
         frame = self.ballDetectionYOLO(frame)
         frame = self.draw_ball_positions(frame)
-        frame = self.drawTexts(frame)
+        frame, max_speed = self.drawTexts(frame)
         # if self.game.time % 25 == 0:
         #     self.timer()
-        return frame
+        return frame, max_speed
 
     def run_debug(self, frame, mode=Mode.NORMAL):
         cv2.rotate(frame, cv2.ROTATE_180, frame)
@@ -318,7 +318,7 @@ class Detection:
         minutes = time // (self.fps*60)
         frames = time % self.fps
         cv2.putText(frame, f'Time: {minutes}m {seconds}s {frames}f', (width//4*3, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
-        return frame
+        return frame, speed
 
     def foosMenDetection(self, frame):
         """Looks for blue and red, and returns their outlines on the frame."""

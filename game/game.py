@@ -151,14 +151,14 @@ class Game:
             if frame is None:
                 print("frame none")
                 frame = cv2.imread("../website/Error_mirrored.jpg")
-            frame = self.detector.run(frame)  # self.mode
+            frame, max_speed = self.detector.run(frame)  # self.mode
             if DEBUG: self.showFrame(frame)
             #encode frame for website
             ret, jpeg = cv2.imencode('.jpg', frame)
             self.buffer.append(jpeg)
             if ret:
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
-                       jpeg.tobytes() + b'\r\n')
+                       jpeg.tobytes() + b'\r\n'), max_speed
     def buffer_frames(self):
         while True:
             bframes = self.buffer.copy()

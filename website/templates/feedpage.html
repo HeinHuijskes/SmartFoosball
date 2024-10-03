@@ -15,6 +15,7 @@
     </style>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
     <script>
+        // to update score
         function fetchScore() {
             $.getJSON("/update_score", function(data) {
                 $('#score').html('<p style="text-align: left; font-weight: 400">' + data.scoreL + ' - ' + data.scoreR + '</p>');
@@ -22,6 +23,14 @@
         }
         // Fetch the score every 5 seconds
         setInterval(fetchScore, 500);
+        // to update speed
+        function fetchSpeed() {
+            $.getJSON("/update_speed", function(data) {
+                $('#speed').html('<p style="text-align: left; font-weight: 400">' + data.max_speed+ '</p>');
+            });
+        }
+        // Fetch the score every 5 seconds
+        setInterval(fetchSpeed, 100);
     </script>
 </head>
 <body>
@@ -51,11 +60,19 @@
              <img src="{{ url_for('delayed_video_feed') }}" alt="Delayed Video Feed">
     </div>
     <!-- two div boxes that split the space under the live feed-->
-    <div style="background-color: transparent; width: 50%">
-        <p style="text-align: left">Match score </p>
-        <p id="score" style="text-align: left; font-weight: 400"> {{scoreL}} - {{scoreR}}</p>
-<!--        <meta http-equiv="refresh" content="5">-->
+<!--    <div style="background-color: transparent; width: 50%">-->
+    <div style="background-color: transparent">
+        <div style="display: inline-block; background-color: transparent; width: 50%; margin-right: 0">
+            <p style="text-align: left">Match score </p>
+            <p id="score" style="text-align: left; font-weight: 400;"> {{scoreL}} - {{scoreR}}</p>
 
+    <!--        <meta http-equiv="refresh" content="5">-->
+
+        </div>
+        <div style="display: inline-block; width: 49%; margin-left: 0">
+            <p style="text-align: left">Maximum Speed </p>
+            <p id="speed" style="text-align: left; font-weight: 400;"> {{max_speed}}</p>
+        </div>
     </div>
     <div style="width: 50%">
     </div>

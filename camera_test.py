@@ -11,6 +11,10 @@ def arduino_run(arduino):
 
 website = Website()
 website_run(website)
+
+#TODO : - speed on website, -webcam working, -left=red , -laggy delay on website, -information page
+
+
 #
 # def thread():
 #     website = Website()

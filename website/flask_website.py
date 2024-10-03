@@ -22,10 +22,11 @@ class Website:
             self.scoreL = 0
             self.scoreR = 0
             self.arduino = Arduino(self, self.game)
+            self.max_speed = 0
 
         def run(self, camera_id):
             self.camera_id = camera_id
-            self.camera = cv2.VideoCapture(camera_id, cv2.CAP_DSHOW)
+            self.camera = cv2.VideoCapture(self.camera_id, cv2.CAP_DSHOW)
             print("Camera initialized successfully.")
             #start arduino class
             t1 = threading.Thread(target=self.arduino.run,)
@@ -67,7 +68,8 @@ class Website:
 
             @self.app.route('/video_feed')
             def video_feed():
-                return Response(self.game.run_camera(self.camera_id), mimetype='multipart/x-mixed-replace; boundary=frame')
+                frame, self.max_speed = self.game.run_camera(self.camera_id)
+                return Response(frame, mimetype='multipart/x-mixed-replace; boundary=frame')
 
             @self.app.route('/delayed_video_feed')
             def delayed_video_feed():
@@ -77,7 +79,7 @@ class Website:
             @self.app.route('/feedpage.html')
             def feedpage():
                 # self.arduino.run()
-                return render_template('feedpage.html', scoreL = self.scoreL, scoreR= self.scoreR)
+                return render_template('feedpage.html', scoreL = self.scoreL, scoreR= self.scoreR, max_speed = self.max_speed)
 
             @self.app.route('/index.html')
             def indexhtml():
@@ -94,4 +96,8 @@ class Website:
             @self.app.route('/update_score')
             def update_score():
                 return jsonify(scoreL = self.scoreL, scoreR= self.scoreR)
+
+            @self.app.route('/update_speed')
+            def update_score():
+                return jsonify(maximum_speed=self.max_speed)
 
