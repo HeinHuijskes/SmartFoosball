@@ -5,7 +5,6 @@ import threading
 
 from game.game import Game
 from hardware.hardware import *
-from waitress import serve
 from hardware.aduino import Arduino
 
 global app

@@ -1,7 +1,5 @@
 import time
 
-import serial
-
 import keyboard
 class Arduino:
 

@@ -150,8 +150,8 @@ class Game:
             frame = camera.get_frame()
             if frame is None:
                 print("frame none")
-                frame = cv2.imread("Error_mirrored.jpg")
-            frame = self.detector.run(frame, self.mode)
+                frame = cv2.imread("../website/Error_mirrored.jpg")
+            frame = self.detector.run(frame)  # self.mode
             if DEBUG: self.showFrame(frame)
             #encode frame for website
             ret, jpeg = cv2.imencode('.jpg', frame)
