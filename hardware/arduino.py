@@ -33,8 +33,7 @@ class Arduino:
                     self.game.add_goal(False)
                     time.sleep(0.1)
                 elif line == "reset":
-                    pass
-    #             TODO add this funciton again
+                    self.game.reset_game()
 
     def key_press(self):
         if keyboard.read_key() == "s":
