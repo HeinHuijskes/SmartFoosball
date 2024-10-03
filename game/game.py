@@ -1,4 +1,7 @@
 from imageProcessing.detection import Detection
+import time
+from collections import deque
+
 # from database.database import *
 import cv2
 from imageProcessing.misc import *
@@ -8,7 +11,7 @@ DEBUG = False
 
 
 class Game:
-    def __init__(self) -> None:
+    def __init__(self, website) -> None:
         self.score_red = 0
         self.score_blue = 0
         self.detector = Detection(game=self)
@@ -22,6 +25,11 @@ class Game:
         self.max_back_frames = self.detector.fps
         self.video_frames = []
         self.calibration_frames = 5
+        self.website = website
+        self.fps = 60
+        self.delaysec = 5
+        self.buffer = deque(maxlen=(self.fps * self.delaysec))
+
 
     def showFrame(self, frame):
         cv2.imshow('smol', frame)
@@ -106,7 +114,7 @@ class Game:
                     continue
 
                 if not nextFrame:
-                    break                
+                    break
                 self.showFrame(frame)
 
     def getFrame(self):
@@ -135,3 +143,33 @@ class Game:
                 frame = jpeg.tobytes()
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        frame + b'\r\n')
+
+    def run_camera(self, camera_id):
+        camera = Camera(camera_id)
+        while True:
+            frame = camera.get_frame()
+            if frame is None:
+                print("frame none")
+                frame = cv2.imread("../website/Error_mirrored.jpg")
+            frame = self.detector.run(frame)  # self.mode
+            if DEBUG: self.showFrame(frame)
+            #encode frame for website
+            ret, jpeg = cv2.imencode('.jpg', frame)
+            self.buffer.append(jpeg)
+            if ret:
+                yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                       jpeg.tobytes() + b'\r\n')
+    def buffer_frames(self):
+        while True:
+            bframes = self.buffer.copy()
+            for jpeg in bframes:
+                time.sleep(0.01)
+                yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                       jpeg.tobytes() + b'\r\n')
+
+    def add_goal(self, Left):
+        "pass True if one goal should be added to the score of the left goal, else 1 will be added to the right goal"
+        self.website.add_goal(Left)
+
+#TOdo see if you can call de app.route('...') to referesh page or potentially
+#referesh div box or in the websitre run function add it as file to watch

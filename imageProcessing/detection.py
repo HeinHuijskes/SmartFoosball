@@ -45,6 +45,7 @@ class Detection:
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.parameters)
         self.model = YOLO("./runs/detect/train1/weights/best.pt")
         self.model.to('cuda')
+        print(self.model.device)
         self.classNames = ["balls"]
 
     def timer(self):
@@ -215,7 +216,7 @@ class Detection:
 
     def ballDetectionYOLO(self, frame):
         position = []
-        result = self.model.predict(frame, verbose=False)
+        result = self.model.predict(frame, verbose=True)
         if result and result[0].boxes:
             boxes = result[0].boxes
             box = boxes[0]
