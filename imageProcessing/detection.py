@@ -17,7 +17,7 @@ class Detection:
 
     def __init__(self):
         # Minimum and maximum amount of pixels to consider a set of pixels a foos-man
-        self.foos_men_min = 400
+        self.foos_men_min = 500
         self.foos_men_max = 3000
 
         # Parameters for video calibration
@@ -46,16 +46,13 @@ class Detection:
         elif mode == Mode.RED:
             # Get the red colour mask
             mask = self.colour_mask(frame, Colour.RED)
-        elif mode == Mode.ORANGE:
-            mask = self.colour_mask(frame, Colour.ORANGE)
         elif mode == Mode.FUNK:
             # Combine the red and blue colour masks
             red_mask = self.colour_mask(frame, Colour.RED)
             blue_mask = self.colour_mask(frame, Colour.BLUE)
-            orange_mask = self.colour_mask(frame, Colour.ORANGE)
-            mask = red_mask | blue_mask | orange_mask
+            mask = red_mask | blue_mask
         elif mode == Mode.DISCO:
-            frame = self.applyMode(random.choice([Mode.BLUE, Mode.RED, Mode.ORANGE, Mode.FUNK, Mode.NORMAL]), frame)
+            frame = self.applyMode(random.choice([Mode.BLUE, Mode.RED, Mode.FUNK, Mode.NORMAL]), frame)
             return frame
         else:
             # Apply no colour masks
@@ -66,7 +63,7 @@ class Detection:
     def aruco(self, frame, calibration_time=5):
         """Detects aruco, returns the bounding box of the foosball table"""
         # Flip the frame (debug for selfie camera mode) TODO: remove
-        # frame = cv2.flip(frame, 1)
+        frame = cv2.flip(frame, 1)
 
         if self.frames == 0:
             # At the start of a stream, always set the dimensions to the full frame
@@ -113,7 +110,7 @@ class Detection:
         (corners, ids, rejected) = detector.detectMarkers(inverted)
         if ids is not None:
             ids = ids.flatten()
-            cv2.aruco.drawDetectedMarkers(frame, corners, ids)
+            # cv2.aruco.drawDetectedMarkers(frame, corners, ids)
 
             for (marker, marker_id) in zip(corners, ids):
                 # Reshape corner to a usable array of 4 corners, each with 2 coordinates (x,y)
@@ -176,7 +173,6 @@ class Detection:
 
     def ballDetection(self, frame, colour=Colour.CORK) -> tuple[tuple[int, int], int]:
         """Finds the ball, returns the coordinate, and the confidence of the found ball in amount of pixels"""
-        # TODO: ff invullen
         pass
 
     def foosMenDetection(self, frame):
@@ -184,10 +180,8 @@ class Detection:
         # cv2.convertScaleAbs(frame, frame, 2)
         blue_mask = self.colour_mask(frame, Colour.BLUE)
         red_mask = self.colour_mask(frame, Colour.RED)
-        orange_mask = self.colour_mask(frame, Colour.ORANGE)
         frame = self.contour_frame(frame, blue_mask, self.foos_men_min, self.foos_men_max, Contour.BLUE)
         frame = self.contour_frame(frame, red_mask, self.foos_men_min, self.foos_men_max, Contour.RED)
-        frame = self.contour_frame(frame, orange_mask, self.foos_men_min, 100000, Contour.ORANGE)
 
         return frame
 

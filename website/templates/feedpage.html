@@ -13,6 +13,16 @@
         p {text-align: center}
         img {max-width: 100%; max-height: 100%}
     </style>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+    <script>
+        function fetchScore() {
+            $.getJSON("/update_score", function(data) {
+                $('#score').html('<p style="text-align: left; font-weight: 400">' + data.scoreL + ' - ' + data.scoreR + '</p>');
+            });
+        }
+        // Fetch the score every 5 seconds
+        setInterval(fetchScore, 500);
+    </script>
 </head>
 <body>
 <div style="position: fixed; margin-left: 10%">
@@ -24,15 +34,27 @@
 </div>
 <div class="centerbox" style="margin: auto; max-width: 75%;">
     <div style="background-color: lightgray;padding: 20px; height: 400px; margin: auto;margin-top: 50px; text-align: center;">
-         <img src="{{ url_for('video_feed') }}" alt="Video Feed">
-         <p style="padding-top: 180px"> No ongoing match</p> <!-- half of the height of the div box - font-size -->
+             <img src="{{ url_for('video_feed') }}" alt="Video Feed">
 
+<!--         <img src="{{ url_for('video_feed') }}" alt="Video Feed" onerror="videoError()">-->
+<!--            <TODO> NO ONGOING MATCH NOR IMG SRC</TODO>-->
+<!--         <p id="error" style="padding-top: 180px">Loading ... </p> &lt;!&ndash; half of the height of the div box - font-size &ndash;&gt;-->
+<!--    <script>-->
+<!--        function videoError(){-->
+<!--            document.getElementById('error').innerHTML = "No ongoing match";-->
+<!--        }-->
+<!--    </script>-->
 <!--        <video id="remoteVideo" autoplay></video>-->
 <!--        <a href="{{ url_for('video_feed') }}" target="_self">Link to Video Feed</a>-->
+    </div>
+    <div style="background-color: lightgray;padding: 20px; height: 400px; margin: auto;margin-top: 50px; text-align: center;">
+             <img src="{{ url_for('delayed_video_feed') }}" alt="Delayed Video Feed">
     </div>
     <!-- two div boxes that split the space under the live feed-->
     <div style="background-color: transparent; width: 50%">
         <p style="text-align: left">Match score </p>
+        <p id="score" style="text-align: left; font-weight: 400"> {{scoreL}} - {{scoreR}}</p>
+<!--        <meta http-equiv="refresh" content="5">-->
 
     </div>
     <div style="width: 50%">

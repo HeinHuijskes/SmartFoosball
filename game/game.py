@@ -1,22 +1,26 @@
-from hardware.arduino import Arduino, Team
-from colorama import Fore, Back, Style
+import time
+from collections import deque
+
 from imageProcessing.detection import Detection
 # from database.database import *
 import cv2
 from imageProcessing.misc import *
 from hardware.camera import *
 
+
 DEBUG = True
 
 
 class Game:
-    def __init__(self) -> None:
+    def __init__(self, website) -> None:
         self.score_red = 0
         self.score_blue = 0
         self.detector = Detection()
         self.mode = Mode.NORMAL
-        self.arduino = Arduino()
-        # database = 
+        self.website = website
+        self.fps = 60
+        self.delaysec = 5
+        self.buffer = deque(maxlen=(self.fps * self.delaysec))
 
     def showFrame(self, frame):
         cv2.imshow('smol', frame)
@@ -34,8 +38,6 @@ class Game:
                 self.mode = Mode.NORMAL
             elif key == ord('d'):
                 self.mode = Mode.DISCO
-            elif key == ord('o'):
-                self.mode = Mode.ORANGE
 
     def kalmanFilter(self):
         pass
@@ -44,48 +46,47 @@ class Game:
         pass
 
     def run(self):
-        video = cv2.VideoCapture('data/video/tafelvoetbal_oranjebal.mp4')
+        video = cv2.VideoCapture('data/video/shakiestcam.mp4')
         nextFrame = True
         while nextFrame:
             nextFrame, frame = video.read()
             if nextFrame == False:
                 break
             frame = self.detector.run(frame, self.mode)
-            self.check_goal()
-
+            
             if DEBUG: self.showFrame(frame)
-
+        
         video.release()
         cv2.destroyAllWindows()
 
-    def run_website(self, video_feed):
-        nextFrame = True
-        while nextFrame:
-            nextFrame, frame = video_feed.read()
-            if not nextFrame:
-                break
+    def run_camera(self, camera_id):
+        camera = Camera(camera_id)
+        while True:
+            frame = camera.get_frame()
+            if frame is None:
+                print("frame none")
+                frame = cv2.imread("Error_mirrored.jpg")
             frame = self.detector.run(frame, self.mode)
-            # cv2.imshow('test', frame)
-            self.showFrame(frame)
-            # encode frame for website
+            if DEBUG: self.showFrame(frame)
+            #encode frame for website
             ret, jpeg = cv2.imencode('.jpg', frame)
-            if frame is None or frame.size == 0:
-                print("frame error")
+            self.buffer.append(jpeg)
             if ret:
-                self.check_goal()
-
-                frame = jpeg.tobytes()
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
-                       frame + b'\r\n')
+                       jpeg.tobytes() + b'\r\n')
+    def buffer_frames(self):
+        while True:
+            bframes = self.buffer.copy()
+            for jpeg in bframes:
+                time.sleep(0.01)
+                yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                       jpeg.tobytes() + b'\r\n')
 
-    def check_goal(self):
-        goal_team, reset = self.arduino.get_goal()
-        if goal_team == Team.BLUE:
-            self.score_blue += 1
-            print(Fore.BLUE, "blue:", self.score_blue, Fore.RED, "red:", self.score_red, Style.RESET_ALL)
-        elif goal_team == Team.RED:
-            self.score_red += 1
-            print(Fore.BLUE, "blue:", self.score_blue, Fore.RED, "red:", self.score_red, Style.RESET_ALL)
-        elif reset:
-            pass
-        # TODO make reset function for game
+    def add_goal(self, Left):
+        "pass True if one goal should be added to the score of the left goal, else 1 will be added to the right goal"
+        self.website.add_goal(Left)
+
+#TOdo see if you can call de app.route('...') to referesh page or potentially
+#referesh div box or in the websitre run function add it as file to watch
+
+
