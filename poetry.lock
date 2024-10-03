@@ -120,7 +120,22 @@ files = [
 [package.extras]
 cp2110 = ["hidapi"]
 
+[[package]]
+name = "waitress"
+version = "3.0.0"
+description = "Waitress WSGI server"
+optional = false
+python-versions = ">=3.8.0"
+files = [
+    {file = "waitress-3.0.0-py3-none-any.whl", hash = "sha256:2a06f242f4ba0cc563444ca3d1998959447477363a2d7e9b8b4d75d35cfd1669"},
+    {file = "waitress-3.0.0.tar.gz", hash = "sha256:005da479b04134cdd9dd602d1ee7c49d79de0537610d653674cc6cbde222b8a1"},
+]
+
+[package.extras]
+docs = ["Sphinx (>=1.8.1)", "docutils", "pylons-sphinx-themes (>=1.0.9)"]
+testing = ["coverage (>=5.0)", "pytest", "pytest-cov"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "9ad12f9dd2df84541ae1bc1b97d2191e55484810150cab4629d793ee1f2303c3"
+content-hash = "f1ee327e8f2af0e85156463c11b1c9bf37be50a1ca35e4a5550a523e59879d43"

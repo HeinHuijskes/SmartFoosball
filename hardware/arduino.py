@@ -71,6 +71,7 @@ class Arduino:
 
     def run(self):
         while True:
+            print("in arduino")
             if self.serialConnection.in_waiting:
                 line = self.get_line()
 

@@ -10,6 +10,7 @@ python = "^3.11"
 psycopg2 = "^2.9.9"
 opencv-python = "^4.10.0.84"
 pyserial = "^3.5"
+waitress = "^3.0.0"
 
 
 [build-system]
