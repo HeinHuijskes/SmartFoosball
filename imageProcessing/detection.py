@@ -38,6 +38,7 @@ class Detection:
         self.min_x, self.max_x, self.min_y, self.max_y = 0, 0, 0, 0
         self.mid_x, self.mid_y = 0, 0
         self.time = time.perf_counter()
+        self.frame_time = time.perf_counter_ns()
 
         # Settings
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_1000)
@@ -59,12 +60,20 @@ class Detection:
     def run(self, frame):
         # frame = self.scale(frame, 0.5)
         # frame = self.aruco(frame)
+        self.updateTime()
         frame = self.ballDetectionYOLO(frame)
         frame = self.draw_ball_positions(frame)
         frame = self.drawTexts(frame)
         # if self.game.time % 25 == 0:
         #     self.timer()
         return frame
+
+    def updateTime(self):
+        if self.game.time % 60 != 0:
+            return
+        time_elapsed = time.perf_counter_ns() - self.frame_time
+        self.fps = 1 / (time_elapsed / 1000000000 / 60)
+        self.frame_time = self.frame_time + time_elapsed
 
     def run_debug(self, frame, mode=Mode.NORMAL):
         cv2.rotate(frame, cv2.ROTATE_180, frame)
@@ -216,7 +225,7 @@ class Detection:
 
     def ballDetectionYOLO(self, frame):
         position = []
-        result = self.model.predict(frame, verbose=True)
+        result = self.model.predict(frame, verbose=False)
         if result and result[0].boxes:
             boxes = result[0].boxes
             box = boxes[0]
@@ -283,12 +292,11 @@ class Detection:
         old_position = self.ball_positions[-1]
         if len(position) != 0 and len(old_position) != 0:
             pixel_speed = math.sqrt((position[0]-old_position[0])**2 + (position[1]-old_position[1])**2)
+
+            speed = pixel_speed * self.pixel_width_cm / 100 * self.fps
             position.append(pixel_speed)
-            if pixel_speed > self.max_ball_speed and self.pixel_width_cm != 0:
-                # speed = pixel_speed * self.pixel_width_cm / 100 * self.fps * 3.6
-                # print(speed, pixel_speed)
-                # if speed < 75:  # TODO: Remove the need for this restraint
-                self.max_ball_speed = pixel_speed
+            if speed > self.max_ball_speed and self.pixel_width_cm != 0:
+                self.max_ball_speed = speed
             position.append((position[0]-old_position[0], position[1]-old_position[1]))
         self.ball_positions.append(position)
         return
@@ -308,16 +316,21 @@ class Detection:
         return frame
     
     def drawTexts(self, frame):
+        self.fps = max(int(self.fps), 1)
+
         height, width, _ = frame.shape
-        speed = self.max_ball_speed * self.pixel_width_cm / 100 * self.fps * 100 // 1 / 100
+        speed = self.max_ball_speed * 100 // 1 / 100
         speed_kmh = speed*3.6*100//1/100
-        cv2.putText(frame, f'Max speed: {speed} m/s ({speed_kmh} km/h)', (width//4, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
+        cv2.putText(frame, f'Max speed: {speed} m/s ({speed_kmh} km/h)', (0, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
 
         time = self.game.time
         seconds = time // self.fps % 60
         minutes = time // (self.fps*60)
         frames = time % self.fps
-        cv2.putText(frame, f'Time: {minutes}m {seconds}s {frames}f', (width//4*3, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
+        cv2.putText(frame, f'Time: {minutes}m {seconds}s {frames}f', (width//5*2, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
+
+        cv2.putText(frame, f'FPS: {self.fps}', (width//2, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
+        cv2.putText(frame, f'FPS: {self.fps}', (width//4*3, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
         return frame
 
     def foosMenDetection(self, frame):

@@ -85,13 +85,16 @@ class Game:
 
     def run(self):
         while True:
-            self.video = cv2.VideoCapture('data/video/best yet.mp4')
-            # self.video = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+            # self.video = cv2.VideoCapture('data/video/best yet.mp4')
+            self.video = cv2.VideoCapture(1, cv2.CAP_DSHOW)
             self.calibrate()
+            self.video.set(cv2.CAP_PROP_FPS, 60)
+            print(self.video.get(cv2.CAP_PROP_FPS))
             nextFrame = True
             while nextFrame:
                 if not self.paused:
                     nextFrame, frame = self.getFrame()
+                    print(self.detector.fps)
                     if DEBUG:
                         frame = self.detector.run_debug(frame, self.mode)
                     else:
