@@ -170,9 +170,9 @@ class Game:
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        jpeg.tobytes() + b'\r\n')
 
-    def add_goal(self, Left):
-        "pass True if one goal should be added to the score of the left goal, else 1 will be added to the right goal"
-        self.website.add_goal(Left)
+    def add_goal(self, Red):
+        "pass True if one goal should be added to the score of the left goal (RED), else 1 will be added to the right goal (BLUE)"
+        self.website.add_goal(Red)
 
     def get_max_speed(self):
         maxspd = self.max_speed

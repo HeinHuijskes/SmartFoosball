@@ -48,9 +48,9 @@ class Website:
             self.camera.release()
             cv2.destroyAllWindows()
 
-        def add_goal(self, Left):
-            "If Left is true, one goal will be added to the score of the left goal, else 1 will be added to the right goal"
-            if Left:
+        def add_goal(self, Red):
+            "If Red is true, one goal will be added to the score of the left goal (RED), else 1 will be added to the right goal (BLUE)"
+            if Red:
                 self.scoreL = self.scoreL + 1
             else: self.scoreR = self.scoreR + 1
 
