@@ -30,6 +30,7 @@ class Game:
         self.delaysec = 5
         self.buffer = deque(maxlen=(self.fps * self.delaysec))
         self.max_speed = [1]
+        self.camera = None
 
 
     def showFrame(self, frame):
@@ -146,9 +147,9 @@ class Game:
                        frame + b'\r\n')
 
     def run_camera(self, camera_id):
-        camera = Camera(camera_id)
+        self.camera = Camera(camera_id)
         while True:
-            frame = camera.get_frame()
+            frame = self.camera.get_frame()
             if frame is None:
                 print("frame none")
                 frame = cv2.imread("../website/Error_mirrored.jpg")
