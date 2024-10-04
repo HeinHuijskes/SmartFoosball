@@ -47,5 +47,4 @@ class Mode(Enum):
     BLUE = 'BLUE'
     FUNK = 'FUNK'
     DISCO = 'DISCO'
-    ORANGE = 'ORANGE'
     ZOOM = 'ZOOM'
