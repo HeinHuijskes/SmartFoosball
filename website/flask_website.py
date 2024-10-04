@@ -76,6 +76,7 @@ class Website:
                 return Response(self.game.buffer_frames(),
                                 mimetype='multipart/x-mixed-replace; boundary=frame')
 
+            #routing to the website pages
             @self.app.route('/feedpage.html')
             def feedpage():
                 # self.arduino.run()
@@ -89,6 +90,13 @@ class Website:
             def cssstyles():
                 return render_template('css/styles.css')
 
+            @self.app.route('/infopage.html')
+            def infopage():
+                # self.arduino.run()
+                return render_template('infopage.html')
+
+
+            #function to update the website
             @self.app.route('/score')
             def score():
                 return render_template('feedpage.html', scoreL = self.scoreL, scoreR= self.scoreR)
