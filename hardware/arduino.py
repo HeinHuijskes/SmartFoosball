@@ -44,6 +44,6 @@ class Arduino:
 
     def get_line(self):
         if arduino:
-            # line = self.serialConnection.readline()
-            # line = line.decode('ascii').strip()
-            # return line
+            line = self.serialConnection.readline()
+            line = line.decode('ascii').strip()
+            return line
