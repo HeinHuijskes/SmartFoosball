@@ -13,6 +13,7 @@
         p {text-align: center}
         img {max-width: 100%; max-height: 100%}
         .center_child {vertical-align: middle;}
+        #but_new_game:hover { color: grey}
     </style>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
     <script>
@@ -26,6 +27,14 @@
         setInterval(fetchScore, 500);
         // to update speed
 
+        //function when new game button is pressed
+        function newgame(){
+            document.getElementById("but_new_game").innerHTML = "new game starting ..."; //TODO change
+            $.getJSON("/new_game", function(data) {
+                $('#but_new_game').html(data.dtext);
+            });
+
+        }
     </script>
 </head>
 <body>
@@ -38,7 +47,10 @@
 <div id="behind title" style="height: 170px"></div>
 
 <div id="new_center" style="max-width: 100%; display: flex">
-    <div class="center_child" style="width: 19%; padding: 3%;margin-top: 6%"><p>hi</p></div>
+    <div class="center_child" style="width: 19%; padding: 3%;margin-top: 6%">
+        <p>hi</p>
+        <p id="but_new_game" onclick="newgame()">new game</p>
+    </div>
     <div class="center_child" style="width: 49%">
         <p style="text-align: left;margin:3%">Camera feed</p>
         <div style="background-color: lightgray;padding: 20px; height: 400px; margin: auto; text-align: center;">

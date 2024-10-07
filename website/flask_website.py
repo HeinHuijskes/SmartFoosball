@@ -1,3 +1,5 @@
+import time
+
 from flask import Flask, render_template, Response, jsonify
 import cv2
 from flask import request
@@ -109,4 +111,8 @@ class Website:
             def update_speed():
                 self.max_speed = self.game.get_max_speed()
                 return jsonify(max_speed=self.max_speed)
-
+            @self.app.route('/new_game')
+            def newgame():
+                print("new game")
+                time.sleep(2)
+                return jsonify(dtext = "new game")
