@@ -16,7 +16,8 @@ class Arduino:
     def __init__(self, website, game, com_port='COM3'):
         self.website = website
         self.game = game
-        self.serialConnection = serial.Serial(com_port, 9600)
+        if arduino:
+            self.serialConnection = serial.Serial(com_port, 9600)
         # self.lock = Lock()
 
     def run(self):
