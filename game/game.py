@@ -180,5 +180,10 @@ class Game:
         return sum(maxspd)/ len(maxspd)
 
 
+    def reset_game(self):
+        self.score_red = 0
+        self.score_blue = 0
+#         maybe also reset max speed
+
 #TOdo see if you can call de app.route('...') to referesh page or potentially
 #referesh div box or in the websitre run function add it as file to watch
