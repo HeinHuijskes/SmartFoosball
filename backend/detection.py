@@ -24,13 +24,14 @@ class Detection(DetectionSettings):
         frame = self.ballDetectionYOLO(frame)
         frame = self.draw_ball_positions(frame)
         frame = self.drawTexts(frame)
-        frame = self.scale(frame)
+        frame = self.scale(frame, 0.5)
         return frame
 
     def detect_debug(self, frame, mode=Mode.NORMAL):
         """Run basic detection with added debug features. See also `Detection.detect()`."""
         if mode == Mode.DISCO:
             mode = random.choice([Mode.BLUE, Mode.RED, Mode.FUNK, Mode.NORMAL])
+        # cv2.rotate(frame, cv2.ROTATE_180, frame)
         self.blue_mask = self.colour_mask(frame, Colour.BLUE)
         self.red_mask = self.colour_mask(frame, Colour.RED)
         mask = self.selectMask(mode)
@@ -39,7 +40,7 @@ class Detection(DetectionSettings):
         frame = self.detect(frame)
 
         # Apply the colour mask to the frame
-        cv2.bitwise_and(frame, frame, mask=mask)
+        frame = cv2.bitwise_and(frame, frame, mask=mask)
         frame = self.foosMenDetection(frame, mode)
         frame = self.zoom_in(frame)
         return frame
@@ -79,22 +80,34 @@ class Detection(DetectionSettings):
         cv2.convertScaleAbs(inverted, inverted, 3)
         # Detect ArUco markers
         (corners, ids, rejected) = self.detector.detectMarkers(inverted)
+        # cv2.aruco.drawDetectedMarkers(frame, corners, ids)
+        # frame = self.scale(frame, 0.5)
+        # while True:
+        #     cv2.imshow('test', frame)
+        #     key = cv2.waitKey(1)
+        height, width, _ = frame.shape
+        mid_x, mid_y = width / 2, height / 2
         if ids is not None:
             ids = ids.flatten()
+            # print(corners)
 
             for (marker, marker_id) in zip(corners, ids):
-                # Reshape corner to a usable array of 4 corners, each with 2 coordinates (x,y)
+                # print(f'marker: {marker}')
                 corner = marker.reshape((4, 2))
+                # print(f'corner: {corner}')
+                # Reshape corner to a usable array of 4 corners, each with 2 coordinates (x,y)
                 maximum = 0
                 for (x, y) in corner:
                     # Calculate the distance to the centre of the screen for every corner
-                    distance = math.sqrt((x - self.mid_x) ** 2 + (y - self.mid_y) ** 2)
+                    distance = math.sqrt((x - mid_x) ** 2 + (y - mid_y) ** 2)
                     if distance > maximum:
                         maximum = distance
                         cx = x
                         cy = y
                 if len(corners[0][0]) == 4:
                     self.corners[marker_id].append([cx, cy])
+                    # if marker_id == 0 or marker_id == 2:
+                    #     print(f'Corner {marker_id}: x={cx}, y={cy}')
 
     def calibrate(self, frame):
         """Calibrate frame and rotate according to aruco corners"""
@@ -109,37 +122,44 @@ class Detection(DetectionSettings):
             result.append((average_x.item(), average_y.item()))
 
         self.corners = result
-        self.calculateCorners()
+        if not self.calculateCorners():
+            return
 
         # Calculate a rotation matrix according to the rotation angle
-        self.rotate_matrix = cv2.getRotationMatrix2D((self.mid_x, self.mid_y), self.angle, 1)
-        frame = cv2.warpAffine(frame, self.rotate_matrix, frame.shape[1::-1], flags=cv2.INTER_LINEAR)
+        self.rotate_matrix = cv2.getRotationMatrix2D((self.mid_x, self.mid_y), math.degrees(self.angle), 1)
+        print("JA HOOR")
+        print(self.rotate_matrix)
+        frame = cv2.warpAffine(frame, self.rotate_matrix, frame.shape[1::-1])
         # Crop frame
+        print(self.corners[3], self.corners[2])
+        print(self.min_y, self.max_y, self.min_x, self.max_x)
+        print(self.angle, math.degrees(self.angle))
         frame = frame[self.min_y:self.max_y, self.min_x:self.max_x]
         height, width, _ = frame.shape
         self.pixel_width_cm = self.table_length / width
 
     def calculateCorners(self):
         # Calculate the edges of the playing field according to corners calculated earlier
-        self.min_x = int(min(self.corners[1][0], self.corners[2][0]))
-        self.max_x = int(max(self.corners[3][0], self.corners[0][0]))
-        self.min_y = int(min(self.corners[2][1], self.corners[3][1]))
-        self.max_y = int(max(self.corners[1][1], self.corners[0][1]))
+        self.min_x = int(min(self.corners[2][0], self.corners[0][0]))
+        self.max_x = int(max(self.corners[0][0], self.corners[2][0]))
+        self.min_y = int(min(self.corners[2][1], self.corners[0][1]))
+        self.max_y = int(max(self.corners[0][1], self.corners[2][1]))
+        if self.min_x == self.max_x:
+            return False
 
         # Calculate middle point of target frame
-        self.mid_x = self.min_x + (self.max_x - self.mid_x) / 2
-        self.mid_y = self.min_y + (self.max_y - self.mid_y) / 2
+        self.mid_x = self.min_x + (self.max_x - self.mid_x) // 2
+        self.mid_y = self.min_y + (self.max_y - self.mid_y) // 2
 
         self.correctAngle()
 
         # Calculate the amount of detected corners
         f = self.game.calibration_frames
-
         detected_corners = sum([len(corner) for corner in self.corners])
         confidence = min(detected_corners / 4 * 10000 // 100 / f, 100)
         print(f'Corner confidence: {confidence}% ({detected_corners} corners detected in {f} frames)')
 
-        return
+        return True
 
     def correctAngle(self):
         # Calculate correct corner coordinates in the newly rotated frame
@@ -151,29 +171,32 @@ class Detection(DetectionSettings):
         # See also https://math.stackexchange.com/questions/260096/find-the-coordinates-of-a-point-on-a-circle.
 
         # Calculate the angle of the playing field compared to the x-axis
-        self.angle = -int(math.degrees(
-            math.atan(abs(self.corners[2][1] - self.corners[3][1]) / abs(self.corners[2][0] - self.corners[3][0]))))
+        opposite = abs(self.corners[2][1] - self.corners[3][1])
+        side = abs(self.corners[2][0] - self.corners[3][0])
+        self.angle = math.atan(opposite / side)
         if self.angle < 0:
-            self.angle += 360
+            self.angle += 2 * math.pi
 
-        θ = self.angle
+        angle = self.angle
+        a_x = self.mid_x
+        a_y = self.mid_y
+        b_x = self.corners[2][0]
+        b_y = self.corners[2][1]
+        e_x = self.corners[0][0]
+        e_y = self.corners[0][1]
 
-        x = self.min_x - self.mid_x
-        y = self.min_y - self.mid_y
-        self.min_x = x * math.cos(θ) + y * math.sin(θ) + self.mid_x
-        self.min_y = -x * math.sin(θ) + y * math.cos(θ) + self.mid_y
+        c_x = a_x + (b_x - a_x) * math.cos(angle) - (b_y - a_y) * math.sin(angle)
+        c_y = a_y + (b_x - a_x) * math.sin(angle) + (b_y - a_y) * math.cos(angle)
 
-        x = self.max_x - self.mid_x
-        y = self.max_y - self.mid_y
-        self.max_x = x * math.cos(θ) + y * math.sin(θ) + self.mid_x
-        self.max_y = -x * math.sin(θ) + y * math.cos(θ) + self.mid_y
+        d_x = a_x + (e_x - a_x) * math.cos(angle) - (e_y - a_y) * math.sin(angle)
+        d_y = a_y + (e_x - a_x) * math.sin(angle) + (e_y - a_y) * math.cos(angle)
+
+        self.min_x = int(min(d_x, c_x))
+        self.min_y = int(min(d_y, c_y))
+        self.max_x = int(max(d_x, c_x))
+        self.max_y = int(max(d_y, c_y))
 
         return
-
-    def setMidPoints(self, frame):
-        """Sets the dimensions and middle point of the video feed"""
-        height, width, _ = frame.shape
-
 
     def ballDetectionYOLO(self, frame):
         position = []

@@ -1,4 +1,7 @@
 import time
+
+import cv2
+
 from backend.detection import Detection
 from backend.gameSettings import GameSettings
 from backend.misc import *
@@ -12,35 +15,35 @@ class Game(GameSettings):
         self.detector = Detection(game=self)
         self.website = website
 
-    def calibrate(self, video):
+    def calibrate(self):
         """Calibrates with aruco codes. Calibrates for a set amount of frames, defined in `self.calibration_frames`."""
-        nextFrame, frame = video.read()
+        nextFrame, frame = self.video.read()
         height, width, _ = frame.shape
 
         # Scale up the width slightly to be able to detect aruco codes.
         # Don't scale up too much, since that severely impacts performance
-        video.set(cv2.CAP_PROP_FRAME_WIDTH, int(width*1.3))
-        video.set(cv2.CAP_PROP_FRAME_HEIGHT, int(height))
+        self.video.set(cv2.CAP_PROP_FRAME_WIDTH, int(width*1.3))
+        self.video.set(cv2.CAP_PROP_FRAME_HEIGHT, int(height))
 
         # Find the aruco codes over multiple frames.
         # `Detection.aruco()` automatically sets the detected table size after a certain amount of frames.
         for i in range(0, self.calibration_frames):
-            nextFrame, frame = video.read()
-            # Rotate the frame if the camera is flipped. TODO: Make this better or preferably obsolete
-            cv2.rotate(frame, cv2.ROTATE_180, frame)
+            nextFrame, frame = self.video.read()
             self.detector.aruco(frame)
         self.detector.calibrate(frame)
 
     def run(self, video):
         """Runs a game locally"""
-        self.calibrate(video)
+        self.video = video
+        self.calibrate()
         # Set to video input FPS
-        video.set(cv2.CAP_PROP_FPS, 60)
+        self.video.set(cv2.CAP_PROP_FPS, 60)
         nextFrame = True
         frame = None
         while nextFrame:
             if self.paused and not self.skip_frame:
-                return frame
+                self.showFrame(frame)
+                continue
 
             if self.skip_frame:
                 self.skip_frame = False
@@ -112,9 +115,9 @@ class Game(GameSettings):
                 self.mode = Mode.DISCO
             case 115:  # pressed 's'
                 self.detector.max_ball_speed = 0
-            # case 99:  # pressed 'c'
-            #     self.detector.corners = [[]]*4
-            #     self.calibrate()
+            case 99:  # pressed 'c'
+                self.detector.corners = [[]]*4
+                self.calibrate()
             case 122:  # pressed 'z'
                 self.detector.zoom += 1
                 if self.detector.zoom >= len(self.detector.zoom_levels):
