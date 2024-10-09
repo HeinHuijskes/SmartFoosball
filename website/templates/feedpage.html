@@ -17,11 +17,33 @@
     </style>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
     <script>
+        //function to display text if goal is scored
+        function score(){
+            document.getElementById("marquee_outer").style.background = "lightgrey";
+            document.getElementById("marquee").innerText = "GOAL !  GOAL!  GOAL !  GOAL !  GOAL !  GOAL !  GOAL !  GOAL !  GOAL!  GOAL !  GOAL!  GOAL !  GOAL !  GOAL !  GOAL !  GOAL !  GOAL !  GOAL!GOAL !  GOAL!  GOAL !  GOAL !  GOAL !  GOAL !  GOAL !  GOAL !  GOAL!  GOAL !  GOAL!  GOAL !  GOAL !  GOAL !  GOAL !  GOAL !  GOAL !  GOAL!  GOAL !  GOAL!  GOAL !  GOAL !  GOAL !  GOAL !  GOAL !  GOAL !  GOAL!"
+            setTimeout(function() {
+            document.getElementById("marquee_outer").style.background = "transparent";
+            document.getElementById("marquee").innerText = " "
+             }, 5000);
+
+        }
         // to update score
         function fetchScore() {
+            var oldscore = document.getElementById('score').innerText;
+            var o_scores= oldscore.split(' - ')
+            var oldscoreL = parseInt(o_scores[0]);
+            var oldscoreR = parseInt(o_scores[1]);
             $.getJSON("/update_score", function(data) {
                 $('#score').html('<p style="text-align: left; font-weight: 400">' + data.scoreL + ' - ' + data.scoreR + '</p>');
+            var newscoreL= data.scoreL;
+            var newscoreR = data.scoreR;
+            if(oldscoreL != newscoreL)
+                score();
+            if(oldscoreR != newscoreR)
+                score();
             });
+
+
         }
         // Fetch the score every 5 seconds
         setInterval(fetchScore, 500);
@@ -40,16 +62,25 @@
 <body>
 <div style="position: fixed; margin-left: 10%; z-index: 2">
     <a style="color: black; background-color: transparent; text-decoration: transparent;" href="index.html"> <p>&larr;</p></a>
-
 </div>
+
+<!--<div id="marquee_outer" style="background-color: lightgrey;z-index:3;position:fixed;margin-top:2%;width:100%;height:150px;display:flex;align-items:center;">-->
+<!--    <marquee id="marquee" style="font-weight:300;font-size:50px;" scrollamount="15">GOAL ! </marquee>-->
+<!--</div>-->
+
+<div id="marquee_outer" style="background-color: transparent;z-index:3;position:fixed;margin-top:2%;width:100%;height:150px;display:flex;align-items:center;">
+<!--    <marquee id="marquee" animation: marquee 10s linear infinite; style="font-weight:300;font-size:50px;" scrollamount="15"> </marquee>-->
+    <p id="marquee" style="font-weight:300;font-size:50px;>GOAL</p>
+</div>
+
 <div  style=" z-index: 1;background-color: rgba(255, 255, 255, 0.75);position: fixed;max-width: 100%; width: 100%; height: 150px; margin-top: 2%">
     <h1 style=" background-color: rgba(255, 255, 255, 0.5);padding: 20px;max-width: 100%; font-weight: 200; text-align: center">Live game</h1></div>
 <div id="behind title" style="height: 170px"></div>
 
+
 <div id="new_center" style="max-width: 100%; display: flex">
     <div class="center_child" style="width: 19%; padding: 3%;margin-top: 6%">
-        <p>hi</p>
-        <p id="but_new_game" onclick="newgame()">new game</p>
+        <p id="but_new_game" onclick="newgame()">New game</p>
     </div>
     <div class="center_child" style="width: 49%">
         <p style="text-align: left;margin:3%">Camera feed</p>
@@ -59,7 +90,7 @@
     <div class="center_child"style="width: 19%; padding: 3%;margin-top: 6%" >
          <p style="text-align: left">Match score </p>
             <p id="score" style="text-align: left; font-weight: 400;"> {{scoreL}} - {{scoreR}}</p>
-         <p style="text-align: left">Maximum Speed </p>
+         <p style="text-align: left">Maximum speed </p>
             <p id="speed" style="text-align: left; font-weight: 400;"> {{max_speed}}</p>
     </div>
 </div>

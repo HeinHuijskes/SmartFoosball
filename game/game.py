@@ -152,7 +152,7 @@ class Game:
             frame = self.camera.get_frame()
             if frame is None:
                 print("frame none")
-                frame = cv2.imread("../website/Error_mirrored.jpg")
+                frame = cv2.imread("website/Error_mirrored.jpg")
             frame, max_speed = self.detector.run(frame)  # self.mode
             if DEBUG: self.showFrame(frame)
             #encode frame for website
@@ -179,7 +179,8 @@ class Game:
         self.max_speed = [maxspd[0]]
         return sum(maxspd)/ len(maxspd)
 
-
+    def reset_max_speed(self):
+        self.max_speed = [0]
     def reset_game(self):
         self.score_red = 0
         self.score_blue = 0

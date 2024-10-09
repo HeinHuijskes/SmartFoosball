@@ -112,7 +112,10 @@ class Website:
                 self.max_speed = self.game.get_max_speed()
                 return jsonify(max_speed=self.max_speed)
             @self.app.route('/new_game')
-            def newgame():
+            def newgame(): #TODO check ball tracking side no infinite loops
                 print("new game")
+                self.scoreL = 0
+                self.scoreR = 0
+                self.game.reset_max_speed()
                 time.sleep(2)
                 return jsonify(dtext = "new game")
