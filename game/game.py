@@ -154,8 +154,8 @@ class Game:
             end = time.time()
             # print("start , end", start, end)
             frame_time = end - start
-            frame = self.camera.get_frame()
             start = time.time()
+            frame = self.camera.get_frame()
             if frame is None:
                 print("frame none")
                 frame = cv2.imread("website/Error_mirrored.jpg")
@@ -172,16 +172,16 @@ class Game:
     def buffer_frames(self):
         while True:
             print("hello")
-            # if len(self.buffer) == self.buffer_max_len:
-            #     bframes = self.buffer.copy()
-            #     self.buffer.clear()
-            #     for jpeg, frame_time in bframes:
-            if len(self.buffer) != 0:
-                    jpeg, frame_time = self.buffer.popleft()
+            if len(self.buffer) == self.buffer_max_len:
+                bframes = self.buffer.copy()
+                self.buffer.clear()
+                for jpeg, frame_time in bframes:
+            # if len(self.buffer) != 0:
+            #         jpeg, frame_time = self.buffer.popleft()
                     # self.showFrame(jpeg)
                     print(frame_time, "frame_time")
                     if frame_time > 0 :
-                        time.sleep(frame_time)
+                        time.sleep(2*frame_time)
                         print(jpeg)
                         yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                            jpeg.tobytes() + b'\r\n')
