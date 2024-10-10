@@ -28,7 +28,8 @@ class Game:
         self.website = website
         self.fps = 60
         self.delaysec = 5
-        self.buffer = deque(maxlen=(self.fps * self.delaysec))
+        self.buffer_max_len = self.fps * self.delaysec
+        self.buffer = deque(maxlen=(self.buffer_max_len))
         self.max_speed = [1]
         self.camera = None
 
@@ -148,8 +149,13 @@ class Game:
 
     def run_camera(self, camera):
         self.camera = camera
+        start = time.time()
         while True:
+            end = time.time()
+            # print("start , end", start, end)
+            frame_time = end - start
             frame = self.camera.get_frame()
+            start = time.time()
             if frame is None:
                 print("frame none")
                 frame = cv2.imread("website/Error_mirrored.jpg")
@@ -157,18 +163,44 @@ class Game:
             if DEBUG: self.showFrame(frame)
             #encode frame for website
             ret, jpeg = cv2.imencode('.jpg', frame)
-            self.buffer.append(jpeg)
+            self.buffer.append((jpeg, frame_time))
             if ret:
 
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        jpeg.tobytes() + b'\r\n')
                 self.max_speed.append(max_speed)
     def buffer_frames(self):
-            bframes = self.buffer.copy()
-            for jpeg in bframes:
-                time.sleep(0.01)
-                yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
-                       jpeg.tobytes() + b'\r\n')
+        # if len(self.buffer) == self.buffer_max_len:
+        #     bframes = self.buffer.copy()
+        #     self.buffer.clear()
+        #     for jpeg, frame_time in bframes:
+        #         # if len(self.buffer) != 0:
+        #         #     jpeg, frame_time = self.buffer.popleft()
+        #         # self.showFrame(jpeg)
+        #         print(frame_time, "frame_time")
+        #         if frame_time > 0:
+        #             time.sleep(frame_time)
+        #             print(jpeg)
+        #             yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+        #                    jpeg.tobytes() + b'\r\n')
+        #         else:
+        #             continue
+        while True:
+            print("hello")
+            # if len(self.buffer) == self.buffer_max_len:
+            #     bframes = self.buffer.copy()
+            #     self.buffer.clear()
+            #     for jpeg, frame_time in bframes:
+            if len(self.buffer) != 0:
+                    jpeg, frame_time = self.buffer.popleft()
+                    self.showFrame(jpeg)
+                    print(frame_time, "frame_time")
+                    if frame_time > 0 :
+                        time.sleep(frame_time)
+                        print(jpeg)
+                        yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                           jpeg.tobytes() + b'\r\n')
+                    else: continue
 
     def add_goal(self, Red):
         "pass True if one goal should be added to the score of the left goal (RED), else 1 will be added to the right goal (BLUE)"
