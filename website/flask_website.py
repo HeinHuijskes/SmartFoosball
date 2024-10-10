@@ -3,7 +3,7 @@ import cv2
 from flask import request
 import threading
 
-from game.game import Game
+from backend.game import Game
 from hardware.hardware import *
 from hardware.arduino import Arduino
 
@@ -67,7 +67,7 @@ class Website:
 
             @self.app.route('/video_feed')
             def video_feed():
-                return Response(self.game.run_camera(self.camera_id), mimetype='multipart/x-mixed-replace; boundary=frame')
+                return Response(self.game.run_website(self.camera), mimetype='multipart/x-mixed-replace; boundary=frame')
 
             @self.app.route('/delayed_video_feed')
             def delayed_video_feed():

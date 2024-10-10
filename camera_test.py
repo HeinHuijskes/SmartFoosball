@@ -4,10 +4,10 @@ import threading
 
 
 def website_run(website):
-    website.run(0)
+    website.detect(0)
 
 def arduino_run(arduino):
-    arduino.run()
+    arduino.detect()
 
 website = Website()
 website_run(website)
