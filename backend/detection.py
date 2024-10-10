@@ -24,7 +24,7 @@ class Detection(DetectionSettings):
         frame = self.ballDetectionYOLO(frame)
         frame = self.draw_ball_positions(frame)
         frame = self.drawTexts(frame)
-        frame = self.scale(frame, 0.5)
+        # frame = self.scale(frame, 0.5)
         return frame
 
     def detect_debug(self, frame, mode=Mode.NORMAL):
@@ -81,20 +81,13 @@ class Detection(DetectionSettings):
         # Detect ArUco markers
         (corners, ids, rejected) = self.detector.detectMarkers(inverted)
         # cv2.aruco.drawDetectedMarkers(frame, corners, ids)
-        # frame = self.scale(frame, 0.5)
-        # while True:
-        #     cv2.imshow('test', frame)
-        #     key = cv2.waitKey(1)
         height, width, _ = frame.shape
         mid_x, mid_y = width / 2, height / 2
         if ids is not None:
             ids = ids.flatten()
-            # print(corners)
 
             for (marker, marker_id) in zip(corners, ids):
-                # print(f'marker: {marker}')
                 corner = marker.reshape((4, 2))
-                # print(f'corner: {corner}')
                 # Reshape corner to a usable array of 4 corners, each with 2 coordinates (x,y)
                 maximum = 0
                 for (x, y) in corner:
@@ -104,29 +97,24 @@ class Detection(DetectionSettings):
                         maximum = distance
                         cx = x
                         cy = y
-                if len(corners[0][0]) == 4:
-                    self.corners[marker_id].append([cx, cy])
-                    # if marker_id == 0 or marker_id == 2:
-                    #     print(f'Corner {marker_id}: x={cx}, y={cy}')
+                self.corners[marker_id] = [cx, cy]
 
     def calibrate(self, frame):
         """Calibrate frame and rotate according to aruco corners"""
-        result = []
         # Calculate the average positions of the stored inside corners
-        for corner in self.corners:
-            if len(corner) == 0:
-                print('NO CORNERS!')
-                return
-            average_x = sum([x for (x, y) in corner]) / len(corner)
-            average_y = sum([y for (x, y) in corner]) / len(corner)
-            result.append((average_x.item(), average_y.item()))
+        corners = [i for i, corner in enumerate(self.corners) if len(corner) > 0]
+        if len(corners) < 4:
+            print(f'ONLY {len(corners)} CORNERS DETECTED! NEEDED 4!')
+            print(f'Missing corners {corners}')
+            height, width, _ = frame.shape
+            self.max_x, self.max_y = width, height
+            return
 
-        self.corners = result
         if not self.calculateCorners():
             return
 
         # Calculate a rotation matrix according to the rotation angle
-        self.rotate_matrix = cv2.getRotationMatrix2D((self.mid_x, self.mid_y), math.degrees(self.angle), 1)
+        self.rotate_matrix = cv2.getRotationMatrix2D((self.mid_x, self.mid_y), -math.degrees(self.angle), 1)
         print("JA HOOR")
         print(self.rotate_matrix)
         frame = cv2.warpAffine(frame, self.rotate_matrix, frame.shape[1::-1])
@@ -144,7 +132,7 @@ class Detection(DetectionSettings):
         self.max_x = int(max(self.corners[0][0], self.corners[2][0]))
         self.min_y = int(min(self.corners[2][1], self.corners[0][1]))
         self.max_y = int(max(self.corners[0][1], self.corners[2][1]))
-        if self.min_x == self.max_x:
+        if self.min_x >= self.max_x:
             return False
 
         # Calculate middle point of target frame
@@ -152,12 +140,6 @@ class Detection(DetectionSettings):
         self.mid_y = self.min_y + (self.max_y - self.mid_y) // 2
 
         self.correctAngle()
-
-        # Calculate the amount of detected corners
-        f = self.game.calibration_frames
-        detected_corners = sum([len(corner) for corner in self.corners])
-        confidence = min(detected_corners / 4 * 10000 // 100 / f, 100)
-        print(f'Corner confidence: {confidence}% ({detected_corners} corners detected in {f} frames)')
 
         return True
 

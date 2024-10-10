@@ -15,15 +15,19 @@ class Game(GameSettings):
         self.detector = Detection(game=self)
         self.website = website
 
-    def calibrate(self):
+    def calibrate(self, setup=False):
         """Calibrates with aruco codes. Calibrates for a set amount of frames, defined in `self.calibration_frames`."""
         nextFrame, frame = self.video.read()
-        height, width, _ = frame.shape
 
-        # Scale up the width slightly to be able to detect aruco codes.
-        # Don't scale up too much, since that severely impacts performance
-        self.video.set(cv2.CAP_PROP_FRAME_WIDTH, int(width*1.3))
-        self.video.set(cv2.CAP_PROP_FRAME_HEIGHT, int(height))
+        if setup:
+            # Scale up the width slightly to be able to detect aruco codes.
+            # Don't scale up too much, since that severely impacts performance
+            height, width, _ = frame.shape
+            print(f'Initial width: {width}, height: {height}')
+            width = width*1.3
+            self.video.set(cv2.CAP_PROP_FRAME_WIDTH, int(width))
+            self.video.set(cv2.CAP_PROP_FRAME_HEIGHT, int(height))
+            print(f'Second width: {width}, height: {height}')
 
         # Find the aruco codes over multiple frames.
         # `Detection.aruco()` automatically sets the detected table size after a certain amount of frames.
@@ -35,7 +39,7 @@ class Game(GameSettings):
     def run(self, video):
         """Runs a game locally"""
         self.video = video
-        self.calibrate()
+        self.calibrate(setup=True)
         # Set to video input FPS
         self.video.set(cv2.CAP_PROP_FPS, 60)
         nextFrame = True
@@ -80,6 +84,7 @@ class Game(GameSettings):
         self.time += 1
         nextFrame, frame = video.read()
         if nextFrame:
+            frame = cv2.warpAffine(frame, self.detector.rotate_matrix, frame.shape[1::-1])
             frame = frame[self.detector.min_y:self.detector.max_y, self.detector.min_x:self.detector.max_x]
         return nextFrame, frame
 
@@ -116,7 +121,7 @@ class Game(GameSettings):
             case 115:  # pressed 's'
                 self.detector.max_ball_speed = 0
             case 99:  # pressed 'c'
-                self.detector.corners = [[]]*4
+                self.detector.corners = [[], [], [], []]
                 self.calibrate()
             case 122:  # pressed 'z'
                 self.detector.zoom += 1
