@@ -7,3 +7,6 @@ class Camera:
     def get_frame(self):
         ret, frame = self.camera.read()
         return frame
+
+    def release_camera(self):
+        self.camera.release()

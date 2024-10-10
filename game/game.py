@@ -146,8 +146,8 @@ class Game:
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        frame + b'\r\n')
 
-    def run_camera(self, camera_id):
-        self.camera = Camera(camera_id)
+    def run_camera(self, camera):
+        self.camera = camera
         while True:
             frame = self.camera.get_frame()
             if frame is None:

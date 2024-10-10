@@ -8,6 +8,7 @@ import threading
 from game.game import Game
 from hardware.hardware import *
 from hardware.arduino import Arduino
+from hardware.camera import *
 
 global app
 
@@ -28,12 +29,14 @@ class Website:
 
         def run(self, camera_id):
             self.camera_id = camera_id
-            self.camera = cv2.VideoCapture(self.camera_id, cv2.CAP_DSHOW)
+            self.camera = Camera(self.camera_id)
+            # self.camera = cv2.VideoCapture(self.camera_id, cv2.CAP_DSHOW)
             print("Camera initialized successfully.")
             #start arduino class
             t1 = threading.Thread(target=self.arduino.run,)
             t1.start()
             self.app.run(debug=True, threaded=True, use_reloader=False)
+            self.camera.release_camera()
 
 
         def generate_frames2(self, frame):
@@ -47,7 +50,7 @@ class Website:
                 frame = jpeg.tobytes()
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                 frame + b'\r\n')
-            self.camera.release()
+            self.camera.release_camera()
             cv2.destroyAllWindows()
 
         def add_goal(self, Red):
@@ -70,7 +73,8 @@ class Website:
 
             @self.app.route('/video_feed')
             def video_feed():
-                return Response(self.game.run_camera(self.camera_id), mimetype='multipart/x-mixed-replace; boundary=frame')
+                # print("vide_feed in website")
+                return Response(self.game.run_camera(self.camera), mimetype='multipart/x-mixed-replace; boundary=frame')
 
             @self.app.route('/delayed_video_feed')
             def delayed_video_feed():
@@ -82,6 +86,7 @@ class Website:
             @self.app.route('/feedpage.html')
             def feedpage():
                 # self.arduino.run()
+                # print("feedpage in website")
                 return render_template('feedpage.html', scoreL = self.scoreL, scoreR= self.scoreR, max_speed = self.max_speed)
 
             @self.app.route('/index.html')
