@@ -53,3 +53,4 @@ class DetectionSettings:
         # Blue and red mask variables
         self.blue_mask = None
         self.red_mask = None
+        self.calibrated = False

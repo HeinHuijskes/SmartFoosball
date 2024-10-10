@@ -102,6 +102,7 @@ class Detection(DetectionSettings):
     def calibrate(self, frame):
         """Calibrate frame and rotate according to aruco corners"""
         # Calculate the average positions of the stored inside corners
+        self.calibrated = False
         corners = [i for i, corner in enumerate(self.corners) if len(corner) > 0]
         if len(corners) < 4:
             print(f'ONLY {len(corners)} CORNERS DETECTED! NEEDED 4!')
@@ -125,6 +126,7 @@ class Detection(DetectionSettings):
         frame = frame[self.min_y:self.max_y, self.min_x:self.max_x]
         height, width, _ = frame.shape
         self.pixel_width_cm = self.table_length / width
+        self.calibrated = True
 
     def calculateCorners(self):
         # Calculate the edges of the playing field according to corners calculated earlier

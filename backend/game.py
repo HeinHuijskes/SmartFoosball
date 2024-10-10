@@ -83,7 +83,7 @@ class Game(GameSettings):
         """Reads a frame from the video input and cuts it to the correct size"""
         self.time += 1
         nextFrame, frame = video.read()
-        if nextFrame:
+        if nextFrame and self.detector.calibrated:
             frame = cv2.warpAffine(frame, self.detector.rotate_matrix, frame.shape[1::-1])
             frame = frame[self.detector.min_y:self.detector.max_y, self.detector.min_x:self.detector.max_x]
         return nextFrame, frame
