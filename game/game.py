@@ -170,21 +170,6 @@ class Game:
                        jpeg.tobytes() + b'\r\n')
                 self.max_speed.append(max_speed)
     def buffer_frames(self):
-        # if len(self.buffer) == self.buffer_max_len:
-        #     bframes = self.buffer.copy()
-        #     self.buffer.clear()
-        #     for jpeg, frame_time in bframes:
-        #         # if len(self.buffer) != 0:
-        #         #     jpeg, frame_time = self.buffer.popleft()
-        #         # self.showFrame(jpeg)
-        #         print(frame_time, "frame_time")
-        #         if frame_time > 0:
-        #             time.sleep(frame_time)
-        #             print(jpeg)
-        #             yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
-        #                    jpeg.tobytes() + b'\r\n')
-        #         else:
-        #             continue
         while True:
             print("hello")
             # if len(self.buffer) == self.buffer_max_len:
@@ -193,7 +178,7 @@ class Game:
             #     for jpeg, frame_time in bframes:
             if len(self.buffer) != 0:
                     jpeg, frame_time = self.buffer.popleft()
-                    self.showFrame(jpeg)
+                    # self.showFrame(jpeg)
                     print(frame_time, "frame_time")
                     if frame_time > 0 :
                         time.sleep(frame_time)
