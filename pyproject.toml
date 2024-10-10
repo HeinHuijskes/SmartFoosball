@@ -11,6 +11,7 @@ psycopg2 = "^2.9.9"
 opencv-python = "^4.10.0.84"
 ultralytics = "^8.2.102"
 pyserial = "^3.5"
+keyboard = "^0.13.5"
 
 
 [build-system]
