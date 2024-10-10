@@ -141,9 +141,9 @@
                 $('#score').html('<p style="text-align: left; font-weight: 400">' + data.scoreL + ' - ' + data.scoreR + '</p>');
             var newscoreL= data.scoreL;
             var newscoreR = data.scoreR;
-            if(oldscoreL != newscoreL)
+            if(oldscoreL != newscoreL && newscoreL != 0)
                 score();
-            if(oldscoreR != newscoreR)
+            if(oldscoreR != newscoreR && newscoreR!= 0)
                 score();
             });
 
