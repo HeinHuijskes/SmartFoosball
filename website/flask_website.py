@@ -1,9 +1,11 @@
+import time
+
 from flask import Flask, render_template, Response, jsonify
 import cv2
 from flask import request
 import threading
 
-from game.game import Game
+from backend.game import Game
 from hardware.hardware import *
 from hardware.arduino import Arduino
 
@@ -22,15 +24,17 @@ class Website:
             self.scoreL = 0
             self.scoreR = 0
             self.arduino = Arduino(self, self.game)
+            self.max_speed = 0
 
         def run(self, camera_id):
             self.camera_id = camera_id
-            self.camera = cv2.VideoCapture(camera_id, cv2.CAP_DSHOW)
+            self.camera = cv2.VideoCapture(self.camera_id, cv2.CAP_DSHOW)
             print("Camera initialized successfully.")
             #start arduino class
             t1 = threading.Thread(target=self.arduino.run,)
             t1.start()
             self.app.run(debug=True, threaded=True, use_reloader=False)
+            self.camera.release()
 
 
         def generate_frames2(self, frame):
@@ -47,9 +51,9 @@ class Website:
             self.camera.release()
             cv2.destroyAllWindows()
 
-        def add_goal(self, Left):
-            "If Left is true, one goal will be added to the score of the left goal, else 1 will be added to the right goal"
-            if Left:
+        def add_goal(self, Red):
+            "If Red is true, one goal will be added to the score of the left goal (RED), else 1 will be added to the right goal (BLUE)"
+            if Red:
                 self.scoreL = self.scoreL + 1
             else: self.scoreR = self.scoreR + 1
 
@@ -67,17 +71,21 @@ class Website:
 
             @self.app.route('/video_feed')
             def video_feed():
-                return Response(self.game.run_camera(self.camera_id), mimetype='multipart/x-mixed-replace; boundary=frame')
+                # print("vide_feed in website")
+                return Response(self.game.run_website(self.camera), mimetype='multipart/x-mixed-replace; boundary=frame')
 
             @self.app.route('/delayed_video_feed')
             def delayed_video_feed():
+                print("error")
                 return Response(self.game.buffer_frames(),
                                 mimetype='multipart/x-mixed-replace; boundary=frame')
 
+            #routing to the website pages
             @self.app.route('/feedpage.html')
             def feedpage():
                 # self.arduino.run()
-                return render_template('feedpage.html', scoreL = self.scoreL, scoreR= self.scoreR)
+                # print("feedpage in website")
+                return render_template('feedpage.html', scoreL = self.scoreL, scoreR= self.scoreR, max_speed = self.max_speed)
 
             @self.app.route('/index.html')
             def indexhtml():
@@ -87,6 +95,13 @@ class Website:
             def cssstyles():
                 return render_template('css/styles.css')
 
+            @self.app.route('/infopage.html')
+            def infopage():
+                # self.arduino.run()
+                return render_template('infopage.html')
+
+
+            #function to update the website
             @self.app.route('/score')
             def score():
                 return render_template('feedpage.html', scoreL = self.scoreL, scoreR= self.scoreR)
@@ -95,3 +110,15 @@ class Website:
             def update_score():
                 return jsonify(scoreL = self.scoreL, scoreR= self.scoreR)
 
+            @self.app.route('/update_speed')
+            def update_speed():
+                self.max_speed = self.game.get_max_speed()
+                return jsonify(max_speed=self.max_speed)
+            @self.app.route('/new_game')
+            def newgame(): #TODO check ball tracking side no infinite loops
+                print("new game")
+                self.scoreL = 0
+                self.scoreR = 0
+                self.game.reset_max_speed()
+                time.sleep(2)
+                return jsonify(dtext = "new game")
