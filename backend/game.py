@@ -34,6 +34,7 @@ class Game(GameSettings):
         for i in range(0, self.calibration_frames):
             nextFrame, frame = self.video.read()
             self.detector.aruco(frame)
+            self.showFrame(frame)
         self.detector.calibrate(frame)
 
     def run(self, video):
@@ -84,6 +85,7 @@ class Game(GameSettings):
         self.time += 1
         nextFrame, frame = video.read()
         if nextFrame and self.detector.calibrated:
+            print(f'Precrop: {frame.shape}, {self.detector.min_y, self.detector.max_y, self.detector.max_x, self.detector.min_x}')
             frame = cv2.warpAffine(frame, self.detector.rotate_matrix, frame.shape[1::-1])
             frame = frame[self.detector.min_y:self.detector.max_y, self.detector.min_x:self.detector.max_x]
         return nextFrame, frame

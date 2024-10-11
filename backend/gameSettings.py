@@ -12,7 +12,7 @@ class GameSettings:
         self.time = 0
         self.video_frames = []
         self.video = None
-        self.calibration_frames = 5
+        self.calibration_frames = 50
         self.fps = 60
         self.delaysec = 5
         self.buffer = deque(maxlen=(self.fps * self.delaysec))
