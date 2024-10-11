@@ -34,6 +34,7 @@ class DetectionSettings:
         # Last known ball positions, [[x,y], [x,y], ...]
         self.ball_positions = [[]] * (self.ball_frames + 1)  # [[px, px]]
         self.max_ball_speed = 0  # m/s
+        self.last_known_position = [0, 0]
 
         # Settings for aruco detection
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_1000)

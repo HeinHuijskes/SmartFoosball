@@ -34,6 +34,7 @@ class Game(GameSettings):
         for i in range(0, self.calibration_frames):
             nextFrame, frame = self.video.read()
             self.detector.aruco(frame)
+            self.showFrame(frame)
         self.detector.calibrate(frame)
 
     def run(self, video):

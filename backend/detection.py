@@ -24,7 +24,6 @@ class Detection(DetectionSettings):
         frame = self.ballDetectionYOLO(frame)
         frame = self.draw_ball_positions(frame)
         frame = self.drawTexts(frame)
-        # frame = self.scale(frame, 0.5)
         return frame
 
     def detect_debug(self, frame, mode=Mode.NORMAL):
@@ -43,6 +42,8 @@ class Detection(DetectionSettings):
         frame = cv2.bitwise_and(frame, frame, mask=mask)
         frame = self.foosMenDetection(frame, mode)
         frame = self.zoom_in(frame)
+        frame = self.scale(frame, 2)
+
         return frame
 
     def updateTime(self):
@@ -80,7 +81,7 @@ class Detection(DetectionSettings):
         cv2.convertScaleAbs(inverted, inverted, 3)
         # Detect ArUco markers
         (corners, ids, rejected) = self.detector.detectMarkers(inverted)
-        # cv2.aruco.drawDetectedMarkers(frame, corners, ids)
+        cv2.aruco.drawDetectedMarkers(frame, corners, ids)
         height, width, _ = frame.shape
         mid_x, mid_y = width / 2, height / 2
         if ids is not None:
@@ -116,13 +117,8 @@ class Detection(DetectionSettings):
 
         # Calculate a rotation matrix according to the rotation angle
         self.rotate_matrix = cv2.getRotationMatrix2D((self.mid_x, self.mid_y), -math.degrees(self.angle), 1)
-        print("JA HOOR")
-        print(self.rotate_matrix)
         frame = cv2.warpAffine(frame, self.rotate_matrix, frame.shape[1::-1])
         # Crop frame
-        print(self.corners[3], self.corners[2])
-        print(self.min_y, self.max_y, self.min_x, self.max_x)
-        print(self.angle, math.degrees(self.angle))
         frame = frame[self.min_y:self.max_y, self.min_x:self.max_x]
         height, width, _ = frame.shape
         self.pixel_width_cm = self.table_length / width
@@ -207,6 +203,9 @@ class Detection(DetectionSettings):
 
     def add_ball_position(self, position):
         old_position = self.ball_positions[-1]
+        if len(position) != 0:
+            self.last_known_position = position
+
         if len(position) != 0 and len(old_position) != 0:
             pixel_speed = math.sqrt((position[0]-old_position[0])**2 + (position[1]-old_position[1])**2)
 
@@ -236,14 +235,6 @@ class Detection(DetectionSettings):
         speed = self.max_ball_speed * 100 // 1 / 100
         speed_kmh = speed*3.6*100//1/100
         cv2.putText(frame, f'Max speed: {speed} m/s ({speed_kmh} km/h)', (0, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
-
-        time_fps = self.game.time
-        seconds = time_fps // self.fps % 60
-        minutes = time_fps // (self.fps*60)
-        frames = time_fps % self.fps
-        cv2.putText(frame, f'Time: {minutes}m {seconds}s {frames}f', (width//5*2, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
-
-        cv2.putText(frame, f'FPS: {self.fps}', (width//2, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
         cv2.putText(frame, f'FPS: {self.fps}', (width//4*3, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
         return frame
     
@@ -253,7 +244,7 @@ class Detection(DetectionSettings):
             return frame
 
         height, width, _ = frame.shape
-        coords = self.ball_positions[-1]
+        coords = self.last_known_position
         # Calculates window size
         size = int(width / self.zoom_levels[self.zoom])
         # Calculates x and y coordinates of window based on ball coordinates
@@ -266,6 +257,7 @@ class Detection(DetectionSettings):
         max_y = min(max(max_y, min_y + size*2), height)
 
         frame = frame[min_y:max_y, min_x:max_x]
+        frame = self.scale(frame, self.zoom_levels[self.zoom] / 3)
         return frame
 
     def foosMenDetection(self, frame, mode):
