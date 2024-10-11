@@ -15,4 +15,6 @@ class GameSettings:
         self.calibration_frames = 10
         self.fps = 60
         self.delaysec = 5
+        self.buffer_max_len = self.fps * self.delaysec
         self.buffer = deque(maxlen=(self.fps * self.delaysec))
+        self.max_speed = [1]

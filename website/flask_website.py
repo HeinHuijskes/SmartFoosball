@@ -5,10 +5,9 @@ import cv2
 from flask import request
 import threading
 
-from game.game import Game
+from backend.game import Game
 from hardware.hardware import *
 from hardware.arduino import Arduino
-from hardware.camera import *
 
 global app
 
@@ -29,14 +28,13 @@ class Website:
 
         def run(self, camera_id):
             self.camera_id = camera_id
-            self.camera = Camera(self.camera_id)
-            # self.camera = cv2.VideoCapture(self.camera_id, cv2.CAP_DSHOW)
+            self.camera = cv2.VideoCapture(self.camera_id, cv2.CAP_DSHOW)
             print("Camera initialized successfully.")
             #start arduino class
             t1 = threading.Thread(target=self.arduino.run,)
             t1.start()
             self.app.run(debug=True, threaded=True, use_reloader=False)
-            self.camera.release_camera()
+            self.camera.release()
 
 
         def generate_frames2(self, frame):
@@ -50,7 +48,7 @@ class Website:
                 frame = jpeg.tobytes()
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                 frame + b'\r\n')
-            self.camera.release_camera()
+            self.camera.release()
             cv2.destroyAllWindows()
 
         def add_goal(self, Red):
@@ -74,7 +72,7 @@ class Website:
             @self.app.route('/video_feed')
             def video_feed():
                 # print("vide_feed in website")
-                return Response(self.game.run_camera(self.camera), mimetype='multipart/x-mixed-replace; boundary=frame')
+                return Response(self.game.run_website(self.camera), mimetype='multipart/x-mixed-replace; boundary=frame')
 
             @self.app.route('/delayed_video_feed')
             def delayed_video_feed():
