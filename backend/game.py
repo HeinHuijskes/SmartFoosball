@@ -5,7 +5,6 @@ import cv2
 from backend.detection import Detection
 from backend.gameSettings import GameSettings
 from backend.misc import *
-from hardware.camera import *
 from env import *
 
 
@@ -23,11 +22,9 @@ class Game(GameSettings):
             # Scale up the width slightly to be able to detect aruco codes.
             # Don't scale up too much, since that severely impacts performance
             height, width, _ = frame.shape
-            print(f'Initial width: {width}, height: {height}')
             width = width*1.3
             self.video.set(cv2.CAP_PROP_FRAME_WIDTH, int(width))
             self.video.set(cv2.CAP_PROP_FRAME_HEIGHT, int(height))
-            print(f'Second width: {width}, height: {height}')
 
         # Find the aruco codes over multiple frames.
         # `Detection.aruco()` automatically sets the detected table size after a certain amount of frames.
@@ -63,22 +60,29 @@ class Game(GameSettings):
 
     def run_website(self, video):
         """Runs a game for website use, yielding encoded frames"""
-        self.calibrate(video)
+        self.video = video
+        self.calibrate(setup=True)
         # Set to input feed FPS
-        video.set(cv2.CAP_PROP_FPS, 60)
+        start = time.time()
         while True:
-            nextFrame, frame = self.getFrame(video)
-            # Send error image in case video feed does not work
-            if not nextFrame:
-                print("No frame")
-                frame = cv2.imread("../website/Error_mirrored.jpg")
-            frame = self.detector.detect(frame)
-            # Encode frame for website
+            end = time.time()
+            # print("start , end", start, end)
+            frame_time = end - start
+            start = time.time()
+            ret, frame = self.getFrame(self.video)
+            if frame is None:
+                print("frame none")
+                frame = cv2.imread("website/Error_mirrored.jpg")
+            frame = self.detector.detect_debug(frame)  # self.mode
+            max_speed = round(self.detector.max_ball_speed*3.6, 2)
+            if DEBUG: self.showFrame(frame)
+            # encode frame for website
             ret, jpeg = cv2.imencode('.jpg', frame)
-            self.buffer.append(jpeg)
+            self.buffer.append((jpeg, frame_time))
             if ret:
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        jpeg.tobytes() + b'\r\n')
+                self.max_speed.append(max_speed)
 
     def getFrame(self, video):
         """Reads a frame from the video input and cuts it to the correct size"""
@@ -88,19 +92,6 @@ class Game(GameSettings):
             frame = cv2.warpAffine(frame, self.detector.rotate_matrix, frame.shape[1::-1])
             frame = frame[self.detector.min_y:self.detector.max_y, self.detector.min_x:self.detector.max_x]
         return nextFrame, frame
-
-    def buffer_frames(self):
-        while True:
-            bframes = self.buffer.copy()
-            for jpeg in bframes:
-                time.sleep(0.01)
-                yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
-                       jpeg.tobytes() + b'\r\n')
-
-    def add_goal(self, Left):
-        """pass True if one goal should be added to the score of the left goal,
-        else 1 will be added to the right goal"""
-        self.website.add_goal(Left)
 
     def showFrame(self, frame):
         """Show a frame in the backend, and detect any key presses to change the behaviour of the frame."""
@@ -133,3 +124,55 @@ class Game(GameSettings):
             case 61:  # pressed '='
                 self.skip_frames = 1
         return
+
+    def buffer_frames(self):
+        time.sleep(3)
+        if len(self.buffer) == self.buffer_max_len:
+            bframes = self.buffer.copy()
+            self.buffer.clear()
+            for jpeg, frame_time in bframes:
+                # if len(self.buffer) != 0:
+                #         jpeg, frame_time = self.buffer.popleft()
+                # self.showFrame(jpeg)
+                print(frame_time, "frame_time")
+                if frame_time > 0:
+                    time.sleep(2 * frame_time)
+                    print(jpeg)
+                    yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                           jpeg.tobytes() + b'\r\n')
+                else:
+                    continue
+        while True:
+            # print("hello")
+            for i in range(self.buffer_max_len//2):
+                if len(self.buffer) !=0:
+                    # bframes = self.buffer.copy()
+                    # self.buffer.clear()
+                    # for jpeg, frame_time in bframes:
+                # if len(self.buffer) != 0:
+                        jpeg, frame_time = self.buffer.popleft()
+                        # self.showFrame(jpeg)
+                        print(frame_time, "frame_time")
+                        if frame_time > 0 :
+                            time.sleep(frame_time)
+                            print(jpeg)
+                            yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                               jpeg.tobytes() + b'\r\n')
+                        else: continue
+
+    def add_goal(self, Red):
+        "pass True if one goal should be added to the score of the left goal (RED), else 1 will be added to the right goal (BLUE)"
+        self.website.add_goal(Red)
+
+    def get_max_speed(self):
+        maxspd = self.max_speed
+        self.max_speed = [maxspd[0]]
+        return sum(maxspd)/ len(maxspd)
+
+    def reset_max_speed(self):
+        self.max_speed = [0]
+
+    def reset_game(self):
+        self.score_red = 0
+        self.score_blue = 0
+#         maybe also reset max speed
