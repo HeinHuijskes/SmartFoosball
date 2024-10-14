@@ -63,9 +63,9 @@ class Game(GameSettings):
         self.video = video
         self.calibrate(setup=True)
         # Set to input feed FPS
+        end = time.time()
         start = time.time()
         while True:
-            end = time.time()
             # print("start , end", start, end)
             frame_time = end - start
             start = time.time()
@@ -83,6 +83,7 @@ class Game(GameSettings):
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        jpeg.tobytes() + b'\r\n')
                 self.max_speed.append(max_speed)
+            end = time.time()
 
     def getFrame(self, video):
         """Reads a frame from the video input and cuts it to the correct size"""

@@ -45,7 +45,7 @@ class DetectionSettings:
         self.model = YOLO("./runs/detect/train1/weights/best.pt")
         # Set the model to GPU with CUDA to run faster
         # If this does not work, see README.md for a line on how to recompile/install pytorch with CUDA included
-        self.model.to('cuda')
+        # self.model.to('cuda')
         # The output of this print statement should be along the lines of "cuda:0", not "cpu". It indicates success
         print(self.model.device)
         # Classnames to detect. Only allow YOLO to detect the "balls" class, which was custom trained in "best.pt".
