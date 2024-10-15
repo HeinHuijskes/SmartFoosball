@@ -42,7 +42,7 @@ class Detection(DetectionSettings):
         frame = cv2.bitwise_and(frame, frame, mask=mask)
         frame = self.foosMenDetection(frame, mode)
         frame = self.zoom_in(frame)
-        frame = self.scale(frame, 0.5)
+        frame = self.scale(frame, 2)
 
         return frame
 
@@ -179,7 +179,6 @@ class Detection(DetectionSettings):
         return
 
     def ballDetectionYOLO(self, frame):
-        position = []
         result = self.model.predict(frame, verbose=False)
         if result and result[0].boxes:
             boxes = result[0].boxes
@@ -189,7 +188,7 @@ class Detection(DetectionSettings):
             x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
             w, h = x2 - x1, y2 - y1
             position = [x1 + w // 2, y1 + h // 2]
-
+            self.kalman_count = 0
         else:
             position = self.kalman()
         self.add_ball_position(position)
@@ -197,10 +196,11 @@ class Detection(DetectionSettings):
 
     def kalman(self):
         last_position = self.ball_positions[-1]
-        if len(last_position) < 3:
+        if len(last_position) < 3 or self.kalman_count > 8:
             return []
         speed_vector = last_position[3]
         prediction = [last_position[0] + speed_vector[0], last_position[1] + speed_vector[1], last_position[2], speed_vector]
+        self.kalman_count += 1
         return prediction
 
     def add_ball_position(self, position):
