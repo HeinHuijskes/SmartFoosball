@@ -7,3 +7,4 @@ yolov8n.pt
 runs/detect/*
 !runs/detect/train1
 datasets
+/yolo11n.pt
