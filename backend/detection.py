@@ -98,7 +98,8 @@ class Detection(DetectionSettings):
                         maximum = distance
                         cx = x
                         cy = y
-                self.corners[marker_id] = [cx, cy]
+                if len(corners[0][0]) == 4:
+                    self.corners[marker_id] = [cx, cy]
 
     def calibrate(self, frame):
         """Calibrate frame and rotate according to aruco corners"""
