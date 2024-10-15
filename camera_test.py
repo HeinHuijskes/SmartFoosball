@@ -7,10 +7,15 @@ def website_run(website):
     website.run(0)
 
 def arduino_run(arduino):
-    arduino.run()
+    arduino.detect()
 
 website = Website()
 website_run(website)
+
+#TODO : - speed on website (check), -webcam working (check), -left=red , -laggy delay on website, -information page
+#TODO : - start a new game on site - when goal scored https://html-shark.com/HTML/Marquee.htm
+
+
 #
 # def thread():
 #     website = Website()
