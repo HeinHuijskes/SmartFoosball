@@ -3,12 +3,15 @@ import serial
 import keyboard
 from enum import Enum
 import keyboard
+import serial.tools.list_ports
 
-arduino = False
+
+# arduino = False
 
 class Team(Enum):
     RED = 1
     BLUE = 2
+
 
 
 class Arduino:
@@ -16,13 +19,23 @@ class Arduino:
     def __init__(self, website, game, com_port='COM3'):
         self.website = website
         self.game = game
-        if arduino:
-            self.serialConnection = serial.Serial(com_port, 9600)
+        self.arduino = False
         # self.lock = Lock()
+
+        ports = list(serial.tools.list_ports.comports())
+        for p in ports:
+            # print(p)
+            if "USB-SERIAL" in p.description:
+                self.arduino = True
+                self.serialConnection = serial.Serial(p.name, 9600)
+
+        if not self.arduino:
+            print("Arduino not connected")
+
 
     def run(self):
         while True:
-            if arduino:
+            if self.arduino:
                 if self.serialConnection.in_waiting:
                     line = self.get_line()
 
@@ -53,7 +66,7 @@ class Arduino:
             self.game.add_goal(True)
 
     def get_line(self):
-        if arduino:
+        if self.arduino:
             line = self.serialConnection.readline()
             line = line.decode('ascii').strip()
             return line
