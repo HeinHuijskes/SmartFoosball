@@ -42,7 +42,7 @@ class Detection(DetectionSettings):
         frame = cv2.bitwise_and(frame, frame, mask=mask)
         frame = self.foosMenDetection(frame, mode)
         frame = self.zoom_in(frame)
-        frame = self.scale(frame, 2)
+        frame = self.scale(frame, 0.5)
 
         return frame
 
@@ -184,22 +184,24 @@ class Detection(DetectionSettings):
         if result and result[0].boxes:
             boxes = result[0].boxes
             box = boxes[0]
-
+            # confidence = box.conf
             x1, y1, x2, y2 = box.xyxy[0]
             x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
             w, h = x2 - x1, y2 - y1
             position = [x1 + w // 2, y1 + h // 2]
+
+        else:
+            position = self.kalman()
         self.add_ball_position(position)
         return frame
 
     def kalman(self):
         last_position = self.ball_positions[-1]
         if len(last_position) < 3:
-            self.add_ball_position([])
-            return
+            return []
         speed_vector = last_position[3]
         prediction = [last_position[0] + speed_vector[0], last_position[1] + speed_vector[1], last_position[2], speed_vector]
-        self.add_ball_position(prediction)
+        return prediction
 
     def add_ball_position(self, position):
         old_position = self.ball_positions[-1]
