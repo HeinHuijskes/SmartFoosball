@@ -299,3 +299,21 @@ class Detection(DetectionSettings):
         resize = (int(width * scaler), int(height * scaler))
         frame = cv2.resize(frame, resize)
         return frame
+
+    def detect_zone(self):
+        """Detect whether the ball is currently in a possession zone, and whether it has been for too long"""
+        new_zone = self.get_zone()
+        if new_zone != self.possession_zone:
+            self.possession_timer = time.time()
+        else:
+            if time.time() - self.possession_timer > 15.0:
+                print("Let go of that ball")
+        self.possession_zone = new_zone
+
+    def get_zone(self):
+        """Detect what possession zone the ball is currently in (-1 if none)"""
+        x, _ = self.last_known_position
+        for i, z in enumerate(self.zones):
+            if z[0] <= x <= z[1]:
+                return i
+        return -1

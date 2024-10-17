@@ -55,3 +55,11 @@ class DetectionSettings:
         self.blue_mask = None
         self.red_mask = None
         self.calibrated = False
+
+        # Possession zone detection settings
+        self.possession_timer = time.time()
+        self.possession_zone = -1       # Change to current possession zone, -1 for none
+
+        self.zones = 8 * [(0, 0)]
+        rod_distance = 0                # Rods seem to be equidistant from each other
+
