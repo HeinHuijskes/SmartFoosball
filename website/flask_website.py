@@ -1,3 +1,4 @@
+import logging
 import time
 
 from flask import Flask, render_template, Response, jsonify
@@ -33,7 +34,10 @@ class Website:
             #start arduino class
             t1 = threading.Thread(target=self.arduino.run,)
             t1.start()
-            self.app.run(debug=True, threaded=True, use_reloader=False)
+            log = logging.getLogger('werkzeug')
+            log.setLevel(logging.ERROR)
+            self.app.run(debug=True, threaded=True, use_reloader=False, host='0.0.0.0', port=5000)
+
             self.camera.release()
 
 

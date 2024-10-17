@@ -134,10 +134,10 @@ class Game(GameSettings):
                 # if len(self.buffer) != 0:
                 #         jpeg, frame_time = self.buffer.popleft()
                 # self.showFrame(jpeg)
-                print(frame_time, "frame_time")
+                # print(frame_time, "frame_time")
                 if frame_time > 0:
                     time.sleep(2 * frame_time)
-                    print(jpeg)
+                    # print(jpeg)
                     yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                            jpeg.tobytes() + b'\r\n')
                 else:
@@ -152,10 +152,10 @@ class Game(GameSettings):
                 # if len(self.buffer) != 0:
                         jpeg, frame_time = self.buffer.popleft()
                         # self.showFrame(jpeg)
-                        print(frame_time, "frame_time")
+                        # print(frame_time, "frame_time")
                         if frame_time > 0 :
                             time.sleep(frame_time)
-                            print(jpeg)
+                            # print(jpeg)
                             yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                                jpeg.tobytes() + b'\r\n')
                         else: continue

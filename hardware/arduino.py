@@ -26,6 +26,7 @@ class Arduino:
         for p in ports:
             # print(p)
             if "USB-SERIAL" in p.description:
+                # pass
                 self.arduino = True
                 self.serialConnection = serial.Serial(p.name, 9600)
 
