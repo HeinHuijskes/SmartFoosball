@@ -1,6 +1,7 @@
+import os
 import time
 
-from flask import Flask, render_template, Response, jsonify
+from flask import Flask, render_template, Response, jsonify, send_file
 import cv2
 from flask import request
 import threading
@@ -129,3 +130,12 @@ class Website:
                 self.game.reset_max_speed()
                 time.sleep(2)
                 return jsonify(dtext = "new game")
+
+            # @self.app.route('/website/rewind.png')
+            # def rewind_img():
+            #     return send_file("website/rewind.png", mimetype='image/gif')
+
+            @self.app.route('/website/rewind.png')
+            def rewind():
+                filep = os.path.join(os.getcwd(),'website', 'rewind.png')
+                return send_file(filep, mimetype='image/png')

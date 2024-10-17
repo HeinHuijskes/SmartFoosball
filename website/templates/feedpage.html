@@ -109,6 +109,12 @@
             document.getElementById("camera_feed_text").style.padding="9%"
 
             document.getElementById("grey_box").style.height = "auto";
+            document.getElementById("grey_box").style.backgroundColor = "transparent";
+            document.getElementById("delayed_box").style.backgroundColor = "lightgrey";
+            document.getElementById("delayed_box").style.padding = "20px";
+
+             // document.getElementById("video_feed").src = "{{ url_for('static', filename='website/rewind.png') }}";
+            document.getElementById("video_feed").src = "/website/rewind.png";
             // padding: 3%;margin-top: 5%
 
         }
@@ -133,6 +139,11 @@
              document.getElementById("camera_feed_text").style.padding="0%";
 
             document.getElementById("grey_box").style.height = "auto";
+            document.getElementById("grey_box").style.backgroundColor = "lightgrey";
+            document.getElementById("delayed_box").style.backgroundColor = "transparent";
+            document.getElementById("delayed_box").style.padding = "0px";
+
+            document.getElementById("video_feed").src ="{{ url_for('video_feed') }}";
         }
 
         // to update score
@@ -189,9 +200,12 @@
 <div id="new_center" style="max-width: 100%; display: flex">
     <div class="center_child" id="left_center_child" style="width: 19%; padding: 3%;margin-top: 5%">
         <p id="rewind" >Delayed camera feed:</p>
+        <div id="delayed_box" style="background-color: transparent; padding :20px">
         <img id="delayed_feed" src="{{ url_for('delayed_video_feed') }}" alt="Delayed Video Feed" style="object-fit: contain">
+        </div>
         <p id="but_new_game" onclick="newgame()">New game</p>
     </div>
+
     <div class="center_child" id="middle_center_child" style="width: 49%">
         <p id="camera_feed_text" style="text-align: left;margin:3%">Camera feed</p>
 <!--        // nog longer height 450 px-->
@@ -199,6 +213,7 @@
             <img id="video_feed" src="{{ url_for('video_feed') }}" alt="Video Feed" style="object-fit: contain">
             </div>
     </div>
+
     <div class="center_child" id="right_center_child" style="width: 19%; padding: 3%;margin-top: 5%" >
          <p style="text-align: left">Match score </p>
         <p id="score" style="text-align: left; font-weight: 400;"> <span style="color:steelblue"> {{scoreL}}</span> - <span style="color: indianred">{{scoreR}}</span></p>
@@ -207,31 +222,6 @@
     </div>
 </div>
 
-
-
-
-
-<!--<div class="centerbox" style="margin: auto; max-width: 50%; margin-top: 25px; margin-left: 25%">-->
-<!--    <div>-->
-<!--    <p style="text-align: left;">Camera feed</p></div>-->
-<!--    <div style="background-color: lightgray;padding: 20px; height: 400px; margin: auto; text-align: center;">-->
-<!--        <img src="{{ url_for('video_feed') }}" alt="Video Feed">-->
-<!--    </div>-->
-
-    <!-- two div boxes that split the space under the live feed-->
-
-<!--    <div style="background-color: transparent">-->
-<!--        <div style="display: inline-block; background-color: transparent; width: 50%; margin-right: 0">-->
-<!--            <p style="text-align: left">Match score </p>-->
-<!--            <p id="score" style="text-align: left; font-weight: 400;"> {{scoreL}} - {{scoreR}}</p>-->
-
-<!--    &lt;!&ndash;        <meta http-equiv="refresh" content="5">&ndash;&gt;-->
-
-<!--        </div>-->
-<!--        <div style="display: inline-block; width: 49%; margin-left: 0">-->
-<!--            <p style="text-align: left">Maximum Speed </p>-->
-<!--            <p id="speed" style="text-align: left; font-weight: 400;"> {{max_speed}}</p>-->
-<!--        </div>-->
     </div>
     <div style="width: 50%">
     </div>
