@@ -53,15 +53,15 @@
             setTimeout(function() {
             document.getElementById("marquee_outer").style.background = "lightgrey";
             document.getElementById("marquee").innerText = " "
-             }, 3000);
+             }, 4000);
             setTimeout(function() {
             document.getElementById("marquee_outer").style.background = "lightgrey";
             document.getElementById("marquee").innerText = "GOAL !  GOAL !  GOAL !"
-             }, 4000);
+             }, 6000);
             setTimeout(function() {
             document.getElementById("marquee_outer").style.background = "transparent";
             document.getElementById("marquee").innerText = " ";
-             }, 5100);
+             }, 8100);
             setTimeout(function (){
                 decreaseScreenSize()
             }, 8100); //adjust this for amount of time to see replay big, 1000 = 1sec
@@ -70,31 +70,6 @@
 
         //function to enlarge delayed video feed
         function increaseScreenSize(){
-            // document.getElementById("right_center_child").style.width = "75%";
-            // document.getElementById("right_center_child").style.paddingTop = "0";
-            // document.getElementById("right_center_child").style.padding = "1%";
-            // document.getElementById("right_center_child").style.marginTop = "1%";
-            // document.getElementById("right_center_child").style.placeItems = "center";
-            // document.getElementById("right_center_child").style.height = "450px";
-            // document.getElementById("delayed_feed").style.maxHeight = "100%";
-            // document.getElementById("delayed_feed").style.maxWidth = "100%";
-            // document.getElementById("delayed_feed").style.objectFit = "contain";
-            // document.getElementById("delayed_feed").style.Height = "100%";
-            // document.getElementById("delayed_feed").style.Width = "100%";
-            //style="width: 19%; padding: 3%;margin-top: 5%">
-
-            // // document.getElementById("delayed_feed").src = "{{ url_for('video_feed') }}"
-            // document.getElementById("video_feed").src = "{{ url_for('delayed_video_feed') }}"
-            // document.getElementById("delayed_feed").src = "{{ url_for('video_feed') }}"
-
-            // $('#video_feed').attr('src', '{{ url_for("delayed_video_feed") }}');
-           // $('#delayed_feed').attr('src', '{{ url_for("video_feed") }}');
-           // $('#video_feed').attr('alt', 'Delayed Video Feed');
-           // $('#delayed_feed').attr('alt', 'Video Feed');
-
-            //
-            // <img id="video_feed" src="{{ url_for('video_feed') }}" alt="Video Feed">
-            //     <img id="delayed_feed" src="{{ url_for('delayed_video_feed') }}" alt="Delayed Video Feed">
 
             document.getElementById("left_center_child").style.width = "40%";
             document.getElementById("middle_center_child").style.width = "20%";
@@ -111,10 +86,13 @@
             document.getElementById("grey_box").style.height = "auto";
             document.getElementById("grey_box").style.backgroundColor = "transparent";
             document.getElementById("delayed_box").style.backgroundColor = "lightgrey";
+            document.getElementById("grey_box2").style.backgroundColor = "transparent";
             document.getElementById("delayed_box").style.padding = "20px";
 
              // document.getElementById("video_feed").src = "{{ url_for('static', filename='website/rewind.png') }}";
-            document.getElementById("video_feed").src = "/website/rewind.png";
+            document.getElementById("video_feed").style.visibility = "hidden";
+            document.getElementById("grey_box2").style.visibility = "visible";
+            document.getElementById("grey_box").style.display = "none";
             // padding: 3%;margin-top: 5%
 
         }
@@ -142,8 +120,12 @@
             document.getElementById("grey_box").style.backgroundColor = "lightgrey";
             document.getElementById("delayed_box").style.backgroundColor = "transparent";
             document.getElementById("delayed_box").style.padding = "0px";
+            document.getElementById("grey_box2").style.backgroundColor = "lightgrey";
 
             document.getElementById("video_feed").src ="{{ url_for('video_feed') }}";
+            document.getElementById("video_feed").style.visibility = "visible";
+            document.getElementById("grey_box2").style.visibility = "hidden";
+            document.getElementById("grey_box").style.display = "block";
         }
 
         // to update score
@@ -209,8 +191,11 @@
     <div class="center_child" id="middle_center_child" style="width: 49%">
         <p id="camera_feed_text" style="text-align: left;margin:3%">Camera feed</p>
 <!--        // nog longer height 450 px-->
-        <div id="grey_box" style="background-color: lightgray;padding: 20px; height: auto; margin: auto; text-align: center;">
+        <div id="grey_box" style="z-index: 2; visibility: visible; background-color: lightgray;padding: 20px; height: auto; margin: auto; text-align: center;">
             <img id="video_feed" src="{{ url_for('video_feed') }}" alt="Video Feed" style="object-fit: contain">
+            </div>
+        <div id="grey_box2" style="z-index: 1; visibility: hidden; background-color: lightgray;padding: 20px; height: auto; margin: auto; text-align: center;">
+            <img id="rewind2" src="/website/rewind.png" alt="Rewind" style="object-fit: contain">
             </div>
     </div>
 
