@@ -7,11 +7,7 @@ import serial.tools.list_ports
 
 
 # arduino = False
-
-class Team(Enum):
-    RED = 1
-    BLUE = 2
-
+from hardware.mqtt_connection import Mqttserver, Team
 
 
 class Arduino:
@@ -20,6 +16,7 @@ class Arduino:
         self.website = website
         self.game = game
         self.arduino = False
+        self.mqttserver = Mqttserver()
         # self.lock = Lock()
 
         ports = list(serial.tools.list_ports.comports())
@@ -44,10 +41,12 @@ class Arduino:
                 if line == 'Goal red':
                     print("red goal")
                     self.game.add_goal(True)
+                    self.mqttserver.add_goal(Team.RED)
                     time.sleep(0.1)
                 elif line == 'Goal blue':
                     print("blue goal")
                     self.game.add_goal(False)
+                    self.mqttserver.add_goal(Team.BLUE)
                     time.sleep(0.1)
                 elif line == "reset":
                     self.game.reset_game()
@@ -55,10 +54,14 @@ class Arduino:
                 if keyboard.read_key() == "l":
                     print("pressed l")
                     self.game.add_goal(True)
+                    self.mqttserver.add_goal(Team.RED)
+
                     time.sleep(0.1)
                 if keyboard.read_key() == "r":
                     print("pressed r")
                     self.game.add_goal(False)
+                    self.mqttserver.add_goal(Team.BLUE)
+
                     time.sleep(0.1)
 
     def key_press(self):

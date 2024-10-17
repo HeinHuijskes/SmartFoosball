@@ -12,6 +12,7 @@ opencv-python = "^4.10.0.84"
 ultralytics = "^8.2.102"
 pyserial = "^3.5"
 keyboard = "^0.13.5"
+paho-mqtt = "^2.1.0"
 
 
 [build-system]
