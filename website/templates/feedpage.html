@@ -28,34 +28,24 @@
         //
         // }
 
-        function score(){ //TODO not detect goal when starting page
-            document.getElementById("marquee_outer").style.background = "lightgrey";
+        function score(color){ //TODO not detect goal when starting page
+            document.getElementById("marquee_outer").style.background = color;
             document.getElementById("marquee").innerText = "GOAL !  GOAL !  GOAL !";
-            increaseScreenSize()
-            // document.getElementById("video_feed").src = "{{ url_for('delayed_video_feed') }}";
-            // document.getElementById("delayed_feed").src = "{{ url_for('video_feed') }}";
-            // setTimeout(function() {
-            // document.getElementById("video_feed").src = "{{ url_for('delayed_video_feed') }}";
-            // document.getElementById("video_feed").alt ="Delayed Video Feed";
-            //  }, 1000);
-            // setTimeout(function() {
-            //  document.getElementById("delayed_feed").src = "{{ url_for('video_feed') }}";
-            //   document.getElementById("video_feed").alt ="Video Feed"   ;
-            //  }, 1000);
+            increaseScreenSize(color)
             setTimeout(function() {
-            document.getElementById("marquee_outer").style.background = "lightgrey";
+            document.getElementById("marquee_outer").style.background = color;
             document.getElementById("marquee").innerText = " "
              }, 1000);
             setTimeout(function() {
-            document.getElementById("marquee_outer").style.background = "lightgrey";
+            document.getElementById("marquee_outer").style.background = color;
             document.getElementById("marquee").innerText = "GOAL !  GOAL !  GOAL ! "
              }, 2000);
             setTimeout(function() {
-            document.getElementById("marquee_outer").style.background = "lightgrey";
+            document.getElementById("marquee_outer").style.background = color;
             document.getElementById("marquee").innerText = " "
              }, 4000);
             setTimeout(function() {
-            document.getElementById("marquee_outer").style.background = "lightgrey";
+            document.getElementById("marquee_outer").style.background = color;
             document.getElementById("marquee").innerText = "GOAL !  GOAL !  GOAL !"
              }, 6000);
             setTimeout(function() {
@@ -69,7 +59,7 @@
         }
 
         //function to enlarge delayed video feed
-        function increaseScreenSize(){
+        function increaseScreenSize(color){
 
             document.getElementById("left_center_child").style.width = "40%";
             document.getElementById("middle_center_child").style.width = "20%";
@@ -85,7 +75,7 @@
 
             document.getElementById("grey_box").style.height = "auto";
             document.getElementById("grey_box").style.backgroundColor = "transparent";
-            document.getElementById("delayed_box").style.backgroundColor = "lightgrey";
+            document.getElementById("delayed_box").style.backgroundColor = color;
             document.getElementById("grey_box2").style.backgroundColor = "transparent";
             document.getElementById("delayed_box").style.padding = "20px";
 
@@ -139,9 +129,9 @@
             var newscoreL= data.scoreL;
             var newscoreR = data.scoreR;
             if(oldscoreL != newscoreL && newscoreL != 0)
-                score();
+                score("steelblue");
             if(oldscoreR != newscoreR && newscoreR!= 0)
-                score();
+                score("indianred");
             });
 
 
