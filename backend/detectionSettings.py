@@ -5,6 +5,7 @@ import cv2
 
 class DetectionSettings:
     def __init__(self):
+        self.kalman_count = 0
         # Minimum and maximum amount of pixel area to consider a set of pixels a foos-man
         self.foos_men_min = 500  # px
         self.foos_men_max = 5000  # px
