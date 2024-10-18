@@ -6,6 +6,7 @@ from backend.detection import Detection
 from backend.gameSettings import GameSettings
 from backend.misc import *
 from env import *
+from hardware.mqtt_connection import Mqttserver, Team
 
 
 class Game(GameSettings):
@@ -13,6 +14,10 @@ class Game(GameSettings):
         super().__init__()
         self.detector = Detection(game=self)
         self.website = website
+        self.mqttserver = Mqttserver()
+        self.score_red = 0
+        self.score_blue = 0
+
 
     def calibrate(self, setup=False):
         """Calibrates with aruco codes. Calibrates for a set amount of frames, defined in `self.calibration_frames`."""
@@ -163,6 +168,12 @@ class Game(GameSettings):
     def add_goal(self, Red):
         "pass True if one goal should be added to the score of the left goal (RED), else 1 will be added to the right goal (BLUE)"
         self.website.add_goal(Red)
+        if Red:
+            self.score_red +=1
+            self.mqttserver.send_message(Team.RED, self.score_red)
+        else:
+            self.score_blue += 1
+            self.mqttserver.send_message(Team.BLUE, self.score_blue)
 
     def get_max_speed(self):
         maxspd = self.max_speed
@@ -175,4 +186,6 @@ class Game(GameSettings):
     def reset_game(self):
         self.score_red = 0
         self.score_blue = 0
+        self.mqttserver.send_message(Team.BLUE, 0)
+        self.mqttserver.send_message(Team.RED, 0)
 #         maybe also reset max speed
