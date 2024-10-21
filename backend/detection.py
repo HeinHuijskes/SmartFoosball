@@ -23,6 +23,7 @@ class Detection(DetectionSettings):
         self.updateTime()
         frame = self.ballDetectionYOLO(frame)
         frame = self.draw_ball_positions(frame)
+        self.detect_zone()
         frame = self.drawTexts(frame)
         return frame
 
@@ -38,11 +39,22 @@ class Detection(DetectionSettings):
         # Run regular ball detection
         frame = self.detect(frame)
 
+        # Temporary possession zone stuff
+        # height, width, _ = frame.shape
+        # for i in self.rod_middles:
+        #     frame = cv2.line(frame, (int(i / self.pixel_width_cm), 0),
+        #                      (int(i / self.pixel_width_cm), height), Colour.BLACK, 5)
+        # for i in self.zones:
+        #     frame = cv2.line(frame, (int(i[0] / self.pixel_width_cm), 0),
+        #                      (int(i[0] / self.pixel_width_cm), height), Colour.BLACK, 5)
+        #     frame = cv2.line(frame, (int(i[1] / self.pixel_width_cm), 0),
+        #                      (int(i[1] / self.pixel_width_cm), height), Colour.BLACK, 5)
+
         # Apply the colour mask to the frame
         frame = cv2.bitwise_and(frame, frame, mask=mask)
         frame = self.foosMenDetection(frame, mode)
         frame = self.zoom_in(frame)
-        frame = self.scale(frame, 2)
+        frame = self.scale(frame, 0.5)
 
         return frame
 
@@ -180,27 +192,29 @@ class Detection(DetectionSettings):
         return
 
     def ballDetectionYOLO(self, frame):
-        position = []
         result = self.model.predict(frame, verbose=False)
         if result and result[0].boxes:
             boxes = result[0].boxes
             box = boxes[0]
-
+            # confidence = box.conf
             x1, y1, x2, y2 = box.xyxy[0]
             x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
             w, h = x2 - x1, y2 - y1
             position = [x1 + w // 2, y1 + h // 2]
+            self.kalman_count = 0
+        else:
+            position = self.kalman()
         self.add_ball_position(position)
         return frame
 
     def kalman(self):
         last_position = self.ball_positions[-1]
-        if len(last_position) < 3:
-            self.add_ball_position([])
-            return
+        if len(last_position) < 3 or self.kalman_count > 8:
+            return []
         speed_vector = last_position[3]
         prediction = [last_position[0] + speed_vector[0], last_position[1] + speed_vector[1], last_position[2], speed_vector]
-        self.add_ball_position(prediction)
+        self.kalman_count += 1
+        return prediction
 
     def add_ball_position(self, position):
         old_position = self.ball_positions[-1]
@@ -299,3 +313,22 @@ class Detection(DetectionSettings):
         resize = (int(width * scaler), int(height * scaler))
         frame = cv2.resize(frame, resize)
         return frame
+
+    def detect_zone(self):
+        """Detect whether the ball is currently in a possession zone, and whether it has been for too long"""
+        if not self.last_known_position == [0, 0]:
+            new_zone = self.get_zone()
+            if new_zone != self.possession_zone or new_zone == -1:
+                self.possession_timer = time.time()
+            else:
+                if time.time() - self.possession_timer > 15.0:
+                    print("Let go of that ball!!!")
+            self.possession_zone = new_zone
+
+    def get_zone(self):
+        """Detect what possession zone the ball is currently in (-1 if none)"""
+        x = self.last_known_position[0] * self.pixel_width_cm
+        for i, z in enumerate(self.zones):
+            if z[0] <= x <= z[1]:
+                return i
+        return -1

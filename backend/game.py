@@ -5,6 +5,7 @@ import cv2
 from backend.detection import Detection
 from backend.gameSettings import GameSettings
 from backend.misc import *
+from hardware.camera import *
 from env import *
 from hardware.mqtt_connection import Mqttserver, Team
 
@@ -68,26 +69,25 @@ class Game(GameSettings):
         self.video = video
         self.calibrate(setup=True)
         # Set to input feed FPS
+        end = time.time()
         start = time.time()
         while True:
-            end = time.time()
-            # print("start , end", start, end)
             frame_time = end - start
             start = time.time()
-            ret, frame = self.getFrame(self.video)
-            if frame is None:
-                print("frame none")
-                frame = cv2.imread("website/Error_mirrored.jpg")
-            frame = self.detector.detect_debug(frame)  # self.mode
-            max_speed = round(self.detector.max_ball_speed*3.6, 2)
-            if DEBUG: self.showFrame(frame)
-            # encode frame for website
+            nextFrame, frame = self.getFrame(video)
+            # Send error image in case video feed does not work
+            if not nextFrame:
+                print("No frame")
+                frame = cv2.imread("../website/Error_mirrored.jpg")
+            frame = self.detector.detect(frame)
+            # Encode frame for website
             ret, jpeg = cv2.imencode('.jpg', frame)
             self.buffer.append((jpeg, frame_time))
             if ret:
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        jpeg.tobytes() + b'\r\n')
                 self.max_speed.append(max_speed)
+            end = time.time()
 
     def getFrame(self, video):
         """Reads a frame from the video input and cuts it to the correct size"""
@@ -97,6 +97,19 @@ class Game(GameSettings):
             frame = cv2.warpAffine(frame, self.detector.rotate_matrix, frame.shape[1::-1])
             frame = frame[self.detector.min_y:self.detector.max_y, self.detector.min_x:self.detector.max_x]
         return nextFrame, frame
+
+    def buffer_frames(self):
+        while True:
+            bframes = self.buffer.copy()
+            for jpeg in bframes:
+                time.sleep(0.01)
+                yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                       jpeg.tobytes() + b'\r\n')
+
+    def add_goal(self, Left):
+        """pass True if one goal should be added to the score of the left goal,
+        else 1 will be added to the right goal"""
+        self.website.add_goal(Left)
 
     def showFrame(self, frame):
         """Show a frame in the backend, and detect any key presses to change the behaviour of the frame."""
