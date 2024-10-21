@@ -1,6 +1,14 @@
 #include <OneButton.h>
+#include "FastLED.h"
 #define BUTTON_PIN 26
 #define DELAY 2000
+#define DATA_PIN 2
+#define NUM_LEDS 60
+CRGB leds[NUM_LEDS];
+
+uint8_t gHue = 0;
+
+TaskHandle_t Task1;
 
 int sensorPinBlue = 34; //define analog pin 2
 int sensorPinRed = 35; //define analog pin 3
@@ -25,6 +33,19 @@ void setup() {
   Serial.print("Red treshold is: ");
   Serial.println(tresholdRed);
 
+  pinMode(DATA_PIN, OUTPUT);
+  LEDS.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
+  LEDS.setBrightness(64);
+
+  xTaskCreatePinnedToCore(
+      lightLoop, /* Function to implement the task */
+      "Lights", /* Name of the task */
+      10000,  /* Stack size in words */
+      NULL,  /* Task input parameter */
+      0,  /* Priority of the task */
+      &Task1,  /* Task handle. */
+      0); /* Core where the task should run */
+
 
   Serial.println("start");
 
@@ -45,7 +66,7 @@ void checkGoal(int sensorPin, int *counter, String team, int treshold) {
   if (value >= treshold) {
     (*counter)++;
 
-    if (*counter >= 6){
+    if (*counter >= 12){
       Serial.println("Goal " + team);
       *counter = 0;
       Serial.println(value);
