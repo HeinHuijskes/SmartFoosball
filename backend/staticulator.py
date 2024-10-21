@@ -28,4 +28,3 @@ class Staticulator(StaticulatorSettings):
         else:
             percentage = round(red_total / (blue_total + red_total) * 100, 2)
             print(f'Red possessed the ball the most this game, with a percentage of {percentage}%')
-

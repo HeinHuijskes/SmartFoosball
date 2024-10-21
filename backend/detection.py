@@ -22,8 +22,11 @@ class Detection(DetectionSettings):
         """
         self.updateTime()
         frame = self.ballDetectionYOLO(frame)
-        frame = self.draw_ball_positions(frame)
         self.detect_zone()
+        kicked = self.detect_kick()
+        if kicked:
+            print(self.find_kicker(frame))
+        frame = self.draw_ball_positions(frame)
         frame = self.drawTexts(frame)
         return frame
 
@@ -41,9 +44,6 @@ class Detection(DetectionSettings):
 
         # Temporary possession zone stuff
         # height, width, _ = frame.shape
-        # for i in self.rod_middles:
-        #     frame = cv2.line(frame, (int(i / self.pixel_width_cm), 0),
-        #                      (int(i / self.pixel_width_cm), height), Colour.BLACK, 5)
         # for i in self.zones:
         #     frame = cv2.line(frame, (int(i[0] / self.pixel_width_cm), 0),
         #                      (int(i[0] / self.pixel_width_cm), height), Colour.BLACK, 5)
@@ -52,9 +52,9 @@ class Detection(DetectionSettings):
 
         # Apply the colour mask to the frame
         frame = cv2.bitwise_and(frame, frame, mask=mask)
-        frame = self.foosMenDetection(frame, mode)
+        frame, _ = self.foosMenDetection(frame, mode)
         frame = self.zoom_in(frame)
-        frame = self.scale(frame, 0.5)
+        frame = self.scale(frame, 0.7)
 
         return frame
 
@@ -83,7 +83,7 @@ class Detection(DetectionSettings):
             # Apply no colour masks
             return None
         return mask
-    
+
     def aruco(self, frame):
         """Find the ArUco corners on a frame and store them"""
         # Convert to grayscale, invert colours
@@ -212,7 +212,8 @@ class Detection(DetectionSettings):
         if len(last_position) < 3 or self.kalman_count > 8:
             return []
         speed_vector = last_position[3]
-        prediction = [last_position[0] + speed_vector[0], last_position[1] + speed_vector[1], last_position[2], speed_vector]
+        prediction = [last_position[0] + speed_vector[0], last_position[1] + speed_vector[1], last_position[2],
+                      speed_vector]
         self.kalman_count += 1
         return prediction
 
@@ -222,13 +223,13 @@ class Detection(DetectionSettings):
             self.last_known_position = position
 
         if len(position) != 0 and len(old_position) != 0:
-            pixel_speed = math.sqrt((position[0]-old_position[0])**2 + (position[1]-old_position[1])**2)
+            pixel_speed = math.sqrt((position[0] - old_position[0]) ** 2 + (position[1] - old_position[1]) ** 2)
 
             speed = pixel_speed * self.pixel_width_cm / 100 * self.fps
             position.append(pixel_speed)
             if speed > self.max_ball_speed and self.pixel_width_cm != 0:
                 self.max_ball_speed = speed
-            position.append((position[0]-old_position[0], position[1]-old_position[1]))
+            position.append((position[0] - old_position[0], position[1] - old_position[1]))
         self.ball_positions.append(position)
         return
 
@@ -248,11 +249,11 @@ class Detection(DetectionSettings):
 
         height, width, _ = frame.shape
         speed = self.max_ball_speed * 100 // 1 / 100
-        speed_kmh = speed*3.6*100//1/100
+        speed_kmh = speed * 3.6 * 100 // 1 / 100
         cv2.putText(frame, f'Max speed: {speed} m/s ({speed_kmh} km/h)', (0, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
-        cv2.putText(frame, f'FPS: {self.fps}', (width//4*3, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
+        cv2.putText(frame, f'FPS: {self.fps}', (width // 4 * 3, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
         return frame
-    
+
     def zoom_in(self, frame):
         """Zooms in on the ball with specified zoom level"""
         if self.zoom == 0:
@@ -264,12 +265,12 @@ class Detection(DetectionSettings):
         size = int(width / self.zoom_levels[self.zoom])
         # Calculates x and y coordinates of window based on ball coordinates
         min_x, max_x = coords[0] - size, coords[0] + size
-        min_x = max(min(min_x, max_x - size*2), 0)
-        max_x = min(max(max_x, min_x + size*2), width)
+        min_x = max(min(min_x, max_x - size * 2), 0)
+        max_x = min(max(max_x, min_x + size * 2), width)
 
         min_y, max_y, = coords[1] - size, coords[1] + size
-        min_y = max(min(min_y, max_y - size*2), 0)
-        max_y = min(max(max_y, min_y + size*2), height)
+        min_y = max(min(min_y, max_y - size * 2), 0)
+        max_y = min(max(max_y, min_y + size * 2), height)
 
         frame = frame[min_y:max_y, min_x:max_x]
         frame = self.scale(frame, self.zoom_levels[self.zoom] / 3)
@@ -278,10 +279,10 @@ class Detection(DetectionSettings):
     def foosMenDetection(self, frame, mode):
         """Looks for blue and red, and returns their outlines on the frame."""
         if not mode == Mode.RED:
-            frame, _ = self.contour_frame(frame, self.blue_mask, self.foos_men_min, self.foos_men_max, Contour.BLUE)
+            frame, contours = self.contour_frame(frame, self.blue_mask, self.foos_men_min, self.foos_men_max, Contour.BLUE)
         if not mode == Mode.BLUE:
-            frame, _ = self.contour_frame(frame, self.red_mask, self.foos_men_min, self.foos_men_max, Contour.RED)
-        return frame
+            frame, contours = self.contour_frame(frame, self.red_mask, self.foos_men_min, self.foos_men_max, Contour.RED)
+        return frame, contours
 
     def contour_frame(self, frame, mask, area_min=100, area_max=1000, contour_colour=Contour.BLACK):
         """Colour all contours in a mask depending on a minimum and maximum area.
@@ -318,11 +319,13 @@ class Detection(DetectionSettings):
         """Detect whether the ball is currently in a possession zone, and whether it has been for too long"""
         if not self.last_known_position == [0, 0]:
             new_zone = self.get_zone()
+            # If in a new zone, reset possession timer and note statistics
             if new_zone != self.possession_zone or new_zone == -1:
                 if self.possession_zone != -1:
                     self.possessions[self.possession_zone] += time.time() - self.possession_timer
                 self.possession_timer = time.time()
             else:
+                # If not in a new zone, check for possession violation
                 if time.time() - self.possession_timer > 15.0:
                     print("Let go of that ball!!!")
             self.possession_zone = new_zone
@@ -334,3 +337,59 @@ class Detection(DetectionSettings):
             if z[0] <= x <= z[1]:
                 return i
         return -1
+
+    def detect_kick(self):
+        """Detect when the ball has been kicked by a significant change in speed vector"""
+        if len(self.ball_positions[-1]) > 2 and len(self.ball_positions[-2]) > 2:
+            x, y = self.ball_positions[-1][3]
+            old_x, old_y = self.ball_positions[-2][3]
+            # Set x and/or y to 1 to prevent division by 0
+            if x == 0:
+                x = 1
+            if y == 0:
+                y = 1
+            # Difference between old and new speed vector
+            x_diff = abs((x - old_x) / x)
+            y_diff = abs((y - old_y) / y)
+            # Return true if significant difference in vectors
+            if (x_diff > 5.0 or y_diff > 5.0) and self.possession_zone != -1:
+                print(self.possession_zone)
+                self.last_kick_position = self.ball_positions[-1]
+                return True
+        return False
+
+    def find_kicker(self, frame):
+        """Find the foosman who last kicked the ball"""
+        ball_y = self.last_kick_position[1]
+        z = self.possession_zone
+        
+        # Check which side has possession of the ball, then retrieve contours for that colour
+        mode = Mode.RED
+        if z in [0, 1, 3, 5]:  # blue
+            mode = Mode.BLUE
+        _, contours = self.foosMenDetection(frame, mode)
+
+        foos_men = []
+        zone = (self.zones[z][0] / self.pixel_width_cm, self.zones[z][1] / self.pixel_width_cm)
+        # Loop over the contours and filter those that lie in the correct zone
+        for contour in contours:
+            x, y, w, h = cv2.boundingRect(contour)
+            if zone[0] < (x + w/2) < zone[1]:
+                foos_men.append(y + h/2)
+
+        if len(foos_men) == 0:
+            return "Impossible"  # No foos_man detected in this zone
+        foos_men = sorted(foos_men)  # Sort the foos_men y-positions large to small
+
+        best_y = abs(foos_men[0] - ball_y)
+        index = 0
+        # Loop over the candidates in the right zone, and find the one closest to the ball
+        for i, y in enumerate(foos_men[1:]):
+            test_y = abs(y - ball_y)
+            if test_y < best_y:
+                best_y = test_y
+                index = i+1
+
+        # Crop the index to avoid index overflow in case too many players are detected
+        index = min(index, len(self.game.staticulator.players[z])-1)
+        return self.game.staticulator.players[z][index]

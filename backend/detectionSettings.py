@@ -31,7 +31,7 @@ class DetectionSettings:
 
         # Ball variables
         # Amount of last known ball positions to store
-        self.ball_frames = 10
+        self.ball_frames = 100
         # Last known ball positions, [[x,y], [x,y], ...]
         self.ball_positions = [[]] * (self.ball_frames + 1)  # [[px, px]]
         self.max_ball_speed = 0  # m/s
@@ -69,5 +69,8 @@ class DetectionSettings:
             rod_middles.append(rod_middles[-1] + rod_distance)
         for i in range(len(self.zones)):
             self.zones[i] = (rod_middles[i] - zone_range, rod_middles[i] + zone_range)
-
+        # Timer for possession times by each rod
         self.possessions = 8 * [0.0]
+        # Last rod to kick the ball
+        self.last_kick_position = None
+        self.kickers = []  # TODO: Empty when a goal is made

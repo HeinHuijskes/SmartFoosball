@@ -82,7 +82,7 @@ class Game(GameSettings):
             if ret:
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        jpeg.tobytes() + b'\r\n')
-                # self.max_speed.append(max_speed)  TODO: ????????
+                self.max_speed.append(self.detector.max_ball_speed)
             end = time.time()
 
     def getFrame(self, video):
