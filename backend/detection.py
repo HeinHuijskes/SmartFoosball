@@ -319,6 +319,8 @@ class Detection(DetectionSettings):
         if not self.last_known_position == [0, 0]:
             new_zone = self.get_zone()
             if new_zone != self.possession_zone or new_zone == -1:
+                if self.possession_zone != -1:
+                    self.possessions[self.possession_zone] += time.time() - self.possession_timer
                 self.possession_timer = time.time()
             else:
                 if time.time() - self.possession_timer > 15.0:

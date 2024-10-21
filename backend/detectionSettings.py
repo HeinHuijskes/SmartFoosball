@@ -64,12 +64,10 @@ class DetectionSettings:
         self.zones = 8 * [(0, 0)]
         rod_distance = 15               # Rods seem to be equidistant from each other
         zone_range = 6
-        self.rod_middles = [11]
+        rod_middles = [11]
         for i in range(len(self.zones) - 1):
-            self.rod_middles.append(self.rod_middles[-1] + rod_distance)
-        print(self.rod_middles)
+            rod_middles.append(rod_middles[-1] + rod_distance)
         for i in range(len(self.zones)):
-            self.zones[i] = (self.rod_middles[i] - 6, self.rod_middles[i] + 6)
+            self.zones[i] = (rod_middles[i] - zone_range, rod_middles[i] + zone_range)
 
-        print(self.zones)
-
+        self.possessions = 8 * [0.0]
