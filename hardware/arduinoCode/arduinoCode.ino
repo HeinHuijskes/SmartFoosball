@@ -10,8 +10,8 @@
 #define NUM_LEDS 60
 
 //Sensor
-int sensorPinBlue = 34; //define analog pin 2
-int sensorPinRed = 35; //define analog pin 3
+int sensorPinBlue = 35; //define analog pin 2
+int sensorPinRed = 34; //define analog pin 3
 // int valueBlue = 0;
 int counterBlue = 0;
 int counterRed = 0;
@@ -52,6 +52,7 @@ void setup() {
   tresholdBlue = getTreshold(sensorPinBlue);
   tresholdRed = getTreshold(sensorPinRed);
 
+
   Serial.print("Blue treshold is: ");
   Serial.println(tresholdBlue);
   Serial.print("Red treshold is: ");
@@ -75,8 +76,15 @@ void setup() {
 
   connect_wifi();
   mqtt_client.setServer(mqtt_server, 1883);  // Port 1883 for non-SSL MQTT
+  reconnect();
+  mqtt_client.publish(mqtt_topic_red, String(score_red).c_str());
+  mqtt_client.publish(mqtt_topic_blue, String(score_blue).c_str());
+
+
 
   Serial.println("start");
+
+
 
 }
 
@@ -111,7 +119,7 @@ void checkGoal(int sensorPin, int *counter, String team, int treshold) {
 
       }
       *counter = 0;
-      Serial.println(value);
+      // Serial.println(value);
       delay(DELAY);
     }
   } else {
