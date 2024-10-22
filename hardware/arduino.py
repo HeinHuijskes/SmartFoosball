@@ -1,3 +1,4 @@
+import random
 import time
 import serial
 import keyboard
@@ -5,12 +6,17 @@ from enum import Enum
 import keyboard
 import serial.tools.list_ports
 
+from hardware.mqtt_connection import Mqttserver, Team
+
+
 class Arduino:
 
     def __init__(self, website, game, com_port='COM3'):
         self.website = website
         self.game = game
         self.arduino = False
+        self.mqtt = Mqttserver(None, True)
+
         # self.lock = Lock()
 
         ports = list(serial.tools.list_ports.comports())
@@ -43,13 +49,19 @@ class Arduino:
                 elif line == "reset":
                     self.game.reset_game()
             else:
+                #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!only for testing
                 if keyboard.read_key() == "l":
                     print("pressed l")
-                    self.game.add_goal(True)
+                    score = int(self.game.score_red) +1
+                    self.mqtt.send_message(Team.RED,score)
+                    # self.game.add_goal(True)
                     time.sleep(0.1)
                 if keyboard.read_key() == "r":
                     print("pressed r")
-                    self.game.add_goal(False)
+                    score = int(self.game.score_blue)+1
+                    self.mqtt.send_message(Team.BLUE,score)
+
+                    # self.game.add_goal(False)
                     time.sleep(0.1)
 
     def key_press(self):
