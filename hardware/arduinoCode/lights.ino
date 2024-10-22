@@ -4,7 +4,7 @@ void my_fill_solid(struct CRGB * leds, int numToFill, const struct CRGB& color) 
   }
 }
 
-void my_fill_solid_2(CHSV color) {
+void my_fill_solid_2(CRGB color) {
   for (int i = 0; i < NUM_LEDS; i++) {
     leds[i] = color;
   }
@@ -22,6 +22,7 @@ void lightLoop(void * parameter) {
     // CHSV color = CHSV(gHue, 255, 255); //rainbow :D
     CHSV red = CHSV(0, 255, 255);   // Red color in HSV
     CHSV blue = CHSV(160, 255, 255);  // Fully saturated, bright blue
+    CRGB white = CRGB(255, 128, 100);
 
 
     // resets
@@ -31,12 +32,13 @@ void lightLoop(void * parameter) {
     // also resets
     //  my_fill_solid_2(color);
     // works();
-    waveUp(red, blue);
-    blinkAmount(red, blue, 3);
-    waveDown(red, blue);
-    waveUp(blue, red);
-    blinkAmount(blue, red, 3);
-    waveDown(blue, red);
+    // waveUp(red, blue);
+    // blinkAmount(red, blue, 3);
+    // waveDown(red, blue);
+    // waveUp(blue, red);
+    // blinkAmount(blue, red, 3);
+    // waveDown(blue, red);
+    my_fill_solid_2(white);
     FastLED.show();
     // delay(8); // also resets without this delay
     gHue++;
