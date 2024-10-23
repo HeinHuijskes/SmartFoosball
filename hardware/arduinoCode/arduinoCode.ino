@@ -7,7 +7,7 @@
 #define BUTTON_PIN 26
 #define DELAY 2000
 #define DATA_PIN 2
-#define NUM_LEDS 60
+#define NUM_LEDS 150
 
 //Sensor
 int sensorPinBlue = 35; //define analog pin 2
@@ -24,6 +24,12 @@ OneButton resetButton;
 uint8_t gHue = 0;
 CRGB leds[NUM_LEDS];
 TaskHandle_t Task1;
+
+//basic colors
+CRGB red = CRGB(255, 0, 0);
+CRGB blue = CRGB(0, 0, 255);
+CRGB white = CRGB(255, 128, 100);
+CRGB black = CRGB(0, 0, 0);
 
 //wifi connection
 const char* ssid = "IoT Cyberlab Zi2070 experiments";
@@ -60,19 +66,7 @@ void setup() {
 
   pinMode(DATA_PIN, OUTPUT);
   LEDS.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
-  LEDS.setBrightness(64);
-
-  xTaskCreatePinnedToCore(
-      lightLoop, /* Function to implement the task */
-      "Lights", /* Name of the task */
-      10000,  /* Stack size in words */
-      NULL,  /* Task input parameter */
-      0,  /* Priority of the task */
-      &Task1,  /* Task handle. */
-      0); /* Core where the task should run */
-
-
-
+  LEDS.setBrightness(255);
 
   connect_wifi();
   mqtt_client.setServer(mqtt_server, 1883);  // Port 1883 for non-SSL MQTT
@@ -82,6 +76,7 @@ void setup() {
 
 
 
+  waveUp(white, CRGB(0, 0, 0));
   Serial.println("start");
 
 
@@ -113,9 +108,27 @@ void checkGoal(int sensorPin, int *counter, String team, int treshold) {
         score_red++;
         mqtt_client.publish(mqtt_topic_red, String(score_red).c_str());
 
+        xTaskCreatePinnedToCore(
+        goalRedLights, /* Function to implement the task */
+        "Red goal lights", /* Name of the task */
+        10000,  /* Stack size in words */
+        (void *) &red,  /* Task input parameter */
+        0,  /* Priority of the task */
+        &Task1,  /* Task handle. */
+        0); /* Core where the task should run */
+
       } else {
         score_blue++;
         mqtt_client.publish(mqtt_topic_blue, String(score_blue).c_str());
+
+        xTaskCreatePinnedToCore(
+        goalBlueLights, /* Function to implement the task */
+        "Blue goal lights", /* Name of the task */
+        10000,  /* Stack size in words */
+        (void *) &blue,  /* Task input parameter */
+        0,  /* Priority of the task */
+        &Task1,  /* Task handle. */
+        0); /* Core where the task should run */
 
       }
       *counter = 0;
@@ -179,5 +192,7 @@ void handleReset() {
   score_red = 0;
   mqtt_client.publish(mqtt_topic_red, String(score_red).c_str());
   mqtt_client.publish(mqtt_topic_blue, String(score_blue).c_str());
+  waveDown(black, white);
+  waveUp(white, black);
 
 }
