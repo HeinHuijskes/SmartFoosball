@@ -7,7 +7,7 @@
 #define BUTTON_PIN 26
 #define DELAY 2000
 #define DATA_PIN 2
-#define NUM_LEDS 150
+#define NUM_LEDS 300
 
 //Sensor
 int sensorPinBlue = 35; //define analog pin 2
@@ -55,15 +55,6 @@ void setup() {
   resetButton = OneButton(BUTTON_PIN, true, true);
   resetButton.attachPress(handleReset);
 
-  tresholdBlue = getTreshold(sensorPinBlue);
-  tresholdRed = getTreshold(sensorPinRed);
-
-
-  Serial.print("Blue treshold is: ");
-  Serial.println(tresholdBlue);
-  Serial.print("Red treshold is: ");
-  Serial.println(tresholdRed);
-
   pinMode(DATA_PIN, OUTPUT);
   LEDS.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
   LEDS.setBrightness(255);
@@ -74,13 +65,11 @@ void setup() {
   mqtt_client.publish(mqtt_topic_red, String(score_red).c_str());
   mqtt_client.publish(mqtt_topic_blue, String(score_blue).c_str());
 
-
+  tresholdBlue = getTreshold(sensorPinBlue);
+  tresholdRed = getTreshold(sensorPinRed);
 
   waveUp(white, CRGB(0, 0, 0));
   Serial.println("start");
-
-
-
 }
 
 void loop() {
@@ -132,7 +121,7 @@ void checkGoal(int sensorPin, int *counter, String team, int treshold) {
 
       }
       *counter = 0;
-      // Serial.println(value);
+      Serial.println(value);
       delay(DELAY);
     }
   } else {
@@ -144,11 +133,18 @@ int getTreshold(int sensorPin) {
   int iterations = 10;
   int total = 0;
 
+
   for (int i = 0; i < iterations; i++) {
     total += analogRead(sensorPin);
   }
 
-  return (total/iterations) * 1.1;
+  int treshold = (total/iterations) * 1.1;
+
+  Serial.print("treshold is: ");
+  Serial.println(treshold);
+
+  return treshold;
+
 }
 
 void reconnect() {
