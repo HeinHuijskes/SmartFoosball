@@ -5,6 +5,7 @@ import numpy as np
 from backend.detectionSettings import DetectionSettings
 import time
 from backend.misc import Mode, Contour, Colour
+from playsound import playsound
 
 
 class Detection(DetectionSettings):
@@ -25,7 +26,10 @@ class Detection(DetectionSettings):
         self.detect_zone()
         kicked = self.detect_kick()
         if kicked:
-            print(self.find_kicker(frame))
+            kicker = self.find_kicker(frame)
+            if kicker == "Dennis Bergkamp":
+                playsound('data/fifa/Voicy_Dennis Bergkamp Goal.mp3')
+            print(kicker)
         frame = self.draw_ball_positions(frame)
         frame = self.drawTexts(frame)
         return frame
@@ -54,7 +58,7 @@ class Detection(DetectionSettings):
         frame = cv2.bitwise_and(frame, frame, mask=mask)
         frame, _ = self.foosMenDetection(frame, mode)
         frame = self.zoom_in(frame)
-        frame = self.scale(frame, 0.7)
+        frame = self.scale(frame, 2)
 
         return frame
 
