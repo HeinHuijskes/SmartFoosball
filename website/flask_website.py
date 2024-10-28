@@ -8,7 +8,6 @@ import threading
 
 from backend.game import Game
 from hardware.hardware import *
-from hardware.arduino import Arduino
 from hardware.mqtt_connection import Mqttserver
 
 global app
@@ -25,19 +24,12 @@ class Website:
             self.game = Game(self)
             self.mqttserver = Mqttserver(self.game,False)
             print("here")
-
-            # self.scoreL = 0
-            # self.scoreR = 0
-            self.arduino = Arduino(self, self.game)
             self.max_speed = 0
 
         def run(self, camera_id):
             self.camera_id = camera_id
             self.camera = cv2.VideoCapture(self.camera_id, cv2.CAP_DSHOW)
             print("Camera initialized successfully.")
-            #start arduino class
-            t1 = threading.Thread(target=self.arduino.run,)
-            t1.start()
             log = logging.getLogger('werkzeug')
             log.setLevel(logging.ERROR)
             self.app.run(debug=True, threaded=True, use_reloader=False, host='0.0.0.0', port=5000)
@@ -91,8 +83,7 @@ class Website:
             #routing to the website pages
             @self.app.route('/feedpage.html')
             def feedpage():
-                # self.arduino.run()
-                # print("feedpage in website")
+                print("feedpage in website")
                 return render_template('feedpage.html', scoreL = self.game.score_red, scoreR= self.game.score_blue, max_speed = self.max_speed)
 
             @self.app.route('/index.html')
@@ -105,7 +96,6 @@ class Website:
 
             @self.app.route('/infopage.html')
             def infopage():
-                # self.arduino.run()
                 return render_template('infopage.html')
 
 
