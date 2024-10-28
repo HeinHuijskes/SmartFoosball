@@ -6,12 +6,16 @@
 
 #define BUTTON_PIN 26
 #define DELAY 2000
-#define DATA_PIN 2
-#define NUM_LEDS 300
+#define LED_PIN_BLUE 2
+#define LED_PIN_TOP 5
+#define LED_PIN_RED 13
+#define NUM_LEDS_BLUE 100
+#define NUM_LEDS_RED 100
+#define NUM_LEDS_TOP 37
 
 //Sensor
-int sensorPinBlue = 35; //define analog pin 2
-int sensorPinRed = 34; //define analog pin 3
+int sensorPinBlue = 35;  //define analog pin 2
+int sensorPinRed = 34;   //define analog pin 3
 // int valueBlue = 0;
 int counterBlue = 0;
 int counterRed = 0;
@@ -22,7 +26,10 @@ OneButton resetButton;
 
 //LEDs
 uint8_t gHue = 0;
-CRGB leds[NUM_LEDS];
+CRGB ledsBlue[NUM_LEDS_BLUE];
+CRGB ledsRed[NUM_LEDS_RED];
+CRGB ledsTop[NUM_LEDS_TOP];
+
 TaskHandle_t Task1;
 
 //basic colors
@@ -30,6 +37,9 @@ CRGB red = CRGB(255, 0, 0);
 CRGB blue = CRGB(0, 0, 255);
 CRGB white = CRGB(255, 128, 100);
 CRGB black = CRGB(0, 0, 0);
+CRGB green = CRGB(0, 255, 0);
+CRGB pink = CRGB(255, 0, 64);
+// CRGB pink = CRGB::Pink;
 
 //wifi connection
 const char* ssid = "IoT Cyberlab Zi2070 experiments";
@@ -40,8 +50,8 @@ WiFiClientSecure client;
 const char* mqtt_server = "192.168.11.121";
 const char* mqtt_user = "voetbal_tafel";
 const char* mqtt_pass = "voetbal_tafel";
-const char* mqtt_topic_red = "sign/foosball/red";          // MQTT topic to publish messages
-const char* mqtt_topic_blue = "sign/foosball/blue";          // MQTT topic to publish messages
+const char* mqtt_topic_red = "sign/foosball/red";    // MQTT topic to publish messages
+const char* mqtt_topic_blue = "sign/foosball/blue";  // MQTT topic to publish messages
 WiFiClient espClient;
 PubSubClient mqtt_client(espClient);
 
@@ -51,12 +61,16 @@ int score_blue = 0;
 
 
 void setup() {
-	Serial.begin(9600);
+  Serial.begin(9600);
   resetButton = OneButton(BUTTON_PIN, true, true);
   resetButton.attachPress(handleReset);
 
-  pinMode(DATA_PIN, OUTPUT);
-  LEDS.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
+  pinMode(LED_PIN_BLUE, OUTPUT);
+  pinMode(LED_PIN_TOP, OUTPUT);
+  pinMode(LED_PIN_RED, OUTPUT);
+  LEDS.addLeds<WS2812B, LED_PIN_BLUE, GRB>(ledsBlue, NUM_LEDS_BLUE);
+  LEDS.addLeds<WS2812B, LED_PIN_RED, GRB>(ledsRed, NUM_LEDS_RED);
+  LEDS.addLeds<WS2812B, LED_PIN_TOP, GRB>(ledsTop, NUM_LEDS_TOP);
   LEDS.setBrightness(255);
 
   connect_wifi();
@@ -65,10 +79,11 @@ void setup() {
   mqtt_client.publish(mqtt_topic_red, String(score_red).c_str());
   mqtt_client.publish(mqtt_topic_blue, String(score_blue).c_str());
 
+  waveUp(white, white, white);
   tresholdBlue = getTreshold(sensorPinBlue);
   tresholdRed = getTreshold(sensorPinRed);
+  waveDown(blue, red, 0);
 
-  waveUp(white, CRGB(0, 0, 0));
   Serial.println("start");
 }
 
@@ -85,44 +100,49 @@ void loop() {
   // Serial.println(analogRead(sensorPinRed));
 }
 
-void checkGoal(int sensorPin, int *counter, String team, int treshold) {
+void checkGoal(int sensorPin, int* counter, String team, int treshold) {
   int value = analogRead(sensorPin);
+  // Serial.printf("%s: %d\n", team, value);
+  delay(1);
 
   if (value >= treshold) {
     (*counter)++;
 
-    if (*counter >= 12){
+    if (*counter >= 12) {
       Serial.println("Goal " + team);
-      if (team == "red"){
+      if (team == "red") {
         score_red++;
         mqtt_client.publish(mqtt_topic_red, String(score_red).c_str());
 
         xTaskCreatePinnedToCore(
-        goalRedLights, /* Function to implement the task */
-        "Red goal lights", /* Name of the task */
-        10000,  /* Stack size in words */
-        (void *) &red,  /* Task input parameter */
-        0,  /* Priority of the task */
-        &Task1,  /* Task handle. */
-        0); /* Core where the task should run */
+          goalRedLights,     /* Function to implement the task */
+          "Red goal lights", /* Name of the task */
+          100000,            /* Stack size in words */
+          (void*)&red,       /* Task input parameter */
+          0,                 /* Priority of the task */
+          &Task1,            /* Task handle. */
+          0);                /* Core where the task should run */
 
       } else {
         score_blue++;
         mqtt_client.publish(mqtt_topic_blue, String(score_blue).c_str());
 
         xTaskCreatePinnedToCore(
-        goalBlueLights, /* Function to implement the task */
-        "Blue goal lights", /* Name of the task */
-        10000,  /* Stack size in words */
-        (void *) &blue,  /* Task input parameter */
-        0,  /* Priority of the task */
-        &Task1,  /* Task handle. */
-        0); /* Core where the task should run */
-
+          goalBlueLights,     /* Function to implement the task */
+          "Blue goal lights", /* Name of the task */
+          100000,             /* Stack size in words */
+          (void*)&blue,       /* Task input parameter */
+          0,                  /* Priority of the task */
+          &Task1,             /* Task handle. */
+          0);                 /* Core where the task should run */
       }
       *counter = 0;
       Serial.println(value);
       delay(DELAY);
+
+      while (analogRead(sensorPin >= treshold)) {
+        delay(100);
+      }
     }
   } else {
     *counter = 0;
@@ -138,13 +158,12 @@ int getTreshold(int sensorPin) {
     total += analogRead(sensorPin);
   }
 
-  int treshold = (total/iterations) * 1.1;
+  int treshold = (total / iterations) * 1.1;
 
   Serial.print("treshold is: ");
   Serial.println(treshold);
 
   return treshold;
-
 }
 
 void reconnect() {
@@ -163,7 +182,7 @@ void reconnect() {
   }
 }
 
-void connect_wifi(){
+void connect_wifi() {
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
@@ -188,7 +207,7 @@ void handleReset() {
   score_red = 0;
   mqtt_client.publish(mqtt_topic_red, String(score_red).c_str());
   mqtt_client.publish(mqtt_topic_blue, String(score_blue).c_str());
-  waveDown(black, white);
-  waveUp(white, black);
-
+  waveOutwards(white, white, white, 0, 0);
+  waveDown(blue, red, 0);
+  waveUp(white, white, white);
 }
