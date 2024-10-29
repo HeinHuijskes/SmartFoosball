@@ -7,7 +7,7 @@ from flask import request
 import threading
 
 from backend.game import Game
-from hardware.hardware import *
+# from hardware.hardware import *
 from hardware.mqtt_connection import Mqttserver
 
 global app

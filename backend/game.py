@@ -179,13 +179,10 @@ class Game(GameSettings):
 
     def add_goal(self, team, score):
         "pass True if one goal should be added to the score of the left goal (RED), else 1 will be added to the right goal (BLUE)"
-        # self.website.add_goal(Red)
         if team == Team.RED:
             self.score_red = score
-            # self.mqttserver.send_message(Team.RED, self.score_red)
         else:
             self.score_blue = score
-            # self.mqttserver.send_message(Team.BLUE, self.score_blue)
 
     def get_max_speed(self):
         maxspd = self.max_speed
@@ -198,6 +195,4 @@ class Game(GameSettings):
     def reset_game(self):
         self.score_red = 0
         self.score_blue = 0
-        self.mqttserver.send_message(Team.BLUE, 0)
-        self.mqttserver.send_message(Team.RED, 0)
 #         maybe also reset max speed
