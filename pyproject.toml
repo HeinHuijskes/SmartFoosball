@@ -11,7 +11,17 @@ psycopg2 = "^2.9.9"
 opencv-python = "^4.10.0.84"
 ultralytics = "^8.2.102"
 pyserial = "^3.5"
+keyboard = "^0.13.5"
+paho-mqtt = "^2.1.0"
+torch = {version = "^2.5.1+cu118", source = "pytorch-gpu"}
+torchvision = {version = "^0.20.1+cu118", source = "pytorch-gpu"}
+torchaudio = {version = "^2.5.1+cu118", source = "pytorch-gpu"}
 
+
+[[tool.poetry.source]]
+name = "pytorch-gpu"
+url = "https://download.pytorch.org/whl/cu118"
+priority = "explicit"
 
 [build-system]
 requires = ["poetry-core"]

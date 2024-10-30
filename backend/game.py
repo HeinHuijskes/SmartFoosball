@@ -7,6 +7,7 @@ from backend.gameSettings import GameSettings
 from backend.staticulator import Staticulator
 from backend.misc import *
 from env import *
+from hardware.mqtt_connection import Mqttserver, Team
 
 
 class Game(GameSettings):
@@ -102,10 +103,10 @@ class Game(GameSettings):
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        jpeg.tobytes() + b'\r\n')
 
-    def add_goal(self, Left):
-        """pass True if one goal should be added to the score of the left goal,
-        else 1 will be added to the right goal"""
-        self.website.add_goal(Left)
+    # def add_goal(self, Left):
+    #     """pass True if one goal should be added to the score of the left goal,
+    #     else 1 will be added to the right goal"""
+    #     self.website.add_goal(Left)
 
     def showFrame(self, frame):
         """Show a frame in the backend, and detect any key presses to change the behaviour of the frame."""
@@ -149,10 +150,10 @@ class Game(GameSettings):
                 # if len(self.buffer) != 0:
                 #         jpeg, frame_time = self.buffer.popleft()
                 # self.showFrame(jpeg)
-                print(frame_time, "frame_time")
+                # print(frame_time, "frame_time")
                 if frame_time > 0:
                     time.sleep(2 * frame_time)
-                    print(jpeg)
+                    # print(jpeg)
                     yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                            jpeg.tobytes() + b'\r\n')
                 else:
@@ -167,17 +168,20 @@ class Game(GameSettings):
                 # if len(self.buffer) != 0:
                         jpeg, frame_time = self.buffer.popleft()
                         # self.showFrame(jpeg)
-                        print(frame_time, "frame_time")
+                        # print(frame_time, "frame_time")
                         if frame_time > 0 :
                             time.sleep(frame_time)
-                            print(jpeg)
+                            # print(jpeg)
                             yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                                jpeg.tobytes() + b'\r\n')
                         else: continue
 
-    def add_goal(self, Red):
+    def add_goal(self, team, score):
         "pass True if one goal should be added to the score of the left goal (RED), else 1 will be added to the right goal (BLUE)"
-        self.website.add_goal(Red)
+        if team == Team.RED:
+            self.score_red = score
+        else:
+            self.score_blue = score
 
     def get_max_speed(self):
         maxspd = self.max_speed

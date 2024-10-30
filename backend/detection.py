@@ -31,6 +31,7 @@ class Detection(DetectionSettings):
                 playsound('data/fifa/Voicy_Dennis Bergkamp Goal.mp3')
             print(kicker)
         frame = self.draw_ball_positions(frame)
+        self.detect_zone()
         frame = self.drawTexts(frame)
         return frame
 
@@ -58,7 +59,7 @@ class Detection(DetectionSettings):
         frame = cv2.bitwise_and(frame, frame, mask=mask)
         frame, _ = self.foosMenDetection(frame, mode)
         frame = self.zoom_in(frame)
-        frame = self.scale(frame, 2)
+        frame = self.scale(frame, 0.5)
 
         return frame
 
