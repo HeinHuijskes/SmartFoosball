@@ -1,11 +1,16 @@
 #define WAVE_TIME 5
 
-void my_fill_solid(struct CRGB *ledsBlue, int numToFill, const struct CRGB &color) {
-  for (int i = 0; i < numToFill; i++) {
-    ledsBlue[i] = color;
-  }
-}
+/*
+This function gives all the LEDs in an array the same color.
 
+Input:
+  CRGB color: the color for the LEDs
+  CRGB leds[]: the LED-strip to color
+  int size: the size of the LED-strip
+
+Output:
+  There is no return value, but all the LEDs in an array will have the same color.
+*/
 void fillSolid(CRGB color, CRGB leds[], int size) {
   for (int i = 0; i < size; i++) {
     leds[i] = color;
@@ -13,6 +18,20 @@ void fillSolid(CRGB color, CRGB leds[], int size) {
   FastLED.show();
 }
 
+/*
+This function gives the bottom of one of the LED-beams, i.e. the outer edges of the
+LED-strip, the same color.
+
+Input:
+  CRGB color: the color for the LEDs
+  CRGB leds[]: the LED-strip to color
+  int size: the size of the LED-strip
+  int amount: how far the LED-strip should be filled
+
+Output:
+  There is no return value, but the outer edges of a LED-strip will have a different
+  color than inside.
+*/
 void fillBottom(CRGB color, CRGB leds[], int size, int amount) {
   for (int i = 0; i < amount; i++) {
     leds[i] = color;
@@ -21,23 +40,29 @@ void fillBottom(CRGB color, CRGB leds[], int size, int amount) {
   FastLED.show();
 }
 
-void works() {
-  CHSV color = CHSV(gHue, 255, 255);
-  for (int i = 0; i < NUM_LEDS_BLUE; i++) {
-    ledsBlue[i] = color;
-  }
-}
+/*
+This function performs an animation when the red team made a goal on its own core.
 
+Output:
+  There is no return value, but a random animation will play for the red team.
+*/
 void goalRedLights(void *parameter) {
   if (random(0, 2) == 0) {
     animationRed1();
   } else {
     animationRed2();
   }
-  
+
   vTaskDelete(NULL);
 }
 
+/*
+One of the two animations for when team red scores.
+
+Output:
+  There is no return value, but red ligths will move upwards,
+  blink 5 times and move downwards again.
+*/
 void animationRed1() {
   fillSolid(black, ledsBlue, NUM_LEDS_BLUE);
   fillSolid(black, ledsRed, NUM_LEDS_RED);
@@ -49,6 +74,12 @@ void animationRed1() {
   waveDown(blue, red, 0);
 }
 
+/*
+One of the two animations for when team red scores.
+
+Output:
+  There is no return value, but red lights will move across the beams and then go to the red side.
+*/
 void animationRed2() {
   fillSolid(black, ledsBlue, NUM_LEDS_BLUE);
   fillSolid(black, ledsRed, NUM_LEDS_RED);
@@ -62,6 +93,12 @@ void animationRed2() {
   fillBottom(pink, ledsBlue, NUM_LEDS_BLUE, score_blue);
 }
 
+/*
+This function performs an animation when the blue team made a goal on its own core.
+
+Output:
+  There is no return value, but a random animation will play for the blue team.
+*/
 void goalBlueLights(void *parameter) {
   if (random(0, 2) == 0) {
     animationBlue1();
@@ -71,6 +108,13 @@ void goalBlueLights(void *parameter) {
   vTaskDelete(NULL);
 }
 
+/*
+One of the two animations for when team blue scores.
+
+Output:
+  There is no return value, but blue ligths will move upwards,
+  blink 5 times and move downwards again.
+*/
 void animationBlue1() {
   fillSolid(black, ledsBlue, NUM_LEDS_BLUE);
   fillSolid(black, ledsRed, NUM_LEDS_RED);
@@ -82,6 +126,12 @@ void animationBlue1() {
   waveDown(blue, red, 0);
 }
 
+/*
+One of the two animations for when team blue scores.
+
+Output:
+  There is no return value, but blue lights will move across the beams and then go to the blue side.
+*/
 void animationBlue2() {
   fillSolid(black, ledsBlue, NUM_LEDS_BLUE);
   fillSolid(black, ledsRed, NUM_LEDS_RED);
@@ -95,11 +145,15 @@ void animationBlue2() {
   fillBottom(green, ledsRed, NUM_LEDS_RED, score_red);
 }
 
-void waveUp(CRGB color1, CRGB color2, CRGB color3) {
-  // fillSolid(colorBackground, ledsBlue, NUM_LEDS_BLUE);
-  // fillSolid(colorBackground, ledsRed, NUM_LEDS_RED);
-  // fillSolid(colorBackground, ledsTop, NUM_LEDS_TOP);
+/*
+Animation where colors move upwards across the side beams and inwards across the top beam
 
+Input:
+  CRGB color1: the color for the beam of the blue side
+  CRGB color2: the color for the beam of the red side
+  CRGB color3: the color for the top beam
+*/
+void waveUp(CRGB color1, CRGB color2, CRGB color3) {
   for (int i = 0; i < NUM_LEDS_BLUE / 2; i++) {
     ledsBlue[i] = color1;
     ledsBlue[NUM_LEDS_BLUE - 1 - i] = color1;
@@ -117,31 +171,32 @@ void waveUp(CRGB color1, CRGB color2, CRGB color3) {
   }
 }
 
+/*
+Animation where colors move outwards across the top beam and downwards across the side beams
+
+Input:
+  CRGB color1
+*/
 void waveDown(CRGB color1, CRGB color2, int mode) {  // mode 0 is both sides, mode 1 is red side, mode -1 is blue side
-  // fillSolid(colorBackground, ledsBlue, NUM_LEDS_BLUE);
-  // fillSolid(colorBackground, ledsRed, NUM_LEDS_RED);
-  // fillSolid(colorBackground, ledsTop, NUM_LEDS_TOP);
-
-  // for (int i = NUM_LEDS_TOP/2; i >= 0; i--) {
-  //   ledsTop[i] = color3;
-  //   ledsTop[NUM_LEDS_TOP-1-i] = color3;
-  //   FastLED.show();
-  //   delay(WAVE_TIME);
-  // }
-
   for (int i = NUM_LEDS_BLUE / 2; i >= 0; i--) {
-    if (mode <= 0) {
+    if (mode <= 0) {  // blue side
       ledsBlue[i] = pink;
-      ledsBlue[i + score_blue] = color1;
       ledsBlue[NUM_LEDS_BLUE - 1 - i] = pink;
-      ledsBlue[NUM_LEDS_BLUE - 1 - i - score_blue] = color1;
+
+      if (i + score_blue <= NUM_LEDS_BLUE / 2) {
+        ledsBlue[i + score_blue] = color1;
+        ledsBlue[NUM_LEDS_BLUE - 1 - i - score_blue] = color1;
+      }
     }
 
-    if (mode >= 0) {
+    if (mode >= 0) {  // red side
       ledsRed[i] = green;
-      ledsRed[i + score_red] = color2;
       ledsRed[NUM_LEDS_RED - 1 - i] = green;
-      ledsRed[NUM_LEDS_RED - 1 - i - score_red] = color2;
+
+      if (i + score_red <= NUM_LEDS_RED / 2) {
+        ledsRed[i + score_red] = color2;
+        ledsRed[NUM_LEDS_RED - 1 - i - score_red] = color2;
+      }
     }
     FastLED.show();
     delay(WAVE_TIME);
@@ -170,6 +225,12 @@ void waveOpposites(CRGB color) {
 }
 
 void waveLeft(CRGB color1, CRGB color2, int offset) {
+  for (int i = NUM_LEDS_TOP - 1; i >= NUM_LEDS_TOP - 1 - offset; i--) {
+    ledsTop[i] = color2;
+    FastLED.show();
+    delay(WAVE_TIME);
+  }
+
   for (int i = NUM_LEDS_TOP - 1; i >= offset; i--) {
     ledsTop[i] = color1;
     ledsTop[i - offset] = color2;
@@ -179,6 +240,12 @@ void waveLeft(CRGB color1, CRGB color2, int offset) {
 }
 
 void waveRight(CRGB color1, CRGB color2, int offset) {
+  for (int i = 0; i < offset; i++) {
+    ledsTop[i] = color2;
+    FastLED.show();
+    delay(WAVE_TIME);
+  }
+
   for (int i = offset; i < NUM_LEDS_TOP; i++) {
     ledsTop[i - offset] = color1;
     ledsTop[i] = color2;
