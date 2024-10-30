@@ -16,6 +16,7 @@ PORT = 1883  # Default MQTT port
 TOPIC_BLUE = 'sign/foosball/blue'
 TOPIC_RED = 'sign/foosball/red'
 
+
 class Mqttserver:
     def __init__(self, game, send_only):
         self.game = game
@@ -28,12 +29,10 @@ class Mqttserver:
 
         # Start the loop to process network traffic
         if not send_only:
-            t1 = threading.Thread(target= self.startup,daemon=True )
+            t1 = threading.Thread(target=self.startup, daemon=True)
             t1.start()
 
-
     def send_message(self, team, score):
-
         if team is Team.RED:
             self.client.publish(TOPIC_RED, str(score))
             print("sent to red")
@@ -48,9 +47,9 @@ class Mqttserver:
     def on_message(self, client, userdata, message):
         topic = message.topic
         if topic == TOPIC_RED:
-            self.game.add_goal(Team.RED,message.payload.decode())
+            self.game.add_goal(Team.RED, message.payload.decode())
         elif topic == TOPIC_BLUE:
-            self.game.add_goal(Team.BLUE,message.payload.decode())
+            self.game.add_goal(Team.BLUE, message.payload.decode())
         print(f"Message received on topic '{message.topic}': {message.payload.decode()}")
 
     # Callback function when connected to the broker
