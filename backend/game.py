@@ -7,7 +7,11 @@ from backend.gameSettings import GameSettings
 from backend.misc import *
 # from hardware.camera import *
 from env import *
-from hardware.mqtt_connection import Mqttserver, Team
+
+
+class Team(Enum):
+    RED = 1
+    BLUE = 2
 
 
 class Game(GameSettings):
@@ -18,7 +22,6 @@ class Game(GameSettings):
         self.score_red = 0
         self.score_blue = 0
 
-
     def calibrate(self, setup=False):
         """Calibrates with aruco codes. Calibrates for a set amount of frames, defined in `self.calibration_frames`."""
         nextFrame, frame = self.video.read()
@@ -27,7 +30,7 @@ class Game(GameSettings):
             # Scale up the width slightly to be able to detect aruco codes.
             # Don't scale up too much, since that severely impacts performance
             height, width, _ = frame.shape
-            width = width*1.3
+            width = width * 1.3
             self.video.set(cv2.CAP_PROP_FRAME_WIDTH, int(width))
             self.video.set(cv2.CAP_PROP_FRAME_HEIGHT, int(height))
 
@@ -161,21 +164,22 @@ class Game(GameSettings):
                     continue
         while True:
             # print("hello")
-            for i in range(self.buffer_max_len//2):
-                if len(self.buffer) !=0:
+            for i in range(self.buffer_max_len // 2):
+                if len(self.buffer) != 0:
                     # bframes = self.buffer.copy()
                     # self.buffer.clear()
                     # for jpeg, frame_time in bframes:
-                # if len(self.buffer) != 0:
-                        jpeg, frame_time = self.buffer.popleft()
-                        # self.showFrame(jpeg)
-                        # print(frame_time, "frame_time")
-                        if frame_time > 0 :
-                            time.sleep(frame_time)
-                            # print(jpeg)
-                            yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                    # if len(self.buffer) != 0:
+                    jpeg, frame_time = self.buffer.popleft()
+                    # self.showFrame(jpeg)
+                    # print(frame_time, "frame_time")
+                    if frame_time > 0:
+                        time.sleep(frame_time)
+                        # print(jpeg)
+                        yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                                jpeg.tobytes() + b'\r\n')
-                        else: continue
+                    else:
+                        continue
 
     def add_goal(self, team, score):
         "pass True if one goal should be added to the score of the left goal (RED), else 1 will be added to the right goal (BLUE)"
@@ -187,7 +191,7 @@ class Game(GameSettings):
     def get_max_speed(self):
         maxspd = self.max_speed
         self.max_speed = [maxspd[0]]
-        return sum(maxspd)/ len(maxspd)
+        return sum(maxspd) / len(maxspd)
 
     def reset_max_speed(self):
         self.max_speed = [0]

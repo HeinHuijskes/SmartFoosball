@@ -1,13 +1,8 @@
 import threading
-from enum import Enum
 
 import paho.mqtt.client as mqtt
 
-
-class Team(Enum):
-    RED = 1
-    BLUE = 2
-
+from backend.game import Team
 
 BROKER = '192.168.11.121'  # Example public broker, replace with your broker address
 USERNAME = 'voetbal_tafel'
