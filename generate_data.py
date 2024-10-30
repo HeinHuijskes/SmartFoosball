@@ -2,7 +2,7 @@ import cv2
 from backend.detection import Detection
 
 calibration_frames = 10
-video = cv2.VideoCapture('./data/video/een mooie naam.mp4')
+video = cv2.VideoCapture('./data/video/bordeelvoetbal.mp4')
 
 refPt = []
 cropping = False
@@ -31,7 +31,7 @@ while nextFrame:
     frame = frame[detector.min_y:detector.max_y, detector.min_x:detector.max_x]
     if counter % skip_frames == 0:
         number = "{:05d}".format(counter)
-        cv2.imwrite(f'./datasets/mooie/{number}.jpg', frame)
+        cv2.imwrite(f'./datasets/white/{number}.jpg', frame)
     cv2.imshow('Shitfuck', frame)
     key = cv2.waitKey(1)
     counter += 1

@@ -6,5 +6,8 @@ data/video/*
 yolov8n.pt
 runs/detect/*
 !runs/detect/train1
+!runs/detect/laserfog_long
+!runs/detect/laserfog_v11
+!runs/detect/laserfog
 datasets
 /yolo11n.pt

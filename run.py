@@ -3,7 +3,7 @@ import cv2
 
 
 game = Game(None)
-# feed = cv2.VideoCapture('data/video/een mooie naam.mp4')
+# feed = cv2.VideoCapture('data/video/bordeelvoetbal.mp4')
 feed = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 # print(feed)
 # print(feed.read())
