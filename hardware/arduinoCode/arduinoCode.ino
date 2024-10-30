@@ -33,12 +33,12 @@ CRGB ledsTop[NUM_LEDS_TOP];
 TaskHandle_t Task1;
 
 //basic colors
-CRGB red = CRGB(255, 0, 0);
-CRGB blue = CRGB(0, 0, 255);
+CRGB red = CRGB(128, 0, 0);
+CRGB blue = CRGB(0, 0, 48);
 CRGB white = CRGB(255, 128, 100);
 CRGB black = CRGB(0, 0, 0);
-CRGB green = CRGB(0, 255, 0);
-CRGB pink = CRGB(255, 0, 64);
+CRGB green = CRGB(0, 48, 0);
+CRGB pink = CRGB(64, 0, 16);
 // CRGB pink = CRGB::Pink;
 
 //wifi connection
@@ -207,7 +207,10 @@ void handleReset() {
   score_red = 0;
   mqtt_client.publish(mqtt_topic_red, String(score_red).c_str());
   mqtt_client.publish(mqtt_topic_blue, String(score_blue).c_str());
-  waveOutwards(white, white, white, 0, 0);
-  waveDown(blue, red, 0);
+
+  fillSolid(black, ledsTop, NUM_LEDS_TOP);
   waveUp(white, white, white);
+  tresholdBlue = getTreshold(sensorPinBlue);
+  tresholdRed = getTreshold(sensorPinRed);
+  waveDown(blue, red, 0);
 }
