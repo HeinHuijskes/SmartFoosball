@@ -163,13 +163,24 @@
         }
 
         function score3(color){
-            increaseScreenSize(color)
+            $("#large_image").fadeIn(1500);
+            setTimeout(function (){
+                increaseScreenSize(color);
+            },500);
+            $("#large_image").fadeOut(1500);
+
             document.getElementsByClassName("goal3x")[0].style.display = "flex";
              document.getElementsByClassName("goal3x")[0].style.background = color;
             setTimeout(function() {
             document.getElementsByClassName("goal3x")[0].style.display = "none";
              }, 8100);
+
             setTimeout(function (){
+                $("#large_image").fadeIn(1500);
+                setTimeout(function (){
+                increaseScreenSize(color);
+                    },500);
+                 $("#large_image").fadeOut(1500);
                 decreaseScreenSize()
             }, 8100); //adjust this for amount of time to see replay big, 1000 = 1sec
         }
@@ -276,6 +287,8 @@
 <!--        <div class="monitor center">-->
 <!--            <p> goal </p>-->
 <!--        </div></div></div>-->
+
+<div id="large_image" style="position:fixed;top:0;left:0;width: 100vw;height: 100vh; z-index: 10; background-color: white;overflow: hidden; text-align: center; align-items: center; font-size:10rem; display:flex; justify-content: center ">GOAL</div>
 <div class="goal3x" style="background-color: transparent;z-index:4;position:fixed;margin-top:2%;width:100%;height:100px;display:none;align-items:center;">
     <div class="words word-1">
       <span>G</span>
