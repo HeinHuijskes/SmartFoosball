@@ -164,18 +164,30 @@
         }
 
         function score3(color){
-            $("#delayed_feed").fadeOut(2000);
-            $("#video_feed").fadeOut(2000);
-            setTimeout(function() {increaseScreenSize(color)
-            document.getElementsByClassName("goal3x")[0].style.display = "flex";
-            document.getElementsByClassName("goal3x")[0].style.background = color;
-             }, 2500);
+            $("#delayed_feed").fadeOut(1000);
+            $("#video_feed").fadeOut(1000);
+            document.getElementById("live_game").style.visibility = "hidden";
             setTimeout(function() {
-            document.getElementsByClassName("goal3x")[0].style.display = "none";
+                increaseScreenSize(color)
+                document.getElementsByClassName("goal3x")[0].style.background = color;
+                $(".goal3x").fadeIn(2000, function() {
+                    $(this).css("display", "flex"); // Set display to flex after fadeIn
+                });
+                // document.getElementsByClassName("goal3x")[0].style.display = "flex";
+            }, 1000);
+            setTimeout(function() {
+                 document.getElementById("live_game").style.visibility = "visible";
+                 $(".goal3x").fadeOut(1000)
+                 $("#delayed_feed").fadeOut(1500)
+                 $("#delayed_box").fadeOut(1500)
+                 $("#video_feed").fadeOut(1500)
+                 $("#grey_box").fadeOut(1500)
+
+            // document.getElementsByClassName("goal3x")[0].style.display = "none";
              }, 8100);
             setTimeout(function (){
                 decreaseScreenSize()
-            }, 8100); //adjust this for amount of time to see replay big, 1000 = 1sec
+            }, 10000); //adjust this for amount of time to see replay big, 1000 = 1sec
         }
 
         //function to enlarge delayed video feed
@@ -194,12 +206,13 @@
 
             document.getElementById("grey_box").style.height = "auto";
             document.getElementById("grey_box").style.backgroundColor = "transparent";
+            document.getElementById("delayed_box").style.display = "none";
             document.getElementById("delayed_box").style.backgroundColor = color;
             document.getElementById("grey_box2").style.backgroundColor = "transparent";
             document.getElementById("delayed_box").style.padding = "20px";
 
-
-            $("#delayed_feed").fadeIn(2000);
+            $("#delayed_box").fadeIn(1500)
+            $("#delayed_feed").fadeIn(1500);
              // document.getElementById("video_feed").src = "{{ url_for('static', filename='website/rewind.png') }}";
             document.getElementById("video_feed").style.visibility = "hidden";
             document.getElementById("grey_box2").style.visibility = "visible";
@@ -247,9 +260,14 @@
             document.getElementById("grey_box2").style.backgroundColor = "lightgrey";
 
             document.getElementById("video_feed").src ="{{ url_for('video_feed') }}";
+
             document.getElementById("video_feed").style.visibility = "visible";
             document.getElementById("grey_box2").style.visibility = "hidden";
-            document.getElementById("grey_box").style.display = "block";
+            // document.getElementById("grey_box").style.display = "block";
+             $("#video_feed").fadeIn(1500)
+             $("#grey_box").fadeIn(1500)
+             $("#delayed_feed").fadeIn(1500)
+             $("#delayed_box").fadeIn(1500)
         }
 
         // to update score
@@ -336,7 +354,7 @@
 </div>
 
 <div style="z-index: 1;background-color: rgba(255, 255, 255, 0.75);position: fixed;max-width: 100%; width: 100%; height: 100px; margin-top: 2%">
-    <h1 style=" background-color: rgba(255, 255, 255, 0.5);padding: 1px;max-width: 100%; font-weight: 200; text-align: center">Live game</h1></div>
+    <h1 id="live_game" style=" background-color: rgba(255, 255, 255, 0.5);padding: 1px;max-width: 100%; font-weight: 200; text-align: center">Live game</h1></div>
 <div id="behind title" style="height: 130px"></div>
 
 
