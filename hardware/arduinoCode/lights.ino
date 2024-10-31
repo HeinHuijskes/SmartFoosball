@@ -130,7 +130,7 @@ void animationBlue1() {
 One of the two animations for when team blue scores.
 
 Output:
-  There is no return value, but blue lights will move across the beams and then go to the blue side.
+  There is no return value, but blue lights will move across the side beams and then go down the blue side.
 */
 void animationBlue2() {
   fillSolid(black, ledsBlue, NUM_LEDS_BLUE);
@@ -146,12 +146,15 @@ void animationBlue2() {
 }
 
 /*
-Animation where colors move upwards across the side beams and inwards across the top beam
+Animation where colors move upwards across the side beams and inwards across the top beam.
 
 Input:
   CRGB color1: the color for the beam of the blue side
   CRGB color2: the color for the beam of the red side
   CRGB color3: the color for the top beam
+
+Output:
+  There is no return value, but colors will move upwards across the side beams and inwards across the top beam.
 */
 void waveUp(CRGB color1, CRGB color2, CRGB color3) {
   for (int i = 0; i < NUM_LEDS_BLUE / 2; i++) {
@@ -172,12 +175,20 @@ void waveUp(CRGB color1, CRGB color2, CRGB color3) {
 }
 
 /*
-Animation where colors move outwards across the top beam and downwards across the side beams
+Animation where colors move downwards across the side beams.
 
 Input:
-  CRGB color1
+  CRGB color1: color for the beam of the blue side
+  CRGB color2: color for the beam of the red side
+  int mode: which beam(s) should perform the animition:
+    0: both sides
+    1: red side only
+    -1: blue side only
+
+Output:
+  There is no return value, but colors will move downwards across the side beams.
 */
-void waveDown(CRGB color1, CRGB color2, int mode) {  // mode 0 is both sides, mode 1 is red side, mode -1 is blue side
+void waveDown(CRGB color1, CRGB color2, int mode) {
   for (int i = NUM_LEDS_BLUE / 2; i >= 0; i--) {
     if (mode <= 0) {  // blue side
       ledsBlue[i] = pink;
@@ -203,6 +214,20 @@ void waveDown(CRGB color1, CRGB color2, int mode) {  // mode 0 is both sides, mo
   }
 }
 
+/*
+Animation where colors move outwards across the top beam.
+
+Input:
+  CRGB color1: the main color of the top beam
+  CRGB color2: the secondary color that will move towards the blue side
+  CRGB color3: the secondary color that will move towards the red side
+  int amount1: how many leds should have color2
+  int amount2: how many leds should have color3
+
+Output:
+  There is no return value, but a waveof colors will move across the top beam,
+  with secondary colors being the first to move, used to represent the scores of both teams.
+*/
 void waveOutwards(CRGB color1, CRGB color2, CRGB color3, int amount1, int amount2) {
   for (int i = NUM_LEDS_TOP / 2; i >= 0; i--) {
     ledsTop[i] = color2;
@@ -214,6 +239,15 @@ void waveOutwards(CRGB color1, CRGB color2, CRGB color3, int amount1, int amount
   }
 }
 
+/*
+Animation where colors move in opposite directions across the side beams.
+
+Input:
+  CRGB color: the color that should move across the beams
+
+Output:
+  There is no return value, but colors will move across the side beams in opposite directions.
+*/
 void waveOpposites(CRGB color) {
   for (int i = NUM_LEDS_BLUE - 1; i >= 0; i--) {
     Serial.println(i);
@@ -224,6 +258,18 @@ void waveOpposites(CRGB color) {
   }
 }
 
+/*
+Animation where colors move to the blue side of the top beam.
+
+Input:
+  CRGB color1: the primary color to move across the beam
+  CRGB color2: the secondary color to move across the beam
+  int offset: how many leds should have color2
+
+Output:
+  There is no return value, but colors will move towards the blue side
+  across the top beam where the secondary is used to represent the score of the blue team.
+*/
 void waveLeft(CRGB color1, CRGB color2, int offset) {
   for (int i = NUM_LEDS_TOP - 1; i >= NUM_LEDS_TOP - 1 - offset; i--) {
     ledsTop[i] = color2;
@@ -239,6 +285,18 @@ void waveLeft(CRGB color1, CRGB color2, int offset) {
   }
 }
 
+/*
+Animation where colors move to the red side of the top beam.
+
+Input:
+  CRGB color1: the primary color to move across the beam
+  CRGB color2: the secondary color to move across the beam
+  int offset: how many leds should have color2
+
+Output:
+  There is no return value, but colors will move towards the red side
+  across the top beam where the secondary is used to represent the score of the red team.
+*/
 void waveRight(CRGB color1, CRGB color2, int offset) {
   for (int i = 0; i < offset; i++) {
     ledsTop[i] = color2;
@@ -254,6 +312,17 @@ void waveRight(CRGB color1, CRGB color2, int offset) {
   }
 }
 
+/*
+Animation where all the LEDs will blink a certain amount of times.
+
+Input:
+  CRGB color: the main color for the blinking
+  CRGB colorBackground: the color that will alternate the main color in blinking
+  int amount: how many the LEDs should blink
+
+Output:
+  There is no return value, but the LEDs will blink a certain amount of times.
+*/
 void blinkAmount(CRGB color, CRGB colorBackground, int amount) {
   int delayTime = 50;
   fillSolid(colorBackground, ledsBlue, NUM_LEDS_BLUE);
