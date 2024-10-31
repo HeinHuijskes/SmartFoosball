@@ -4,7 +4,7 @@ import paho.mqtt.client as mqtt
 
 from backend.game import Team
 
-BROKER = '192.168.11.121'  # Example public broker, replace with your broker address
+BROKER = '192.168.11.121'
 USERNAME = 'voetbal_tafel'
 PASSWORD = 'voetbal_tafel'
 PORT = 1883  # Default MQTT port
@@ -87,7 +87,6 @@ class Mqttserver:
         print(f"Connected with result code {rc}")
         client.subscribe(TOPIC_RED)  # Subscribe to the topic
         client.subscribe(TOPIC_BLUE)  # Subscribe to the topic
-        # self.client.publish(TOPIC_RED, str(4))
 
     def startup(self):
         """
