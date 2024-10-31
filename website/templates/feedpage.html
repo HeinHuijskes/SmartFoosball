@@ -164,31 +164,22 @@
         }
 
         function score3(color){
-            $("#large_image").fadeIn(1500);
-            setTimeout(function (){
-                increaseScreenSize(color);
-            },500);
-            $("#large_image").fadeOut(1500);
-
+            $("#delayed_feed").fadeOut(2000);
+            $("#video_feed").fadeOut(2000);
+            setTimeout(function() {increaseScreenSize(color)
             document.getElementsByClassName("goal3x")[0].style.display = "flex";
-             document.getElementsByClassName("goal3x")[0].style.background = color;
+            document.getElementsByClassName("goal3x")[0].style.background = color;
+             }, 2500);
             setTimeout(function() {
             document.getElementsByClassName("goal3x")[0].style.display = "none";
              }, 8100);
-
             setTimeout(function (){
-                $("#large_image").fadeIn(1500);
-                setTimeout(function (){
-                increaseScreenSize(color);
-                    },500);
-                 $("#large_image").fadeOut(1500);
                 decreaseScreenSize()
             }, 8100); //adjust this for amount of time to see replay big, 1000 = 1sec
         }
 
         //function to enlarge delayed video feed
         function increaseScreenSize(color){
-
             document.getElementById("left_center_child").style.width = "40%";
             document.getElementById("middle_center_child").style.width = "20%";
             document.getElementById("right_center_child").style.width = "29%";
@@ -207,10 +198,11 @@
             document.getElementById("grey_box2").style.backgroundColor = "transparent";
             document.getElementById("delayed_box").style.padding = "20px";
 
+
+            $("#delayed_feed").fadeIn(2000);
              // document.getElementById("video_feed").src = "{{ url_for('static', filename='website/rewind.png') }}";
             document.getElementById("video_feed").style.visibility = "hidden";
-            $("#grey_box2").fadeIn(4000);
-            // document.getElementById("grey_box2").style.visibility = "visible";
+            document.getElementById("grey_box2").style.visibility = "visible";
             document.getElementById("grey_box").style.display = "none";
             // padding: 3%;margin-top: 5%
 
@@ -224,8 +216,7 @@
 
          $(document).ready(function(){
             $("button").click(function() {
-                $("#delayed_feed").css("display", "none")
-                $("#delayed_feed").fadeIn(2000);
+
             });
         });
 
@@ -303,8 +294,6 @@
 <!--        <div class="monitor center">-->
 <!--            <p> goal </p>-->
 <!--        </div></div></div>-->
-
-<div id="large_image" style="position:fixed;top:0;left:0;width: 100vw;height: 100vh; z-index: 10; background-color: white;overflow: hidden; text-align: center; align-items: center; font-size:10rem; display:flex; justify-content: center ">GOAL</div>
 <div class="goal3x" style="background-color: transparent;z-index:4;position:fixed;margin-top:2%;width:100%;height:100px;display:none;align-items:center;">
     <div class="words word-1">
       <span>G</span>
