@@ -283,11 +283,12 @@ class Detection(DetectionSettings):
 
     def foosMenDetection(self, frame, mode):
         """Looks for blue and red, and returns their outlines on the frame."""
+        contoured_frame = frame.copy()
         if not mode == Mode.RED:
-            frame, contours = self.contour_frame(frame, self.blue_mask, self.foos_men_min, self.foos_men_max, Contour.BLUE)
+            contoured_frame, contours = self.contour_frame(contoured_frame, self.blue_mask, self.foos_men_min, self.foos_men_max, Contour.BLUE)
         if not mode == Mode.BLUE:
-            frame, contours = self.contour_frame(frame, self.red_mask, self.foos_men_min, self.foos_men_max, Contour.RED)
-        return frame, contours
+            contoured_frame, contours = self.contour_frame(contoured_frame, self.red_mask, self.foos_men_min, self.foos_men_max, Contour.RED)
+        return contoured_frame, contours
 
     def contour_frame(self, frame, mask, area_min=100, area_max=1000, contour_colour=Contour.BLACK):
         """Colour all contours in a mask depending on a minimum and maximum area.
@@ -369,10 +370,14 @@ class Detection(DetectionSettings):
         z = self.possession_zone
         
         # Check which side has possession of the ball, then retrieve contours for that colour
-        mode = Mode.RED
         if z in [0, 1, 3, 5]:  # blue
             mode = Mode.BLUE
+            self.blue_mask = self.colour_mask(frame, Colour.BLUE)
+        else:
+            mode = Mode.RED
+            self.red_mask = self.colour_mask(frame, Colour.RED)
         _, contours = self.foosMenDetection(frame, mode)
+        self.red_mask, self.blue_mask = None, None
 
         foos_men = []
         zone = (self.zones[z][0] / self.pixel_width_cm, self.zones[z][1] / self.pixel_width_cm)
