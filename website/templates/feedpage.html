@@ -42,7 +42,7 @@
         .words span {
           font-size: 5rem;
           display: inline-flex;
-          animation: move 3s ease-in-out infinite;
+          animation: move 1500ms ease-in-out infinite;
           flex-shrink: 1;
             min-width: 0;
         }
@@ -164,30 +164,30 @@
         }
 
         function score3(color){
-            $("#delayed_feed").fadeOut(1000);
-            $("#video_feed").fadeOut(1000);
+            $("#delayed_feed").fadeOut(500);
+            $("#video_feed").fadeOut(500);
             document.getElementById("live_game").style.visibility = "hidden";
             setTimeout(function() {
                 increaseScreenSize(color)
                 document.getElementsByClassName("goal3x")[0].style.background = color;
-                $(".goal3x").fadeIn(2000, function() {
+                $(".goal3x").fadeIn(1000, function() {
                     $(this).css("display", "flex"); // Set display to flex after fadeIn
                 });
                 // document.getElementsByClassName("goal3x")[0].style.display = "flex";
             }, 1000);
             setTimeout(function() {
-                 document.getElementById("live_game").style.visibility = "visible";
-                 $(".goal3x").fadeOut(1000)
-                 $("#delayed_feed").fadeOut(1500)
-                 $("#delayed_box").fadeOut(1500)
-                 $("#video_feed").fadeOut(1500)
-                 $("#grey_box").fadeOut(1500)
+                 $(".goal3x").fadeOut(500)
+                 $("#delayed_feed").fadeOut(500)
+                 $("#delayed_box").fadeOut(500)
+                 $("#video_feed").fadeOut(500)
+                 $("#grey_box").fadeOut(500)
 
             // document.getElementsByClassName("goal3x")[0].style.display = "none";
              }, 8100);
             setTimeout(function (){
+                document.getElementById("live_game").style.visibility = "visible";
                 decreaseScreenSize()
-            }, 10000); //adjust this for amount of time to see replay big, 1000 = 1sec
+            }, 9000); //adjust this for amount of time to see replay big, 1000 = 1sec
         }
 
         //function to enlarge delayed video feed
@@ -211,8 +211,8 @@
             document.getElementById("grey_box2").style.backgroundColor = "transparent";
             document.getElementById("delayed_box").style.padding = "20px";
 
-            $("#delayed_box").fadeIn(1500)
-            $("#delayed_feed").fadeIn(1500);
+            $("#delayed_box").fadeIn(500)
+            $("#delayed_feed").fadeIn(500);
              // document.getElementById("video_feed").src = "{{ url_for('static', filename='website/rewind.png') }}";
             document.getElementById("video_feed").style.visibility = "hidden";
             document.getElementById("grey_box2").style.visibility = "visible";
@@ -264,10 +264,10 @@
             document.getElementById("video_feed").style.visibility = "visible";
             document.getElementById("grey_box2").style.visibility = "hidden";
             // document.getElementById("grey_box").style.display = "block";
-             $("#video_feed").fadeIn(1500)
-             $("#grey_box").fadeIn(1500)
-             $("#delayed_feed").fadeIn(1500)
-             $("#delayed_box").fadeIn(1500)
+             $("#video_feed").fadeIn(500)
+             $("#grey_box").fadeIn(500)
+             $("#delayed_feed").fadeIn(500)
+             $("#delayed_box").fadeIn(500)
         }
 
         // to update score
