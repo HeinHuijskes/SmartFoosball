@@ -14,6 +14,8 @@
         img {max-width: 100%; max-height: 100%}
         .center_child {vertical-align: middle;}
         #but_new_game:hover { color: grey}
+        #full_screen {color: black; background-color: transparent; text-decoration: transparent; }
+        #full_screen:hover { color: grey}
 
         .goal3x {
             display: flex;
@@ -304,6 +306,7 @@
     <a style="color: black; background-color: transparent; text-decoration: transparent;" href="index.html"> <p>&larr;</p></a>
 </div>
 
+<!--<div id="large_image" style="position:fixed;top:0;left:0;width: 100vw;height: 100vh; z-index: 10; background-color: white;overflow: hidden; text-align: center; align-items: center; font-size:10rem; display:flex; justify-content: center ">GOAL</div>-->
 <!--<div class="table center">-->
 <!--    <div class="monitor-wrapper center">-->
 <!--        <div class="monitor center">-->
@@ -358,6 +361,7 @@
         <img id="delayed_feed" src="{{ url_for('delayed_video_feed') }}" alt="Delayed Video Feed" style="object-fit: contain">
         </div>
         <p id="but_new_game" onclick="newgame()">New game</p>
+        <a id="full_screen" href="fullpage.html" >full screen</a>
     </div>
 
     <div class="center_child" id="middle_center_child" style="width: 49%">

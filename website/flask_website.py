@@ -101,6 +101,10 @@ class Website:
                 # self.arduino.run()
                 return render_template('infopage.html')
 
+            @self.app.route('/fullpage.html')
+            def fullpage():
+                return render_template('fullpage.html',  scoreL = self.scoreL, scoreR= self.scoreR)
+
 
             #function to update the website
             @self.app.route('/score')
