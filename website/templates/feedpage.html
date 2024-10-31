@@ -27,6 +27,7 @@
             max-width: 100%;
             max-height: 130px;
             overflow: hidden;
+            box-shadow: 0 0 15px 15px rgba(0, 0, 0, 0);
         }
 
         .words {
@@ -164,23 +165,26 @@
         }
 
         function score3(color){
+            let colorL = color
             $("#delayed_feed").fadeOut(500);
             $("#video_feed").fadeOut(500);
             document.getElementById("live_game").style.visibility = "hidden";
             setTimeout(function() {
                 increaseScreenSize(color)
                 document.getElementsByClassName("goal3x")[0].style.background = color;
-                $(".goal3x").fadeIn(1000, function() {
-                    $(this).css("display", "flex"); // Set display to flex after fadeIn
-                });
-                // document.getElementsByClassName("goal3x")[0].style.display = "flex";
+                // document.getElementsByClassName("goal3x")[0].style.boxShadow = "0 0 15px 15px" + colorL;
+                document.getElementById("grey_box").style.boxShadow = "none";
+                let colr = "0 0 3px 3px " + color;
+                $(".goal3x").css("box-shadow", colr); // Set display to flex after fadeIn
+
+                document.getElementsByClassName("goal3x")[0].style.display = "flex";
             }, 1000);
             setTimeout(function() {
                  $(".goal3x").fadeOut(500)
+                 $("#grey_box").fadeOut(250)
                  $("#delayed_feed").fadeOut(500)
                  $("#delayed_box").fadeOut(500)
-                 $("#video_feed").fadeOut(500)
-                 $("#grey_box").fadeOut(500)
+                 $("#video_feed").fadeOut(3500)
 
             // document.getElementsByClassName("goal3x")[0].style.display = "none";
              }, 8100);
@@ -211,6 +215,9 @@
             document.getElementById("grey_box2").style.backgroundColor = "transparent";
             document.getElementById("delayed_box").style.padding = "20px";
 
+            document.getElementById("delayed_box").style.boxShadow = "0 0 10px 10px rgba(0, 0, 0, 0.3)";
+            document.getElementById("grey_box").style.boxShadow = "none";
+
             $("#delayed_box").fadeIn(500)
             $("#delayed_feed").fadeIn(500);
              // document.getElementById("video_feed").src = "{{ url_for('static', filename='website/rewind.png') }}";
@@ -220,19 +227,6 @@
             // padding: 3%;margin-top: 5%
 
         }
-
-        // $(document).ready(function(){
-        //     $("button").click(function() {
-        //         $("#grey2").fadeIn();
-        //     });
-        // });
-
-         $(document).ready(function(){
-            $("button").click(function() {
-
-            });
-        });
-
 
          function decreaseScreenSize(){
             // document.getElementById("right_center_child").style.width = "19%";
@@ -263,6 +257,9 @@
 
             document.getElementById("video_feed").style.visibility = "visible";
             document.getElementById("grey_box2").style.visibility = "hidden";
+
+            document.getElementById("delayed_box").style.boxShadow = "none";
+            document.getElementById("grey_box").style.boxShadow = "0 0 15px 15px rgba(0, 0, 0, 0.3)";
             // document.getElementById("grey_box").style.display = "block";
              $("#video_feed").fadeIn(500)
              $("#grey_box").fadeIn(500)
@@ -346,10 +343,6 @@
     <p id="marquee" style="width:100%;font-weight:300;font-size:50px;text-align: center"> </p>
 </div>
 
-<button>hello? </button>
-<div id="hi" style="display:none"> hi
-</div>
-
 <div id="grey2" style="z-index: 1; display: none; background-color: lightgray;padding: 20px; height: auto; margin: auto; text-align: center;">
 </div>
 
@@ -370,7 +363,7 @@
     <div class="center_child" id="middle_center_child" style="width: 49%">
         <p id="camera_feed_text" style="text-align: left;margin:3%">Camera feed</p>
 <!--        // nog longer height 450 px-->
-        <div id="grey_box" style="z-index: 2; visibility: visible; background-color: lightgray;padding: 20px; height: auto; margin: auto; text-align: center;">
+        <div id="grey_box" style="box-shadow: 0 0 15px 15px rgba(0, 0, 0, 0.3);z-index: 2; visibility: visible; background-color: lightgray;padding: 20px; height: auto; margin: auto; text-align: center;">
             <img id="video_feed" src="{{ url_for('video_feed') }}" alt="Video Feed" style="object-fit: contain">
             </div>
         <div id="grey_box2" style="z-index: 1; visibility: hidden; background-color: lightgray;padding: 20px; height: auto; margin: auto; text-align: center;">
