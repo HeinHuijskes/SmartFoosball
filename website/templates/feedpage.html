@@ -216,11 +216,19 @@
 
         }
 
-        $(document).ready(function(){
+        // $(document).ready(function(){
+        //     $("button").click(function() {
+        //         $("#grey2").fadeIn();
+        //     });
+        // });
+
+         $(document).ready(function(){
             $("button").click(function() {
-                $("#hi").fadeIn();
+                $("#delayed_feed").css("display", "none")
+                $("#delayed_feed").fadeIn(2000);
             });
         });
+
 
          function decreaseScreenSize(){
             // document.getElementById("right_center_child").style.width = "19%";
@@ -334,6 +342,10 @@
 <button>hello? </button>
 <div id="hi" style="display:none"> hi
 </div>
+
+<div id="grey2" style="z-index: 1; display: none; background-color: lightgray;padding: 20px; height: auto; margin: auto; text-align: center;">
+</div>
+
 <div style="z-index: 1;background-color: rgba(255, 255, 255, 0.75);position: fixed;max-width: 100%; width: 100%; height: 100px; margin-top: 2%">
     <h1 style=" background-color: rgba(255, 255, 255, 0.5);padding: 1px;max-width: 100%; font-weight: 200; text-align: center">Live game</h1></div>
 <div id="behind title" style="height: 130px"></div>
