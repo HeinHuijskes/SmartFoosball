@@ -159,7 +159,7 @@
             $('#textcheck').html('<div id="textcheck" style="position: absolute; z-index: 15;"> ' + oldscore + ' </div>');
 
             $.getJSON("/update_score", function (data) {
-                $('#scoretext2').html('<p style="text-align: left; font-weight: 400; margin: 0; padding: 0;"> <span style="color:steelblue">' + data.scoreL + ' </span> - <span style="color: indianred"> ' + data.scoreR + '</span></p>');
+                $('#scoretext2').html('<p style="text-align: left; font-weight: 800; margin: 0; padding: 0;"> <span style="color:steelblue">' + data.scoreL + ' </span> - <span style="color: indianred"> ' + data.scoreR + '</span></p>');
                 var newscoreL = data.scoreL;
                 var newscoreR = data.scoreR;
 
