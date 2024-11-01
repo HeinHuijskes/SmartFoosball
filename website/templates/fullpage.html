@@ -48,7 +48,26 @@
         #repeat_parent{
             z-index: 4;
             background-color: white;
+            display: flex;
+            text-align: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
         }
+
+        #end_repeat_parent{
+            z-index: 4;
+            background-color: white;
+            text-align: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
         #video_box {
             z-index: 5;
             visibility: visible;
@@ -213,29 +232,59 @@
         // to update score
         function fetchScore() {
             var oldscore = document.getElementById('scoretext2').innerText;
-            var o_scores= oldscore.split(' - ')
+            var o_scores = oldscore.split(' - ')
             var oldscoreL = parseInt(o_scores[0]);
             var oldscoreR = parseInt(o_scores[1]);
-            $.getJSON("/update_score", function(data) {
-                $('#scoretext2').html('<p style="text-align: left; font-weight: 400; margin: 0; padding: 0;"> <span style="color:steelblue">' + data.scoreL + ' </span> - <span style="color: indianred"> ' + data.scoreR + '</span></p>');
-                var newscoreL= data.scoreL;
-                var newscoreR = data.scoreR;
-                if(oldscoreL != newscoreL && newscoreL != 0)
-                    $("#video_box").fadeOut(500)
-                    $("#video_box").css("display", "none");
-                    setTimeout(function (){
-                    $("#delayed_parent").fadeIn(500)
-                    // $("#delayed_parent").css("display", "block")
-                    }, 700);
-                    setTimeout(function (){
-                    $("#video_box").fadeIn(500)
-                    $("#delayed_parent").css("display", "none");
-                    }, 8100);
+            $('#textcheck').html('<div id="textcheck" style="position: absolute; z-index: 15;"> ' + oldscore + ' </div>');
 
-                // if(oldscoreR != newscoreR && newscoreR!= 0)
-                //     score3("indianred");
-                });
-        }
+            $.getJSON("/update_score", function (data) {
+                $('#scoretext2').html('<p style="text-align: left; font-weight: 400; margin: 0; padding: 0;"> <span style="color:steelblue">' + data.scoreL + ' </span> - <span style="color: indianred"> ' + data.scoreR + '</span></p>');
+                var newscoreL = data.scoreL;
+                var newscoreR = data.scoreR;
+
+                if (oldscoreL != newscoreL && newscoreL != 0) {
+                    $('#textcheck').html('<div id="textcheck" style="position: absolute; z-index: 15;"> CHECKED </div>');
+
+                    // Hide video elements initially
+                    $("#video_box").fadeOut(500);
+
+                    // Show delayed video feed
+                    setTimeout(function () {
+                        $("#delayed_parent").fadeIn(500);
+                    }, 1000); //leave time ro show rewind screen
+                    // Delay display of delayed_parent
+
+                    setTimeout(function () {
+                        $("#delayed_parent").fadeOut(500)
+                    }, 5100);
+                    setTimeout(function () {
+                        $("#video_box").fadeIn(500);
+                    }, 6000);
+                }
+                // if(oldscoreL != newscoreL && newscoreL != 0)
+                //     $('#textcheck').html('<div id="textcheck" style="position: absolute; z-index: 15;"> CHECKED </div>');
+                //     // $("#video_box").fadeOut(500)
+                //     // $("#video_box").css("display", "none");
+                //     // setTimeout(function (){
+                //     // $("#delayed_parent").fadeIn(500)
+                //     // // $("#delayed_parent").css("display", "block")
+                //     // }, 700);
+                //     $("#video_box").css("display", "none");
+                //     $("#delayed_parent").css("display", "none");
+                //     setTimeout(function (){
+                //     $("#video_box").fadeIn(500)
+                //     $("#video_feed2").fadeIn(500)
+                //     $("#delayed_parent").css("display", "none");
+                //     }, 3100);
+                //     setTimeout(function (){
+                //     $("#delayed_parent").css("display", "box");
+                //     }, 5100);
+                //
+                // // if(oldscoreR != newscoreR && newscoreR!= 0)
+                // //     score3("indianred");
+                // });
+            });
+        };
         // Fetch the score every 5 seconds
         setInterval(fetchScore, 500);
         // to update speed
@@ -271,10 +320,15 @@
 <div id="repeat_parent" >
     <p id="repeat"> GOAL REWIND</p>
 </div>
+<div id="end_repeat_parent" >
+    <p id="end_repeat"> END REWIND</p>
+</div>
 
 <div id="delayed_parent">
     <img id="delayed_feed" src="{{ url_for('delayed_video_feed') }}" alt="Delayed Video Feed" style="object-fit: contain">
 </div>
+
+    <div id="textcheck" style="position: absolute; z-index: 15;">check </div>
 
 </div>
 </body>
