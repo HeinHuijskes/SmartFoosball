@@ -222,14 +222,14 @@
                 var newscoreR = data.scoreR;
                 if(oldscoreL != newscoreL && newscoreL != 0)
                     $("#video_box").fadeOut(500)
-                    // $("#video_box").css("display", "none");
+                    $("#video_box").css("display", "none");
                     setTimeout(function (){
-                    $("#delayed_box").fadeIn(500)
-                    $("#delayed_box").css("display", "block")
+                    $("#delayed_parent").fadeIn(500)
+                    // $("#delayed_parent").css("display", "block")
                     }, 700);
                     setTimeout(function (){
                     $("#video_box").fadeIn(500)
-                    $("#delayed_box").css("display", "none");
+                    $("#delayed_parent").css("display", "none");
                     }, 8100);
 
                 // if(oldscoreR != newscoreR && newscoreR!= 0)
