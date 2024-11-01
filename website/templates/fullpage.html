@@ -25,7 +25,7 @@
 
         #delayed_parent{
             z-index: 3;
-            display: block;
+            display: none;
             background-color: white;
             margin: 0;
             position : fixed;
@@ -47,31 +47,44 @@
 
         #repeat_parent{
             z-index: 4;
-            background-color: white;
-            display: flex;
-            text-align: center;
-            align-items: center;
-            width: 100%;
-            height: 100%;
             max-width: 100%;
             max-height: 100%;
+            top:0;
+            left:0;
+            width: 100vw;
+            height: 100vh;
+            background-color: white  ;
+            overflow: hidden;
+            text-align: center;
+            align-items: center;
+            font-size:10rem;
+            display:flex;
+            justify-content: center;
+
         }
+
 
         #end_repeat_parent{
             z-index: 4;
-            background-color: white;
-            text-align: center;
-            align-items: center;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             max-width: 100%;
             max-height: 100%;
+            top:0;
+            left:0;
+            background-color: white  ;
+            overflow: hidden;
+            text-align: center;
+            align-items: center;
+            font-size:10rem;
+            display:flex;
+            justify-content: center;
         }
 
         #video_box {
             z-index: 5;
             visibility: visible;
-            display: none;
+            display: block;
             background-color: white;
             margin: 0;
             position : fixed;
@@ -246,6 +259,7 @@
                     $('#textcheck').html('<div id="textcheck" style="position: absolute; z-index: 15;"> CHECKED </div>');
 
                     // Hide video elements initially
+                    $("#repeat_parent").css("display", "flex");
                     $("#video_box").fadeOut(500);
 
                     // Show delayed video feed
@@ -255,7 +269,8 @@
                     // Delay display of delayed_parent
 
                     setTimeout(function () {
-                        $("#delayed_parent").fadeOut(500)
+                        $("#repeat_parent").css("display", "none");
+                        $("#delayed_parent").fadeOut(500);
                     }, 5100);
                     setTimeout(function () {
                         $("#video_box").fadeIn(500);
