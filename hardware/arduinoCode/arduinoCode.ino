@@ -78,6 +78,8 @@ void setup() {
 
   connect_wifi();
   mqtt_client.setServer(mqtt_server, 1883);  // Port 1883 for non-SSL MQTT
+  mqtt_client.setCallback(callback);
+
   reconnect();
   mqtt_client.publish(mqtt_topic_red, String(score_red).c_str());
   mqtt_client.publish(mqtt_topic_blue, String(score_blue).c_str());
@@ -213,6 +215,8 @@ void reconnect() {
     // Try to connect using client ID, username, and password
     if (mqtt_client.connect("ESP32Client", mqtt_user, mqtt_pass)) {
       Serial.println("connected");
+      mqtt_client.subscribe("sign/foosball/red");
+
     } else {
       Serial.print("failed, rc=");
       Serial.print(mqtt_client.state());
@@ -244,6 +248,28 @@ void connect_wifi() {
     Serial.println("Connected without SSL validation!");
   } else {
     Serial.println("Connection failed.");
+  }
+}
+
+
+void callback(char* topic, byte* message, unsigned int length) {
+  Serial.print("Message arrived on topic: ");
+  Serial.print(topic);
+  Serial.print(". Message: ");
+  String messageTemp;
+
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)message[i]);
+    messageTemp += (char)message[i];
+  }
+  Serial.println();
+
+  // Feel free to add more if statements to control more GPIOs with MQTT
+
+  if (String(topic) == "sign/foosball/red") {
+    if (messageTemp == "calibrate"){
+
+    }
   }
 }
 
