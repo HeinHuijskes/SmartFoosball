@@ -85,8 +85,10 @@ class Website:
             #routing to the website pages
             @self.app.route('/feedpage.html')
             def feedpage():
+                kicker = self.game.get_kicker()
+                print(kicker)
                 print("feedpage in website")
-                return render_template('feedpage.html', scoreL = self.game.score_red, scoreR= self.game.score_blue, max_speed = self.max_speed)
+                return render_template('feedpage.html', scoreL = self.game.score_red, scoreR= self.game.score_blue, max_speed = self.max_speed, kicker =kicker)
 
             @self.app.route('/index.html')
             def indexhtml():
@@ -125,6 +127,12 @@ class Website:
                 average_speed = self.game.get_average_speed()
                 # print("avera_speed",average_speed)
                 return jsonify(max_speed=round(average_speed,8))
+
+            @self.app.route('/update_kicker')
+            def update_kicker():
+                kicker = self.game.get_kicker()
+                print("kicke ri s", kicker)
+                return jsonify(kicker= kicker)
 
             @self.app.route('/new_game')
             def newgame(): #TODO check ball tracking side no infinite loops

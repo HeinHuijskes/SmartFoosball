@@ -192,6 +192,9 @@ class Game(GameSettings):
         self.max_speed = [maxspd[-1]]
         return sum(maxspd)/ len(maxspd)
 
+    def get_kicker(self):
+        return self.detector.kicker
+
     def reset_max_speed(self):
         self.max_speed = [0]
 

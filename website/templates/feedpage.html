@@ -272,6 +272,8 @@
         <p id="score" style="text-align: left; font-weight: 400;"> <span style="color:indianred"> {{scoreL}}</span> - <span style="color: steelblue">{{scoreR}}</span></p>
          <p style="text-align: left">Average FPS </p>
             <p id="speed" style="text-align: left; font-weight: 400;"> {{max_speed}}</p>
+        <p style="text-align: left">Last kicker </p>
+            <p id="kicker" style="text-align: left; font-weight: 400;"> {{kicker}}</p>
     </div>
 </div>
 
@@ -290,6 +292,14 @@
                 $('#speed').html('<p style="text-align: left; font-weight: 400">' + data.max_speed+ '</p>');
             });
         }
-        // Fetch the score every 5 seconds
-        setInterval(fetchSpeed, 500);</script>
+
+     function fetchKicker() {
+            $.getJSON("/update_kicker", function(data) {
+                $('#kicker').html('<p style="text-align: left; font-weight: 400">' + data.kicker+ '</p>');
+            });
+        }
+
+        // Fetch the score and kicker every 5 seconds
+        setInterval(fetchSpeed, 500);
+        setInterval(fetchKicker, 500);</script>
 </html>
