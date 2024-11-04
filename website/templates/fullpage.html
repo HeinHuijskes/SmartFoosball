@@ -143,14 +143,73 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js" type="text/javascript"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-
     <script>
-        // makes the scorebox be able to be placed any where on the screen
+
          $( function() {
              $("#score_box").draggable({ containment: "#ultimate_parent" });
          });
 
-         // to update score
+        function score(color){ //TODO not detect goal when starting page
+            document.getElementById("marquee_outer").style.background = color;
+            document.getElementById("marquee").innerText = "GOAL !  GOAL !  GOAL !";
+            increaseScreenSize(color)
+            setTimeout(function() {
+            document.getElementById("marquee_outer").style.background = color;
+            document.getElementById("marquee").innerText = " "
+             }, 1000);
+            setTimeout(function() {
+            document.getElementById("marquee_outer").style.background = color;
+            document.getElementById("marquee").innerText = "GOAL !  GOAL !  GOAL ! "
+             }, 2000);
+            setTimeout(function() {
+            document.getElementById("marquee_outer").style.background = color;
+            document.getElementById("marquee").innerText = " "
+             }, 4000);
+            setTimeout(function() {
+            document.getElementById("marquee_outer").style.background = color;
+            document.getElementById("marquee").innerText = "GOAL !  GOAL !  GOAL !"
+             }, 6000);
+            setTimeout(function() {
+            document.getElementById("marquee_outer").style.background = "transparent";
+            document.getElementById("marquee").innerText = " ";
+             }, 8100);
+            setTimeout(function (){
+                decreaseScreenSize()
+            }, 8100); //adjust this for amount of time to see replay big, 1000 = 1sec
+
+        }
+
+        function score3(color){
+            let colorL = color
+            $("#delayed_feed").fadeOut(500);
+            $("#video_feed").fadeOut(500);
+            document.getElementById("live_game").style.visibility = "hidden";
+            setTimeout(function() {
+                increaseScreenSize(color)
+                document.getElementsByClassName("goal3x")[0].style.background = color;
+                // document.getElementsByClassName("goal3x")[0].style.boxShadow = "0 0 15px 15px" + colorL;
+                document.getElementById("grey_box").style.boxShadow = "none";
+                let colr = "0 0 3px 3px " + color;
+                $(".goal3x").css("box-shadow", colr); // Set display to flex after fadeIn
+
+                document.getElementsByClassName("goal3x")[0].style.display = "flex";
+            }, 1000);
+            setTimeout(function() {
+                 $(".goal3x").fadeOut(500)
+                 $("#grey_box").fadeOut(250)
+                 $("#delayed_feed").fadeOut(500)
+                 $("#delayed_box").fadeOut(500)
+                 $("#video_feed").fadeOut(3500)
+
+            // document.getElementsByClassName("goal3x")[0].style.display = "none";
+             }, 8100);
+            setTimeout(function (){
+                document.getElementById("live_game").style.visibility = "visible";
+                decreaseScreenSize()
+            }, 9000); //adjust this for amount of time to see replay big, 1000 = 1sec
+        }
+
+        // to update score
         function fetchScore() {
             var oldscore = document.getElementById('scoretext2').innerText;
             var o_scores = oldscore.split(' - ')
@@ -159,12 +218,11 @@
             $('#textcheck').html('<div id="textcheck" style="position: absolute; z-index: 15;"> ' + oldscore + ' </div>');
 
             $.getJSON("/update_score", function (data) {
-                $('#scoretext2').html('<p style="text-align: left; font-weight: 800; margin: 0; padding: 0;"> <span style="color:steelblue">' + data.scoreL + ' </span> - <span style="color: indianred"> ' + data.scoreR + '</span></p>');
+                $('#scoretext2').html('<p style="text-align: left; font-weight: 400; margin: 0; padding: 0;"> <span style="color:steelblue">' + data.scoreL + ' </span> - <span style="color: indianred"> ' + data.scoreR + '</span></p>');
                 var newscoreL = data.scoreL;
                 var newscoreR = data.scoreR;
 
-                //check if the left or right score changed
-               if ((oldscoreL != newscoreL && newscoreL != 0) || (oldscoreR != newscoreR && newscoreR != 0))
+                if (oldscoreL != newscoreL && newscoreL != 0) {
                     $('#textcheck').html('<div id="textcheck" style="position: absolute; z-index: 15;"> CHECKED </div>');
 
                     // Hide video elements initially
@@ -174,22 +232,101 @@
                     // Show delayed video feed
                     setTimeout(function () {
                         $("#delayed_parent").fadeIn(500);
-                    }, 1000); //leave time to show rewind screen
+                    }, 1000); //leave time ro show rewind screen
                     // Delay display of delayed_parent
 
                     setTimeout(function () {
                         $("#repeat_parent").css("display", "none");
                         $("#delayed_parent").fadeOut(500);
-                    }, 5100); // time to show replay
+                    }, 5100);
                     setTimeout(function () {
                         $("#video_box").fadeIn(500);
                     }, 6000);
+                }
+                // if(oldscoreL != newscoreL && newscoreL != 0)
+                //     $('#textcheck').html('<div id="textcheck" style="position: absolute; z-index: 15;"> CHECKED </div>');
+                //     // $("#video_box").fadeOut(500)
+                //     // $("#video_box").css("display", "none");
+                //     // setTimeout(function (){
+                //     // $("#delayed_parent").fadeIn(500)
+                //     // // $("#delayed_parent").css("display", "block")
+                //     // }, 700);
+                //     $("#video_box").css("display", "none");
+                //     $("#delayed_parent").css("display", "none");
+                //     setTimeout(function (){
+                //     $("#video_box").fadeIn(500)
+                //     $("#video_feed2").fadeIn(500)
+                //     $("#delayed_parent").css("display", "none");
+                //     }, 3100);
+                //     setTimeout(function (){
+                //     $("#delayed_parent").css("display", "box");
+                //     }, 5100);
+                //
+                // // if(oldscoreR != newscoreR && newscoreR!= 0)
+                // //     score3("indianred");
+                // });
             });
         };
         // Fetch the score every 5 seconds
         setInterval(fetchScore, 500);
         // to update speed
+
+        //function when new game button is pressed
+        function newgame(){
+            document.getElementById("but_new_game").innerHTML = "new game starting ..."; //TODO change
+            $.getJSON("/new_game", function(data) {
+                $('#but_new_game').html(data.dtext);
+            });
+
+        }
     </script>
+
+<!--    <script>-->
+<!--        // makes the scorebox be able to be placed any where on the screen-->
+<!--         $( function() {-->
+<!--             $("#score_box").draggable({ containment: "#ultimate_parent" });-->
+<!--         });-->
+
+<!--         // to update score-->
+<!--        function fetchScore() {-->
+<!--            var oldscore = document.getElementById('scoretext2').innerText;-->
+<!--            var o_scores = oldscore.split(' - ')-->
+<!--            var oldscoreL = parseInt(o_scores[0]);-->
+<!--            var oldscoreR = parseInt(o_scores[1]);-->
+<!--            $('#textcheck').html('<div id="textcheck" style="position: absolute; z-index: 15;"> ' + oldscore + ' </div>');-->
+
+<!--            $.getJSON("/update_score", function (data) {-->
+<!--                $('#scoretext2').html('<p style="text-align: left; font-weight: 800; margin: 0; padding: 0;"> <span style="color:steelblue">' + data.scoreL + ' </span> - <span style="color: indianred"> ' + data.scoreR + '</span></p>');-->
+<!--                var newscoreL = data.scoreL;-->
+<!--                var newscoreR = data.scoreR;-->
+
+<!--                //check if the left or right score changed-->
+<!--               if ((oldscoreL != newscoreL && newscoreL != 0))-->
+<!--                    $('#textcheck').html('<div id="textcheck" style="position: absolute; z-index: 15;"> CHECKED </div>');-->
+
+<!--                    // Hide video elements initially-->
+<!--                    $("#repeat_parent").css("display", "flex");-->
+<!--                    $("#video_box").fadeOut(500);-->
+
+<!--                    // Show delayed video feed-->
+<!--                    setTimeout(function () {-->
+<!--                        $("#delayed_parent").fadeIn(500);-->
+<!--                    }, 1000); //leave time to show rewind screen-->
+<!--                    // Delay display of delayed_parent-->
+
+<!--                    setTimeout(function () {-->
+<!--                        $("#repeat_parent").css("display", "none");-->
+<!--                        $("#delayed_parent").fadeOut(500);-->
+<!--                    }, 5100); // time to show replay-->
+<!--                    setTimeout(function () {-->
+<!--                        $("#video_box").fadeIn(500);-->
+<!--                    }, 6000);-->
+<!--            });-->
+<!--        };-->
+<!--        // Fetch the score every 5 seconds-->
+<!--        setInterval(fetchScore, 500);-->
+<!--        // to update speed-->
+<!--    </script>-->
 </head>
 <body>
 
