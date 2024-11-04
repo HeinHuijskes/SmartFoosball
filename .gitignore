@@ -9,5 +9,6 @@ runs/detect/*
 !runs/detect/laserfog_long
 !runs/detect/laserfog_v11
 !runs/detect/laserfog
+!runs/detect/LaserFog15
 datasets
 /yolo11n.pt
