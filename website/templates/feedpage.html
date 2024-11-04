@@ -160,7 +160,7 @@
         //function when new game button is pressed
         function newgame(){
             document.getElementById("but_new_game").innerHTML = "new game starting ..."; //TODO change
-            $.getJSON("/new_game", function(data) {
+            $.getJSON("/calibrate", function(data) {
                 $('#but_new_game').html(data.dtext);
             });
 

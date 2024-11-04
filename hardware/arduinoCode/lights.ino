@@ -166,7 +166,7 @@ void waveUp(CRGB color1, CRGB color2, CRGB color3) {
     delay(WAVE_TIME);
   }
 
-  for (int i = 0; i < NUM_LEDS_TOP / 2; i++) {
+  for (int i = 0; i <= NUM_LEDS_TOP / 2; i++) {
     ledsTop[i] = color3;
     ledsTop[NUM_LEDS_TOP - 1 - i] = color3;
     FastLED.show();
@@ -341,4 +341,18 @@ void blinkAmount(CRGB color, CRGB colorBackground, int amount) {
     fillSolid(colorBackground, ledsTop, NUM_LEDS_TOP);
     delay(delayTime);
   }
+}
+
+void calibrateAruco() {
+  fillSolid(white, ledsBlue, NUM_LEDS_BLUE);
+  fillSolid(white, ledsRed, NUM_LEDS_RED);
+  fillSolid(white, ledsTop, NUM_LEDS_TOP);
+}
+
+void stopCalibrating() {
+  fillSolid(white, ledsTop, NUM_LEDS_TOP);
+  fillSolid(red, ledsRed, NUM_LEDS_RED);
+  fillSolid(blue, ledsBlue, NUM_LEDS_BLUE);
+  fillBottom(green, ledsRed, NUM_LEDS_RED, score_red);
+  fillBottom(pink, ledsBlue, NUM_LEDS_BLUE, score_blue);
 }

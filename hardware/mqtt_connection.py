@@ -10,6 +10,7 @@ PASSWORD = 'voetbal_tafel'
 PORT = 1883  # Default MQTT port
 TOPIC_BLUE = 'sign/foosball/blue'
 TOPIC_RED = 'sign/foosball/red'
+TOPIC_CALIBRATE = 'sign/foosball/calibrate'
 
 
 class Mqttserver:
@@ -56,6 +57,10 @@ class Mqttserver:
         elif team is Team.BLUE:
             self.client.publish(TOPIC_BLUE, str(score))
             print("sent to blue")
+
+        elif team == 'calibrate':
+            self.client.publish(TOPIC_CALIBRATE, str(score))
+            print("sent to calibrate")
 
     def on_message(self, client, userdata, message):
         """

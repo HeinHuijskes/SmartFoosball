@@ -49,6 +49,7 @@ const char* mqtt_user = "voetbal_tafel";
 const char* mqtt_pass = "voetbal_tafel";
 const char* mqtt_topic_red = "sign/foosball/red";    // MQTT topic to publish messages
 const char* mqtt_topic_blue = "sign/foosball/blue";  // MQTT topic to publish messages
+const char* mqtt_topic_calibrate = "sign/foosball/calibrate"; // MQTT topic for calibrating
 WiFiClient espClient;
 PubSubClient mqtt_client(espClient);
 
@@ -89,6 +90,7 @@ void setup() {
   waveDown(blue, red, 0);
 
   Serial.println("start");
+  // calibrateAruco();
 }
 
 /*
@@ -211,7 +213,7 @@ void reconnect() {
     // Try to connect using client ID, username, and password
     if (mqtt_client.connect("ESP32Client", mqtt_user, mqtt_pass)) {
       Serial.println("connected");
-      mqtt_client.subscribe("sign/foosball/red");
+      mqtt_client.subscribe("sign/foosball/calibrate");
 
     } else {
       Serial.print("failed, rc=");
@@ -272,9 +274,11 @@ void callback(char* topic, byte* message, unsigned int length) {
 
   // Feel free to add more if statements to control more GPIOs with MQTT
 
-  if (String(topic) == "sign/foosball/red") {
-    if (messageTemp == "calibrate"){
-
+  if (String(topic) == "sign/foosball/calibrate") {
+    if (messageTemp == "calibrate") {
+      calibrateAruco();
+    } else if (messageTemp == "stop calibrating") {
+      stopCalibrating();
     }
   }
 }
@@ -298,4 +302,8 @@ void handleReset() {
   tresholdBlue = getTreshold(sensorPinBlue);
   tresholdRed = getTreshold(sensorPinRed);
   waveDown(blue, red, 0);
+
+  calibrateAruco();
+  delay(2000);
+  stopCalibrating();
 }
