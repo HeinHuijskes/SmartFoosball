@@ -246,7 +246,18 @@ void connect_wifi() {
   }
 }
 
+/*
+This function handles incoming messages from the MQTT server.
+It runs automatically when the server publishes something new
 
+Input:
+  char* topic: the topic the message is from
+  byte* message: the message that is received
+  unsigned int length: the length of the received message
+
+Output:
+  There is no return value, but the threshold of the given pin will be set to a good value so goals will be detected.
+*/
 void callback(char* topic, byte* message, unsigned int length) {
   Serial.print("Message arrived on topic: ");
   Serial.print(topic);
