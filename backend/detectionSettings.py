@@ -43,14 +43,14 @@ class DetectionSettings:
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.parameters)
 
         # Load custom trained YOLO object detection model
-        self.model = YOLO("./runs/detect/laserfog_long/weights/best.pt")
+        self.model = YOLO("./runs/detect/LaserFog15/weights/best.pt")
         # Set the model to GPU with CUDA to run faster
         # If this does not work, see README.md for a line on how to recompile/install pytorch with CUDA included
         self.model.to('cuda')
         # The output of this print statement should be along the lines of "cuda:0", not "cpu". It indicates success
         print(self.model.device)
         # Classnames to detect. Only allow YOLO to detect the "balls" class, which was custom trained in "best.pt".
-        self.classNames = ["balls"]
+        self.classNames = ["ball"]
 
         # Blue and red mask variables
         self.blue_mask = None

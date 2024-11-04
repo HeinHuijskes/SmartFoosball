@@ -171,9 +171,10 @@ class Detection(DetectionSettings):
         # Calculate the angle of the playing field compared to the x-axis
         opposite = abs(self.corners[2][1] - self.corners[3][1])
         side = abs(self.corners[2][0] - self.corners[3][0])
-        self.angle = math.atan(opposite / side)
-        if self.angle < 0:
-            self.angle += 2 * math.pi
+        if self.corners[2][1] < self.corners[3][1]:
+            self.angle = math.atan(opposite / side)
+        else:
+            self.angle = -math.atan(opposite / side)
 
         angle = self.angle
         a_x = self.mid_x
@@ -197,23 +198,28 @@ class Detection(DetectionSettings):
         return
 
     def ballDetectionYOLO(self, frame):
+        """Use Yolo model and save predicted ball location"""
         result = self.model.predict(frame, verbose=False)
+        # Get the result with the highest confidence
         if result and result[0].boxes:
             boxes = result[0].boxes
             box = boxes[0]
-            # confidence = box.conf
             x1, y1, x2, y2 = box.xyxy[0]
             x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
             w, h = x2 - x1, y2 - y1
             position = [x1 + w // 2, y1 + h // 2]
             self.kalman_count = 0
         else:
+            # If there is no result with reasonable confidence, use Kalman filter
             position = self.kalman()
         self.add_ball_position(position)
         return frame
 
     def kalman(self):
+        """Use Kalman filter to predict a new ball position"""
         last_position = self.ball_positions[-1]
+        # Check if there are enough recent ball positions to predict,
+        # and there have not been too many Kalman predictions in a row
         if len(last_position) < 3 or self.kalman_count > 8:
             return []
         speed_vector = last_position[3]
@@ -223,11 +229,13 @@ class Detection(DetectionSettings):
         return prediction
 
     def add_ball_position(self, position):
+        """Store ball position and calculate speed"""
         old_position = self.ball_positions[-1]
         if len(position) != 0:
             self.last_known_position = position
 
         if len(position) != 0 and len(old_position) != 0:
+            # Calculate speed and store if maximum ball speed
             pixel_speed = math.sqrt((position[0] - old_position[0]) ** 2 + (position[1] - old_position[1]) ** 2)
 
             speed = pixel_speed * self.pixel_width_cm / 100 * self.fps
@@ -239,6 +247,7 @@ class Detection(DetectionSettings):
         return
 
     def draw_ball_positions(self, frame):
+        """Draw a line following the recent ball positions"""
         old_position = self.ball_positions[-self.ball_frames]
         for position in self.ball_positions[-self.ball_frames:]:
             if len(position) == 0 or len(old_position) == 0:
@@ -358,7 +367,7 @@ class Detection(DetectionSettings):
             x_diff = abs((x - old_x) / x)
             y_diff = abs((y - old_y) / y)
             # Return true if significant difference in vectors
-            if (x_diff > 5.0 or y_diff > 5.0) and self.possession_zone != -1:
+            if (x_diff > 4.0 or y_diff > 4.0) and self.possession_zone != -1:
                 print(self.possession_zone)
                 self.last_kick_position = self.ball_positions[-1]
                 return True
