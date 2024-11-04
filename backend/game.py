@@ -59,7 +59,7 @@ class Game(GameSettings):
             if DEBUG:
                 frame = self.detector.detect_debug(frame, self.mode)
             else:
-                frame = self.detector.detect(frame)
+                frame, fps = self.detector.detect(frame)
 
             self.showFrame(frame)
 
@@ -78,7 +78,8 @@ class Game(GameSettings):
             if not nextFrame:
                 print("No frame")
                 frame = cv2.imread("../website/Error_mirrored.jpg")
-            frame = self.detector.detect(frame)
+            frame, fps = self.detector.detect(frame)
+            print("fps detect", fps)
             # Encode frame for website
             ret, jpeg = cv2.imencode('.jpg', frame)
             self.buffer.append((jpeg, frame_time))
@@ -86,8 +87,8 @@ class Game(GameSettings):
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        jpeg.tobytes() + b'\r\n')
 
-                self.average_speed.append(average_ball_speed)
-                self.max_speed.append(self.detector.max_ball_speed)
+                # self.average_speed.append(average_ball_speed)
+                self.max_speed.append(fps)
             end = time.time()
 
     def getFrame(self, video):
@@ -187,8 +188,9 @@ class Game(GameSettings):
             self.score_blue = score
 
     def get_max_speed(self):
+        # max speed is now fps
         maxspd = self.max_speed
-        self.max_speed = [maxspd[0]]
+        self.max_speed = [maxspd[-1]]
         return sum(maxspd)/ len(maxspd)
 
     def reset_max_speed(self):
@@ -201,8 +203,11 @@ class Game(GameSettings):
         print("spd: ", spd, "average_spd", self.average_speed)
         return sum(spd)/ len(spd)
 
-    def reset_max_speed(self):
+    def reset_average_speed(self):
         self.average_speed = [0]
+
+    def reset_max_speed(self):
+        self.max_speed = [0]
 
     def reset_game(self):
         self.score_red = 0

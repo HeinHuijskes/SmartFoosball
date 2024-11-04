@@ -173,14 +173,14 @@
             var oldscoreL = parseInt(o_scores[0]);
             var oldscoreR = parseInt(o_scores[1]);
             $.getJSON("/update_score", function(data) {
-                $('#score').html('<p style="text-align: left; font-weight: 800"> <span style="color:steelblue">' + data.scoreL + ' </span> - <span style="color: indianred"> ' + data.scoreR + '</span></p>');
+                $('#score').html('<p style="text-align: left; font-weight: 800"> <span style="color:indianred">' + data.scoreL + ' </span> - <span style="color: steelblue"> ' + data.scoreR + '</span></p>');
 
             var newscoreL= data.scoreL;
             var newscoreR = data.scoreR;
             if(oldscoreL != newscoreL && newscoreL != 0)
-                score3("steelblue");
-            if(oldscoreR != newscoreR && newscoreR!= 0)
                 score3("indianred");
+            if(oldscoreR != newscoreR && newscoreR!= 0)
+                score3("steelblue");
             });
 
 
@@ -269,8 +269,8 @@
 
     <div class="center_child" id="right_center_child" style="width: 19%; padding: 3%;margin-top: 5%" >
          <p style="text-align: left">Match score </p>
-        <p id="score" style="text-align: left; font-weight: 400;"> <span style="color:steelblue"> {{scoreL}}</span> - <span style="color: indianred">{{scoreR}}</span></p>
-         <p style="text-align: left">Maximum speed </p>
+        <p id="score" style="text-align: left; font-weight: 400;"> <span style="color:indianred"> {{scoreL}}</span> - <span style="color: steelblue">{{scoreR}}</span></p>
+         <p style="text-align: left">Average FPS </p>
             <p id="speed" style="text-align: left; font-weight: 400;"> {{max_speed}}</p>
     </div>
 </div>
@@ -286,7 +286,7 @@
 <script>
    //updates the max_speed from the flask_website.py
      function fetchSpeed() {
-            $.getJSON("/update_average_speed", function(data) {
+            $.getJSON("/update_speed", function(data) {
                 $('#speed').html('<p style="text-align: left; font-weight: 400">' + data.max_speed+ '</p>');
             });
         }

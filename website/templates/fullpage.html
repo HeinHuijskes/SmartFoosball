@@ -158,12 +158,12 @@
             $('#textcheck').html('<div id="textcheck" style="position: absolute; z-index: 15;"> ' + oldscore + ' </div>');
 
             $.getJSON("/update_score", function (data) {
-                $('#scoretext2').html('<p style="text-align: left; font-weight: 800; margin: 0; padding: 0;"> <span style="color:steelblue">' + data.scoreL + ' </span> - <span style="color: indianred"> ' + data.scoreR + '</span></p>');
+                $('#scoretext2').html('<p style="text-align: left; font-weight: 800; margin: 0; padding: 0;"> <span style="color:indianred">' + data.scoreL + ' </span> - <span style="color: steelblue"> ' + data.scoreR + '</span></p>');
                 var newscoreL = data.scoreL;
                 var newscoreR = data.scoreR;
 
-                if (oldscoreL != newscoreL && newscoreL != 0 || (oldscoreR != newscoreR && newscoreR != 0)) {
-                    $('#textcheck').html('<div id="textcheck" style="position: absolute; z-index: 15;"> CHECKED </div>');
+                if (oldscoreL != newscoreL && newscoreL != 0 ) {
+                     $('#textcheck').html('<div id="textcheck" style="position: absolute; z-index: 15;"> CHECKED </div>');
 
                     // Hide video elements initially
                     $("#repeat_parent").css("display", "flex");
@@ -171,8 +171,11 @@
 
                     // Show delayed video feed
                     setTimeout(function () {
+                        $("#delayed_parent").css("background", "indianred");
                         $("#delayed_parent").fadeIn(500);
                     }, 1000); //leave time ro show rewind screen
+                    // Show delayed video feed
+
                     // Delay display of delayed_parent
 
                     setTimeout(function () {
@@ -182,6 +185,38 @@
                     setTimeout(function () {
                         $("#video_box").fadeIn(500);
                     }, 6000);
+                    // change back backgrounnd in the background
+                     setTimeout(function () {
+                         $("#delayed_parent").css("background", "transparent");
+                    }, 6600);
+                }
+                if (oldscoreR != newscoreR && newscoreR != 0) {
+                   $('#textcheck').html('<div id="textcheck" style="position: absolute; z-index: 15;"> CHECKED </div>');
+
+                    // Hide video elements initially
+                    $("#repeat_parent").css("display", "flex");
+                    $("#video_box").fadeOut(500);
+
+                    // Show delayed video feed
+                    setTimeout(function () {
+                        $("#delayed_parent").css("background", "steelblue");
+                        $("#delayed_parent").fadeIn(500);
+                    }, 1000); //leave time ro show rewind screen
+                    // Show delayed video feed
+
+                    // Delay display of delayed_parent
+
+                    setTimeout(function () {
+                        $("#repeat_parent").css("display", "none");
+                        $("#delayed_parent").fadeOut(500);
+                    }, 5100);
+                    setTimeout(function () {
+                        $("#video_box").fadeIn(500);
+                    }, 6000);
+                    // change back backgrounnd in the background
+                     setTimeout(function () {
+                         $("#delayed_parent").css("background", "transparent");
+                    }, 6600);
                 }
             });
         };
@@ -255,7 +290,7 @@
 
 <div id="score_box">
         <p id="scoretext"style="text-align: left">Match score </p>
-        <p id="scoretext2" style="text-align: left; font-weight: 400;"> <span style="color:steelblue"> {{scoreL}}</span> - <span style="color: indianred">{{scoreR}}</span></p>
+        <p id="scoretext2" style="text-align: left; font-weight: 400;"> <span style="color:indianred"> {{scoreL}}</span> - <span style="color: steelblue">{{scoreR}}</span></p>
 </div>
 
 <div id="video_box">

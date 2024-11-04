@@ -20,13 +20,13 @@ class Detection(DetectionSettings):
         Apply YOLO to find the ball, draw all last known ball positions as a line, display text information and scale.
         Works best with a pre-cropped frame displaying only a foosball table, though not strictly required.
         """
-        self.updateTime()
+        fps = self.updateTime()
         frame = self.ballDetectionYOLO(frame)
         frame = self.draw_ball_positions(frame)
         self.detect_zone()
-        frame = self.drawTexts(frame)
-        print("ball speed", self.ball_speed)
-        return frame, self.ball_speed
+        fps = max(int(self.fps), 1)
+        print("FPS : ",fps)
+        return frame,fps
 
     def detect_debug(self, frame, mode=Mode.NORMAL):
         """Run basic detection with added debug features. See also `Detection.detect()`."""
@@ -38,7 +38,7 @@ class Detection(DetectionSettings):
         mask = self.selectMask(mode)
 
         # Run regular ball detection
-        frame = self.detect(frame)
+        frame, fps = self.detect(frame)
 
         # Temporary possession zone stuff
         # height, width, _ = frame.shape
@@ -65,9 +65,12 @@ class Detection(DetectionSettings):
             return
         time_elapsed = time.perf_counter_ns() - self.frame_time
         # time_elapsed is in nanoseconds, so divide by 10^9, and by 60 for the past 60 frames
-        self.fps = 1 / (time_elapsed / 1000000000 / 60)
+        fps = 1 / (time_elapsed / 1000000000 / 60)
+        self.fps = fps
+        print("updateTime", self.fps)
         # Update latest current time
         self.frame_time = self.frame_time + time_elapsed
+        return fps
 
     def selectMask(self, mode):
         """Create different colour masks for the frame. Options are BLUE, RED, FUNK, and NORMAL"""
@@ -249,16 +252,17 @@ class Detection(DetectionSettings):
             old_position = position
         return frame
 
-    def drawTexts(self, frame):
-        """Draws FPS and maximum speed on the frame"""
-        self.fps = max(int(self.fps), 1)
+    # def drawTexts(self, frame):
+        # """Draws FPS and maximum speed on the frame"""
+        # self.fps = max(int(self.fps), 1)
+        #
+        # height, width, _ = frame.shape
+        # speed = self.max_ball_speed * 100 // 1 / 100
+        # speed_kmh = speed*3.6*100//1/100
+        # cv2.putText(frame, f'Max speed: {speed} m/s ({speed_kmh} km/h)', (0, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
+        # cv2.putText(frame, f'FPS: {self.fps}', (width//4*3, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
+        # return frame
 
-        height, width, _ = frame.shape
-        speed = self.max_ball_speed * 100 // 1 / 100
-        speed_kmh = speed*3.6*100//1/100
-        cv2.putText(frame, f'Max speed: {speed} m/s ({speed_kmh} km/h)', (0, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
-        cv2.putText(frame, f'FPS: {self.fps}', (width//4*3, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
-        return frame
     
     def zoom_in(self, frame):
         """Zooms in on the ball with specified zoom level"""
