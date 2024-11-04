@@ -272,8 +272,6 @@ void callback(char* topic, byte* message, unsigned int length) {
   }
   Serial.println();
 
-  // Feel free to add more if statements to control more GPIOs with MQTT
-
   if (String(topic) == "sign/foosball/calibrate") {
     if (messageTemp == "calibrate") {
       calibrateAruco();
@@ -302,8 +300,4 @@ void handleReset() {
   tresholdBlue = getTreshold(sensorPinBlue);
   tresholdRed = getTreshold(sensorPinRed);
   waveDown(blue, red, 0);
-
-  calibrateAruco();
-  delay(2000);
-  stopCalibrating();
 }

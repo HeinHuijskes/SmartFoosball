@@ -110,11 +110,6 @@ class Website:
         def fullpage():
             return render_template('fullpage.html', scoreL=self.game.score_red, scoreR=self.game.score_blue)
 
-        # function to update the website
-        @self.app.route('/score')
-        def score():
-            return render_template('feedpage.html', self.game.score_red, scoreR=self.game.score_blue)
-
         @self.app.route('/update_score')
         def update_score():
             return jsonify(scoreL=self.game.score_red, scoreR=self.game.score_blue)
@@ -124,10 +119,10 @@ class Website:
             self.max_speed = self.game.get_max_speed()
             return jsonify(max_speed=self.max_speed)
 
-        @self.app.route('/update_speed')
-        def update_speed():
-            self.max_speed = self.game.get_max_speed()
-            return jsonify(max_speed=round(int(self.max_speed), 2))
+        # @self.app.route('/update_speed')
+        # def update_speed():
+        #     self.max_speed = self.game.get_max_speed()
+        #     return jsonify(max_speed=round(int(self.max_speed), 2))
 
         @self.app.route('/update_average_speed')
         def update_average_speed():

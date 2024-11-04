@@ -170,22 +170,22 @@ class Game(GameSettings):
                     continue
         while True:
             # print("hello")
-            for i in range(self.buffer_max_len//2):
-                if len(self.buffer) !=0:
+            for i in range(self.buffer_max_len // 2):
+                if len(self.buffer) != 0:
                     # bframes = self.buffer.copy()
                     # self.buffer.clear()
                     # for jpeg, frame_time in bframes:
-                # if len(self.buffer) != 0:
-                        jpeg, frame_time = self.buffer.popleft()
-                        # self.showFrame(jpeg)
-                        # print(frame_time, "frame_time")
-                        if frame_time > 0 :
-                            time.sleep(frame_time)
-                            # print(jpeg)
-                            yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                    # if len(self.buffer) != 0:
+                    jpeg, frame_time = self.buffer.popleft()
+                    # self.showFrame(jpeg)
+                    # print(frame_time, "frame_time")
+                    if frame_time > 0:
+                        time.sleep(frame_time)
+                        # print(jpeg)
+                        yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                                jpeg.tobytes() + b'\r\n')
-                    else:
-                        continue
+                else:
+                    continue
 
     def add_goal(self, team, score):
         "pass True if one goal should be added to the score of the left goal (RED), else 1 will be added to the right goal (BLUE)"
@@ -198,17 +198,16 @@ class Game(GameSettings):
         # max speed is now fps
         maxspd = self.max_speed
         self.max_speed = [maxspd[-1]]
-        return sum(maxspd)/ len(maxspd)
+        return sum(maxspd) / len(maxspd)
 
     def reset_max_speed(self):
         self.max_speed = [0]
-
 
     def get_average_speed(self):
         spd = self.average_speed
         self.average_speed = [spd[-1]]
         print("spd: ", spd, "average_spd", self.average_speed)
-        return sum(spd)/ len(spd)
+        return sum(spd) / len(spd)
 
     def reset_average_speed(self):
         self.average_speed = [0]
@@ -220,4 +219,3 @@ class Game(GameSettings):
         self.score_red = 0
         self.score_blue = 0
 #         maybe also reset max speed
-
