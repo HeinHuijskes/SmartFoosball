@@ -35,6 +35,7 @@ class DetectionSettings:
         # Last known ball positions, [[x,y], [x,y], ...]
         self.ball_positions = [[]] * (self.ball_frames + 1)  # [[px, px]]
         self.max_ball_speed = 0  # m/s
+        self.ball_speed = 0
         self.last_known_position = [0, 0]
 
         # Settings for aruco detection
@@ -46,7 +47,8 @@ class DetectionSettings:
         self.model = YOLO("./runs/detect/LaserFog15/weights/best.pt")
         # Set the model to GPU with CUDA to run faster
         # If this does not work, see README.md for a line on how to recompile/install pytorch with CUDA included
-        self.model.to('cuda')
+
+        # self.model.to('cuda')
         # The output of this print statement should be along the lines of "cuda:0", not "cpu". It indicates success
         print(self.model.device)
         # Classnames to detect. Only allow YOLO to detect the "balls" class, which was custom trained in "best.pt".
