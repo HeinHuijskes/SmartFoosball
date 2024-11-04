@@ -28,7 +28,7 @@ class Detection(DetectionSettings):
         if kicked:
             kicker = self.find_kicker(frame)
             if kicker == "Dennis Bergkamp":
-                playsound('data/fifa/Voicy_Dennis Bergkamp Goal.mp3')
+                playsound('data/fifa/Voicy_Dennis Bergkamp Goal.mp3', block=False)
             print(kicker)
         frame = self.draw_ball_positions(frame)
         self.detect_zone()
