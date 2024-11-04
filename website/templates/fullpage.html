@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/styles.css">
+    <title> THE SMART FOOSBALL TABLE</title>
+    <link href='https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,200;1,14..32,200&display=swap' rel='stylesheet'>
+    <style>
+        body { font-family: 'Inter'; font-weight: 200; font-size: 22px;
+        margin: 0; padding: 0;}
+        h1 { font-weight: 200; text-align: center}
+        p {text-align: center}
+        img {max-width: 100%; max-height: 100%}
+        .center_child {vertical-align: middle;}
+        #but_new_game:hover { color: grey}
+
+        /*div box around everything filling up full screen*/
+        #ultimate_parent {
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain ;
+        }
+/*the div box around the dealyed feed*/
+        #delayed_parent{
+            z-index: 3;
+            display: none;
+            background-color: white;
+            margin: 0;
+            position : fixed;
+            text-align: center;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        #delayed_feed {
+           width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+        }
+/*the parent div around the 'goal rewind'*/
+        #repeat_parent{
+            z-index: 4;
+            max-width: 100%;
+            max-height: 100%;
+            top:0;
+            left:0;
+            width: 100vw;
+            height: 100vh;
+            background-color: white  ;
+            overflow: hidden;
+            text-align: center;
+            align-items: center;
+            font-size:10rem;
+            display:flex;
+            justify-content: center;
+
+        }
+
+/*the parent div around the text end rewind*/
+        #end_repeat_parent{
+            z-index: 4;
+            width: 100vw;
+            height: 100vh;
+            max-width: 100%;
+            max-height: 100%;
+            top:0;
+            left:0;
+            background-color: white  ;
+            overflow: hidden;
+            text-align: center;
+            align-items: center;
+            font-size:10rem;
+            display:flex;
+            justify-content: center;
+        }
+/*the parent div around the video feed*/
+        #video_box {
+            z-index: 5;
+            visibility: visible;
+            display: block;
+            background-color: white;
+            margin: 0;
+            position : fixed;
+            text-align: center;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+        }
+/*the video feed*/
+        #video_feed2 {
+           width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        #arrow {
+            z-index: 7;
+            position: fixed;
+            left: 30px;
+            top: 30px;
+        }
+
+        #score_box{
+            z-index: 6 ;
+            position: fixed;
+            left: 120px;
+            top: 40px;
+            background-color: #072b25 ;/*dark green*/
+            opacity: 75%;
+            padding: 10px;
+            align-items: center;
+            display:flex;
+            justify-content: center;
+            flex-direction: column;
+
+        }
+/*shows match*/
+        #scoretext {
+            color: white;
+            padding: 0;
+            margin: 0;
+        }
+/*shows scores as e.g. 1 -1 */
+        #scoretext2 {
+            color: white;
+            padding: 0;
+            margin: 0;
+        }
+
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js" type="text/javascript"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script>
+
+         $( function() {
+             $("#score_box").draggable({ containment: "#ultimate_parent" });
+         });
+
+        // to update score
+        function fetchScore() {
+            var oldscore = document.getElementById('scoretext2').innerText;
+            var o_scores = oldscore.split(' - ')
+            var oldscoreL = parseInt(o_scores[0]);
+            var oldscoreR = parseInt(o_scores[1]);
+            $('#textcheck').html('<div id="textcheck" style="position: absolute; z-index: 15;"> ' + oldscore + ' </div>');
+
+            $.getJSON("/update_score", function (data) {
+                $('#scoretext2').html('<p style="text-align: left; font-weight: 800; margin: 0; padding: 0;"> <span style="color:steelblue">' + data.scoreL + ' </span> - <span style="color: indianred"> ' + data.scoreR + '</span></p>');
+                var newscoreL = data.scoreL;
+                var newscoreR = data.scoreR;
+
+                if (oldscoreL != newscoreL && newscoreL != 0 || (oldscoreR != newscoreR && newscoreR != 0)) {
+                    $('#textcheck').html('<div id="textcheck" style="position: absolute; z-index: 15;"> CHECKED </div>');
+
+                    // Hide video elements initially
+                    $("#repeat_parent").css("display", "flex");
+                    $("#video_box").fadeOut(500);
+
+                    // Show delayed video feed
+                    setTimeout(function () {
+                        $("#delayed_parent").fadeIn(500);
+                    }, 1000); //leave time ro show rewind screen
+                    // Delay display of delayed_parent
+
+                    setTimeout(function () {
+                        $("#repeat_parent").css("display", "none");
+                        $("#delayed_parent").fadeOut(500);
+                    }, 5100);
+                    setTimeout(function () {
+                        $("#video_box").fadeIn(500);
+                    }, 6000);
+                }
+            });
+        };
+        // Fetch the score every 5 seconds
+        setInterval(fetchScore, 500);
+        // to update speed
+
+        //function when new game button is pressed
+        function newgame(){
+            document.getElementById("but_new_game").innerHTML = "new game starting ..."; //TODO change
+            $.getJSON("/new_game", function(data) {
+                $('#but_new_game').html(data.dtext);
+            });
+
+        }
+    </script>
+
+<!--    <script>-->
+<!--        // makes the scorebox be able to be placed any where on the screen-->
+<!--         $( function() {-->
+<!--             $("#score_box").draggable({ containment: "#ultimate_parent" });-->
+<!--         });-->
+
+<!--         // to update score-->
+<!--        function fetchScore() {-->
+<!--            var oldscore = document.getElementById('scoretext2').innerText;-->
+<!--            var o_scores = oldscore.split(' - ')-->
+<!--            var oldscoreL = parseInt(o_scores[0]);-->
+<!--            var oldscoreR = parseInt(o_scores[1]);-->
+<!--            $('#textcheck').html('<div id="textcheck" style="position: absolute; z-index: 15;"> ' + oldscore + ' </div>');-->
+
+<!--            $.getJSON("/update_score", function (data) {-->
+<!--                $('#scoretext2').html('<p style="text-align: left; font-weight: 800; margin: 0; padding: 0;"> <span style="color:steelblue">' + data.scoreL + ' </span> - <span style="color: indianred"> ' + data.scoreR + '</span></p>');-->
+<!--                var newscoreL = data.scoreL;-->
+<!--                var newscoreR = data.scoreR;-->
+
+<!--                //check if the left or right score changed-->
+<!--               if ((oldscoreL != newscoreL && newscoreL != 0))-->
+<!--                    $('#textcheck').html('<div id="textcheck" style="position: absolute; z-index: 15;"> CHECKED </div>');-->
+
+<!--                    // Hide video elements initially-->
+<!--                    $("#repeat_parent").css("display", "flex");-->
+<!--                    $("#video_box").fadeOut(500);-->
+
+<!--                    // Show delayed video feed-->
+<!--                    setTimeout(function () {-->
+<!--                        $("#delayed_parent").fadeIn(500);-->
+<!--                    }, 1000); //leave time to show rewind screen-->
+<!--                    // Delay display of delayed_parent-->
+
+<!--                    setTimeout(function () {-->
+<!--                        $("#repeat_parent").css("display", "none");-->
+<!--                        $("#delayed_parent").fadeOut(500);-->
+<!--                    }, 5100); // time to show replay-->
+<!--                    setTimeout(function () {-->
+<!--                        $("#video_box").fadeIn(500);-->
+<!--                    }, 6000);-->
+<!--            });-->
+<!--        };-->
+<!--        // Fetch the score every 5 seconds-->
+<!--        setInterval(fetchScore, 500);-->
+<!--        // to update speed-->
+<!--    </script>-->
+</head>
+<body>
+
+<div id="ultimate_parent">
+<div id="arrow">
+    <a style="margin:0; padding:0;color: black; background-color: transparent; text-decoration: transparent;" href="index.html"> <p>&larr;</p></a>
+</div>
+
+<div id="score_box">
+        <p id="scoretext"style="text-align: left">Match score </p>
+        <p id="scoretext2" style="text-align: left; font-weight: 400;"> <span style="color:steelblue"> {{scoreL}}</span> - <span style="color: indianred">{{scoreR}}</span></p>
+</div>
+
+<div id="video_box">
+            <img id="video_feed2" src="{{ url_for('video_feed') }}" alt="Video Feed" style="object-fit: contain">
+            </div>
+
+<div id="repeat_parent" >
+    <p id="repeat"> GOAL REWIND</p>
+</div>
+<div id="end_repeat_parent" >
+    <p id="end_repeat"> END REWIND</p>
+</div>
+
+<div id="delayed_parent">
+    <img id="delayed_feed" src="{{ url_for('delayed_video_feed') }}" alt="Delayed Video Feed" style="object-fit: contain">
+</div>
+
+    <div id="textcheck" style="position: absolute; z-index: 15;">check </div>
+
+</div>
+</body>
+</html>

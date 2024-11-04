@@ -25,7 +25,8 @@ class Detection(DetectionSettings):
         frame = self.draw_ball_positions(frame)
         self.detect_zone()
         frame = self.drawTexts(frame)
-        return frame
+        print("ball speed", self.ball_speed)
+        return frame, self.ball_speed
 
     def detect_debug(self, frame, mode=Mode.NORMAL):
         """Run basic detection with added debug features. See also `Detection.detect()`."""
@@ -225,9 +226,15 @@ class Detection(DetectionSettings):
             pixel_speed = math.sqrt((position[0]-old_position[0])**2 + (position[1]-old_position[1])**2)
 
             speed = pixel_speed * self.pixel_width_cm / 100 * self.fps
+            print("pixel width: ", self.pixel_width_cm)
             position.append(pixel_speed)
             if speed > self.max_ball_speed and self.pixel_width_cm != 0:
                 self.max_ball_speed = speed
+                print("max_speed", self.max_ball_speed)
+            # extra line to get speed
+            if self.pixel_width_cm != 0:
+                self.ball_speed = speed * 100 // 1 / 100 #m/s
+                print("ball_speed", self.ball_speed)
             position.append((position[0]-old_position[0], position[1]-old_position[1]))
         self.ball_positions.append(position)
         return

@@ -85,6 +85,8 @@ class Game(GameSettings):
             if ret:
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        jpeg.tobytes() + b'\r\n')
+
+                self.average_speed.append(average_ball_speed)
                 self.max_speed.append(self.detector.max_ball_speed)
             end = time.time()
 
@@ -191,6 +193,16 @@ class Game(GameSettings):
 
     def reset_max_speed(self):
         self.max_speed = [0]
+
+
+    def get_average_speed(self):
+        spd = self.average_speed
+        self.average_speed = [spd[-1]]
+        print("spd: ", spd, "average_spd", self.average_speed)
+        return sum(spd)/ len(spd)
+
+    def reset_max_speed(self):
+        self.average_speed = [0]
 
     def reset_game(self):
         self.score_red = 0
