@@ -31,10 +31,11 @@ class DetectionSettings:
 
         # Ball variables
         # Amount of last known ball positions to store
-        self.ball_frames = 10
+        self.ball_frames = 100
         # Last known ball positions, [[x,y], [x,y], ...]
         self.ball_positions = [[]] * (self.ball_frames + 1)  # [[px, px]]
         self.max_ball_speed = 0  # m/s
+        self.ball_speed = 0
         self.last_known_position = [0, 0]
 
         # Settings for aruco detection
@@ -43,14 +44,15 @@ class DetectionSettings:
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.parameters)
 
         # Load custom trained YOLO object detection model
-        self.model = YOLO("./runs/detect/train1/weights/best.pt")
+        self.model = YOLO("./runs/detect/LaserFog15/weights/best.pt")
         # Set the model to GPU with CUDA to run faster
         # If this does not work, see README.md for a line on how to recompile/install pytorch with CUDA included
+
         self.model.to('cuda')
         # The output of this print statement should be along the lines of "cuda:0", not "cpu". It indicates success
         print(self.model.device)
         # Classnames to detect. Only allow YOLO to detect the "balls" class, which was custom trained in "best.pt".
-        self.classNames = ["balls"]
+        self.classNames = ["ball"]
 
         # Blue and red mask variables
         self.blue_mask = None
@@ -64,12 +66,13 @@ class DetectionSettings:
         self.zones = 8 * [(0, 0)]
         rod_distance = 15               # Rods seem to be equidistant from each other
         zone_range = 6
-        self.rod_middles = [11]
+        rod_middles = [11]
         for i in range(len(self.zones) - 1):
-            self.rod_middles.append(self.rod_middles[-1] + rod_distance)
-        print(self.rod_middles)
+            rod_middles.append(rod_middles[-1] + rod_distance)
         for i in range(len(self.zones)):
-            self.zones[i] = (self.rod_middles[i] - 6, self.rod_middles[i] + 6)
-
-        print(self.zones)
-
+            self.zones[i] = (rod_middles[i] - zone_range, rod_middles[i] + zone_range)
+        # Timer for possession times by each rod
+        self.possessions = 8 * [0.0]
+        # Last rod to kick the ball
+        self.last_kick_position = None
+        self.kickers = []  # TODO: Empty when a goal is made

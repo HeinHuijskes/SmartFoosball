@@ -4,8 +4,8 @@ import cv2
 
 from backend.detection import Detection
 from backend.gameSettings import GameSettings
+from backend.staticulator import Staticulator
 from backend.misc import *
-# from hardware.camera import *
 from env import *
 
 
@@ -21,6 +21,8 @@ class Game(GameSettings):
         self.website = website
         self.score_red = 0
         self.score_blue = 0
+
+        self.staticulator = Staticulator()
 
     def calibrate(self, setup=False):
         """Calibrates with aruco codes. Calibrates for a set amount of frames, defined in `self.calibration_frames`."""
@@ -62,7 +64,7 @@ class Game(GameSettings):
             if DEBUG:
                 frame = self.detector.detect_debug(frame, self.mode)
             else:
-                frame = self.detector.detect(frame)
+                frame, fps = self.detector.detect(frame)
 
             self.showFrame(frame)
 
@@ -81,14 +83,17 @@ class Game(GameSettings):
             if not nextFrame:
                 print("No frame")
                 frame = cv2.imread("../website/Error_mirrored.jpg")
-            frame = self.detector.detect(frame)
+            frame, fps = self.detector.detect(frame)
+            print("fps detect", fps)
             # Encode frame for website
             ret, jpeg = cv2.imencode('.jpg', frame)
             self.buffer.append((jpeg, frame_time))
             if ret:
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        jpeg.tobytes() + b'\r\n')
-                self.max_speed.append(self.detector.max_ball_speed)
+
+                # self.average_speed.append(average_ball_speed)
+                self.max_speed.append(fps)
             end = time.time()
 
     def getFrame(self, video):
@@ -119,6 +124,7 @@ class Game(GameSettings):
         key = cv2.waitKey(1)
         match key:
             case 113:  # pressed 'q'
+                self.staticulator.calculate_statistics(detector=self.detector)
                 exit('YOU EXITED?!')
             case 114:  # pressed 'r'
                 self.mode = Mode.RED
@@ -164,19 +170,19 @@ class Game(GameSettings):
                     continue
         while True:
             # print("hello")
-            for i in range(self.buffer_max_len // 2):
-                if len(self.buffer) != 0:
+            for i in range(self.buffer_max_len//2):
+                if len(self.buffer) !=0:
                     # bframes = self.buffer.copy()
                     # self.buffer.clear()
                     # for jpeg, frame_time in bframes:
-                    # if len(self.buffer) != 0:
-                    jpeg, frame_time = self.buffer.popleft()
-                    # self.showFrame(jpeg)
-                    # print(frame_time, "frame_time")
-                    if frame_time > 0:
-                        time.sleep(frame_time)
-                        # print(jpeg)
-                        yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                # if len(self.buffer) != 0:
+                        jpeg, frame_time = self.buffer.popleft()
+                        # self.showFrame(jpeg)
+                        # print(frame_time, "frame_time")
+                        if frame_time > 0 :
+                            time.sleep(frame_time)
+                            # print(jpeg)
+                            yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                                jpeg.tobytes() + b'\r\n')
                     else:
                         continue
@@ -189,9 +195,23 @@ class Game(GameSettings):
             self.score_blue = score
 
     def get_max_speed(self):
+        # max speed is now fps
         maxspd = self.max_speed
-        self.max_speed = [maxspd[0]]
-        return sum(maxspd) / len(maxspd)
+        self.max_speed = [maxspd[-1]]
+        return sum(maxspd)/ len(maxspd)
+
+    def reset_max_speed(self):
+        self.max_speed = [0]
+
+
+    def get_average_speed(self):
+        spd = self.average_speed
+        self.average_speed = [spd[-1]]
+        print("spd: ", spd, "average_spd", self.average_speed)
+        return sum(spd)/ len(spd)
+
+    def reset_average_speed(self):
+        self.average_speed = [0]
 
     def reset_max_speed(self):
         self.max_speed = [0]
@@ -200,3 +220,4 @@ class Game(GameSettings):
         self.score_red = 0
         self.score_blue = 0
 #         maybe also reset max speed
+
