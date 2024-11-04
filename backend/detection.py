@@ -23,6 +23,7 @@ class Detection(DetectionSettings):
         self.updateTime()
         frame = self.ballDetectionYOLO(frame)
         frame = self.draw_ball_positions(frame)
+        self.detect_zone()
         frame = self.drawTexts(frame)
         print("ball speed", self.ball_speed)
         return frame, self.ball_speed
@@ -39,11 +40,22 @@ class Detection(DetectionSettings):
         # Run regular ball detection
         frame = self.detect(frame)
 
+        # Temporary possession zone stuff
+        # height, width, _ = frame.shape
+        # for i in self.rod_middles:
+        #     frame = cv2.line(frame, (int(i / self.pixel_width_cm), 0),
+        #                      (int(i / self.pixel_width_cm), height), Colour.BLACK, 5)
+        # for i in self.zones:
+        #     frame = cv2.line(frame, (int(i[0] / self.pixel_width_cm), 0),
+        #                      (int(i[0] / self.pixel_width_cm), height), Colour.BLACK, 5)
+        #     frame = cv2.line(frame, (int(i[1] / self.pixel_width_cm), 0),
+        #                      (int(i[1] / self.pixel_width_cm), height), Colour.BLACK, 5)
+
         # Apply the colour mask to the frame
         frame = cv2.bitwise_and(frame, frame, mask=mask)
         frame = self.foosMenDetection(frame, mode)
         frame = self.zoom_in(frame)
-        frame = self.scale(frame, 2)
+        frame = self.scale(frame, 0.5)
 
         return frame
 
@@ -308,3 +320,22 @@ class Detection(DetectionSettings):
         resize = (int(width * scaler), int(height * scaler))
         frame = cv2.resize(frame, resize)
         return frame
+
+    def detect_zone(self):
+        """Detect whether the ball is currently in a possession zone, and whether it has been for too long"""
+        if not self.last_known_position == [0, 0]:
+            new_zone = self.get_zone()
+            if new_zone != self.possession_zone or new_zone == -1:
+                self.possession_timer = time.time()
+            else:
+                if time.time() - self.possession_timer > 15.0:
+                    print("Let go of that ball!!!")
+            self.possession_zone = new_zone
+
+    def get_zone(self):
+        """Detect what possession zone the ball is currently in (-1 if none)"""
+        x = self.last_known_position[0] * self.pixel_width_cm
+        for i, z in enumerate(self.zones):
+            if z[0] <= x <= z[1]:
+                return i
+        return -1
