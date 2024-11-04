@@ -4,8 +4,8 @@ import cv2
 
 from backend.detection import Detection
 from backend.gameSettings import GameSettings
+from backend.staticulator import Staticulator
 from backend.misc import *
-# from hardware.camera import *
 from env import *
 from hardware.mqtt_connection import Mqttserver, Team
 
@@ -15,9 +15,7 @@ class Game(GameSettings):
         super().__init__()
         self.detector = Detection(game=self)
         self.website = website
-        self.score_red = 0
-        self.score_blue = 0
-
+        self.staticulator = Staticulator()
 
     def calibrate(self, setup=False):
         """Calibrates with aruco codes. Calibrates for a set amount of frames, defined in `self.calibration_frames`."""
@@ -119,6 +117,7 @@ class Game(GameSettings):
         key = cv2.waitKey(1)
         match key:
             case 113:  # pressed 'q'
+                self.staticulator.calculate_statistics(detector=self.detector)
                 exit('YOU EXITED?!')
             case 114:  # pressed 'r'
                 self.mode = Mode.RED
@@ -213,3 +212,4 @@ class Game(GameSettings):
         self.score_red = 0
         self.score_blue = 0
 #         maybe also reset max speed
+

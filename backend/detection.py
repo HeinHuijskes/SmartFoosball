@@ -5,6 +5,7 @@ import numpy as np
 from backend.detectionSettings import DetectionSettings
 import time
 from backend.misc import Mode, Contour, Colour
+from playsound import playsound
 
 
 class Detection(DetectionSettings):
@@ -22,6 +23,13 @@ class Detection(DetectionSettings):
         """
         fps = self.updateTime()
         frame = self.ballDetectionYOLO(frame)
+        self.detect_zone()
+        kicked = self.detect_kick()
+        if kicked:
+            kicker = self.find_kicker(frame)
+            if kicker == "Dennis Bergkamp":
+                playsound('data/fifa/Voicy_Dennis Bergkamp Goal.mp3', block=False)
+            print(kicker)
         frame = self.draw_ball_positions(frame)
         self.detect_zone()
         fps = max(int(self.fps), 1)
@@ -53,7 +61,7 @@ class Detection(DetectionSettings):
 
         # Apply the colour mask to the frame
         frame = cv2.bitwise_and(frame, frame, mask=mask)
-        frame = self.foosMenDetection(frame, mode)
+        frame, _ = self.foosMenDetection(frame, mode)
         frame = self.zoom_in(frame)
         frame = self.scale(frame, 0.5)
 
@@ -87,7 +95,7 @@ class Detection(DetectionSettings):
             # Apply no colour masks
             return None
         return mask
-    
+
     def aruco(self, frame):
         """Find the ArUco corners on a frame and store them"""
         # Convert to grayscale, invert colours
@@ -170,9 +178,10 @@ class Detection(DetectionSettings):
         # Calculate the angle of the playing field compared to the x-axis
         opposite = abs(self.corners[2][1] - self.corners[3][1])
         side = abs(self.corners[2][0] - self.corners[3][0])
-        self.angle = math.atan(opposite / side)
-        if self.angle < 0:
-            self.angle += 2 * math.pi
+        if self.corners[2][1] < self.corners[3][1]:
+            self.angle = math.atan(opposite / side)
+        else:
+            self.angle = -math.atan(opposite / side)
 
         angle = self.angle
         a_x = self.mid_x
@@ -196,40 +205,47 @@ class Detection(DetectionSettings):
         return
 
     def ballDetectionYOLO(self, frame):
+        """Use Yolo model and save predicted ball location"""
         result = self.model.predict(frame, verbose=False)
+        # Get the result with the highest confidence
         if result and result[0].boxes:
             boxes = result[0].boxes
             box = boxes[0]
-            # confidence = box.conf
             x1, y1, x2, y2 = box.xyxy[0]
             x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
             w, h = x2 - x1, y2 - y1
             position = [x1 + w // 2, y1 + h // 2]
             self.kalman_count = 0
         else:
+            # If there is no result with reasonable confidence, use Kalman filter
             position = self.kalman()
         self.add_ball_position(position)
         return frame
 
     def kalman(self):
+        """Use Kalman filter to predict a new ball position"""
         last_position = self.ball_positions[-1]
+        # Check if there are enough recent ball positions to predict,
+        # and there have not been too many Kalman predictions in a row
         if len(last_position) < 3 or self.kalman_count > 8:
             return []
         speed_vector = last_position[3]
-        prediction = [last_position[0] + speed_vector[0], last_position[1] + speed_vector[1], last_position[2], speed_vector]
+        prediction = [last_position[0] + speed_vector[0], last_position[1] + speed_vector[1], last_position[2],
+                      speed_vector]
         self.kalman_count += 1
         return prediction
 
     def add_ball_position(self, position):
+        """Store ball position and calculate speed"""
         old_position = self.ball_positions[-1]
         if len(position) != 0:
             self.last_known_position = position
 
         if len(position) != 0 and len(old_position) != 0:
-            pixel_speed = math.sqrt((position[0]-old_position[0])**2 + (position[1]-old_position[1])**2)
+            # Calculate speed and store if maximum ball speed
+            pixel_speed = math.sqrt((position[0] - old_position[0]) ** 2 + (position[1] - old_position[1]) ** 2)
 
             speed = pixel_speed * self.pixel_width_cm / 100 * self.fps
-            print("pixel width: ", self.pixel_width_cm)
             position.append(pixel_speed)
             if speed > self.max_ball_speed and self.pixel_width_cm != 0:
                 self.max_ball_speed = speed
@@ -243,6 +259,7 @@ class Detection(DetectionSettings):
         return
 
     def draw_ball_positions(self, frame):
+        """Draw a line following the recent ball positions"""
         old_position = self.ball_positions[-self.ball_frames]
         for position in self.ball_positions[-self.ball_frames:]:
             if len(position) == 0 or len(old_position) == 0:
@@ -275,12 +292,12 @@ class Detection(DetectionSettings):
         size = int(width / self.zoom_levels[self.zoom])
         # Calculates x and y coordinates of window based on ball coordinates
         min_x, max_x = coords[0] - size, coords[0] + size
-        min_x = max(min(min_x, max_x - size*2), 0)
-        max_x = min(max(max_x, min_x + size*2), width)
+        min_x = max(min(min_x, max_x - size * 2), 0)
+        max_x = min(max(max_x, min_x + size * 2), width)
 
         min_y, max_y, = coords[1] - size, coords[1] + size
-        min_y = max(min(min_y, max_y - size*2), 0)
-        max_y = min(max(max_y, min_y + size*2), height)
+        min_y = max(min(min_y, max_y - size * 2), 0)
+        max_y = min(max(max_y, min_y + size * 2), height)
 
         frame = frame[min_y:max_y, min_x:max_x]
         frame = self.scale(frame, self.zoom_levels[self.zoom] / 3)
@@ -288,11 +305,12 @@ class Detection(DetectionSettings):
 
     def foosMenDetection(self, frame, mode):
         """Looks for blue and red, and returns their outlines on the frame."""
+        contoured_frame = frame.copy()
         if not mode == Mode.RED:
-            frame, _ = self.contour_frame(frame, self.blue_mask, self.foos_men_min, self.foos_men_max, Contour.BLUE)
+            contoured_frame, contours = self.contour_frame(contoured_frame, self.blue_mask, self.foos_men_min, self.foos_men_max, Contour.BLUE)
         if not mode == Mode.BLUE:
-            frame, _ = self.contour_frame(frame, self.red_mask, self.foos_men_min, self.foos_men_max, Contour.RED)
-        return frame
+            contoured_frame, contours = self.contour_frame(contoured_frame, self.red_mask, self.foos_men_min, self.foos_men_max, Contour.RED)
+        return contoured_frame, contours
 
     def contour_frame(self, frame, mask, area_min=100, area_max=1000, contour_colour=Contour.BLACK):
         """Colour all contours in a mask depending on a minimum and maximum area.
@@ -329,9 +347,13 @@ class Detection(DetectionSettings):
         """Detect whether the ball is currently in a possession zone, and whether it has been for too long"""
         if not self.last_known_position == [0, 0]:
             new_zone = self.get_zone()
+            # If in a new zone, reset possession timer and note statistics
             if new_zone != self.possession_zone or new_zone == -1:
+                if self.possession_zone != -1:
+                    self.possessions[self.possession_zone] += time.time() - self.possession_timer
                 self.possession_timer = time.time()
             else:
+                # If not in a new zone, check for possession violation
                 if time.time() - self.possession_timer > 15.0:
                     print("Let go of that ball!!!")
             self.possession_zone = new_zone
@@ -343,3 +365,63 @@ class Detection(DetectionSettings):
             if z[0] <= x <= z[1]:
                 return i
         return -1
+
+    def detect_kick(self):
+        """Detect when the ball has been kicked by a significant change in speed vector"""
+        if len(self.ball_positions[-1]) > 2 and len(self.ball_positions[-2]) > 2:
+            x, y = self.ball_positions[-1][3]
+            old_x, old_y = self.ball_positions[-2][3]
+            # Set x and/or y to 1 to prevent division by 0
+            if x == 0:
+                x = 1
+            if y == 0:
+                y = 1
+            # Difference between old and new speed vector
+            x_diff = abs((x - old_x) / x)
+            y_diff = abs((y - old_y) / y)
+            # Return true if significant difference in vectors
+            if (x_diff > 4.0 or y_diff > 4.0) and self.possession_zone != -1:
+                print(self.possession_zone)
+                self.last_kick_position = self.ball_positions[-1]
+                return True
+        return False
+
+    def find_kicker(self, frame):
+        """Find the foosman who last kicked the ball"""
+        ball_y = self.last_kick_position[1]
+        z = self.possession_zone
+
+        # Check which side has possession of the ball, then retrieve contours for that colour
+        if z in [0, 1, 3, 5]:  # blue
+            mode = Mode.BLUE
+            self.blue_mask = self.colour_mask(frame, Colour.BLUE)
+        else:
+            mode = Mode.RED
+            self.red_mask = self.colour_mask(frame, Colour.RED)
+        _, contours = self.foosMenDetection(frame, mode)
+        self.red_mask, self.blue_mask = None, None
+
+        foos_men = []
+        zone = (self.zones[z][0] / self.pixel_width_cm, self.zones[z][1] / self.pixel_width_cm)
+        # Loop over the contours and filter those that lie in the correct zone
+        for contour in contours:
+            x, y, w, h = cv2.boundingRect(contour)
+            if zone[0] < (x + w/2) < zone[1]:
+                foos_men.append(y + h/2)
+
+        if len(foos_men) == 0:
+            return "Impossible"  # No foos_man detected in this zone
+        foos_men = sorted(foos_men)  # Sort the foos_men y-positions large to small
+
+        best_y = abs(foos_men[0] - ball_y)
+        index = 0
+        # Loop over the candidates in the right zone, and find the one closest to the ball
+        for i, y in enumerate(foos_men[1:]):
+            test_y = abs(y - ball_y)
+            if test_y < best_y:
+                best_y = test_y
+                index = i+1
+
+        # Crop the index to avoid index overflow in case too many players are detected
+        index = min(index, len(self.game.staticulator.players[z])-1)
+        return self.game.staticulator.players[z][index]

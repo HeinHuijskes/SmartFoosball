@@ -1,5 +1,5 @@
 # Backend variables
-DEBUG = True
+DEBUG = False
 
 # Database variables
 HOST = "localhost"
