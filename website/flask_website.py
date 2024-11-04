@@ -102,7 +102,7 @@ class Website:
 
             @self.app.route('/fullpage.html')
             def fullpage():
-                return render_template('fullpage.html',  scoreL = self.scoreL, scoreR= self.scoreR)
+                return render_template('fullpage.html',  scoreL = self.game.score_red, scoreR= self.game.score_blue)
 
 
             #function to update the website
