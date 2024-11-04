@@ -24,9 +24,9 @@ OneButton resetButton;
 
 //LEDs
 uint8_t gHue = 0;
-CRGB ledsBlue[NUM_LEDS_BLUE];   //Initializes an array of CRGB objects(individual LEDs)
-CRGB ledsRed[NUM_LEDS_RED];     //Initializes an array of CRGB objects(individual LEDs)
-CRGB ledsTop[NUM_LEDS_TOP];     //Initializes an array of CRGB objects(individual LEDs)
+CRGB ledsBlue[NUM_LEDS_BLUE];  //Initializes an array of CRGB objects(individual LEDs)
+CRGB ledsRed[NUM_LEDS_RED];    //Initializes an array of CRGB objects(individual LEDs)
+CRGB ledsTop[NUM_LEDS_TOP];    //Initializes an array of CRGB objects(individual LEDs)
 
 TaskHandle_t Task1;
 
@@ -37,7 +37,6 @@ CRGB white = CRGB(255, 128, 100);
 CRGB black = CRGB(0, 0, 0);
 CRGB green = CRGB(0, 48, 0);
 CRGB pink = CRGB(64, 0, 16);
-// CRGB pink = CRGB::Pink;
 
 //wifi connection
 const char* ssid = "IoT Cyberlab Zi2070 experiments";
@@ -108,7 +107,6 @@ void loop() {
   resetButton.tick();
   checkGoal(sensorPinBlue, &counterBlue, "blue", tresholdBlue);
   checkGoal(sensorPinRed, &counterRed, "red", tresholdRed);
-  // Serial.println(analogRead(sensorPinRed));
 }
 
 
@@ -125,10 +123,8 @@ Input:
 Output:
   There is no return value, but the ESP32 will send a message to the MQTT server and activate the LEDs in case a goal is detected.
 */
-
 void checkGoal(int sensorPin, int* counter, String team, int treshold) {
   int value = analogRead(sensorPin);
-  // Serial.printf("%s: %d\n", team, value);
   delay(1);
 
   if (value >= treshold) {
@@ -233,7 +229,6 @@ This function connects the ESP32 with the wifi.
 Output:
   There is no return value, the ESP32 will be connected to the wifi.
 */
-
 void connect_wifi() {
   WiFi.begin(ssid, password);
 
@@ -280,7 +275,6 @@ This function resets the score to 0-0 and sets a new threshold for the goal sens
 Output:
   There is no return value, but the score will be 0-0.
 */
-
 void handleReset() {
   Serial.println("reset");
   score_blue = 0;
