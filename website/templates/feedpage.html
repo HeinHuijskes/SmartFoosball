@@ -17,6 +17,14 @@
         #full_screen {text-align: center; color: black; background-color: transparent; text-decoration: transparent; }
         #full_screen:hover { color: grey}
 
+        .info-text {
+            display: none;
+        }
+
+        .info-icon:hover + .info-text{
+            display: block;
+        }
+        
         .goal3x {
             display: flex;
           flex-direction: row;
@@ -274,6 +282,12 @@
             <p id="speed" style="text-align: left; font-weight: 400;"> {{max_speed}}</p>
         <p style="text-align: left">Last kicker </p>
             <p id="kicker" style="text-align: left; font-weight: 400;"> {{kicker}}</p>
+             <div class="info-container">
+                <span class="info-icon">i</span>
+                <div class="info-text">The most recent fooseman that had contact with the ball. Kick to see the image of the foosemen with their corresponding names.
+
+                </div>
+             </div>
     </div>
 </div>
 

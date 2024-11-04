@@ -106,6 +106,9 @@ class Website:
             def fullpage():
                 return render_template('fullpage.html',  scoreL = self.game.score_red, scoreR= self.game.score_blue)
 
+            @self.app.route('/kickerpage.html')
+            def kickerpage():
+                return render_template('kickerpage.html')
 
             #function to update the website
             @self.app.route('/score')
@@ -152,3 +155,10 @@ class Website:
             def rewind():
                 filep = os.path.join(os.getcwd(),'website', 'rewind.png')
                 return send_file(filep, mimetype='image/png')
+
+            @self.app.route('/website/Foosemen_names.png')
+            def image_fnames():
+                filep = os.path.join(os.getcwd(), 'website', 'Foosemen_names.png')
+                return send_file(filep, mimetype='image/png')
+
+
