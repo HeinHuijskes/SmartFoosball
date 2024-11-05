@@ -1,4 +1,4 @@
-#define WAVE_TIME 5
+#define WAVE_TIME 5 // Delay between the steps of the animations
 
 /*
 This function gives all the LEDs in an array the same color.
@@ -343,12 +343,25 @@ void blinkAmount(CRGB color, CRGB colorBackground, int amount) {
   }
 }
 
+/*
+This function turns all the LEDs white, such that the camera can
+see the ArUco codes and is able to calibrate.
+
+Output:
+  There is no return value, but all the LEDs will be white
+*/
 void calibrateAruco() {
   fillSolid(white, ledsBlue, NUM_LEDS_BLUE);
   fillSolid(white, ledsRed, NUM_LEDS_RED);
   fillSolid(white, ledsTop, NUM_LEDS_TOP);
 }
 
+/*
+This function will restore the previous colours of the LEDs after calibrating is done.
+
+Output:
+  There is no return value, but the LEDs will display the colours of the teams and their points in the arches.
+*/
 void stopCalibrating() {
   fillSolid(white, ledsTop, NUM_LEDS_TOP);
   fillSolid(red, ledsRed, NUM_LEDS_RED);

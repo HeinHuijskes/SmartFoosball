@@ -47,9 +47,9 @@ WiFiClientSecure client;
 const char* mqtt_server = "192.168.11.121";
 const char* mqtt_user = "voetbal_tafel";
 const char* mqtt_pass = "voetbal_tafel";
-const char* mqtt_topic_red = "sign/foosball/red";    // MQTT topic to publish messages
-const char* mqtt_topic_blue = "sign/foosball/blue";  // MQTT topic to publish messages
-const char* mqtt_topic_calibrate = "sign/foosball/calibrate"; // MQTT topic for calibrating
+const char* mqtt_topic_red = "sign/foosball/red";              // MQTT topic to publish messages
+const char* mqtt_topic_blue = "sign/foosball/blue";            // MQTT topic to publish messages
+const char* mqtt_topic_calibrate = "sign/foosball/calibrate";  // MQTT topic for calibrating
 WiFiClient espClient;
 PubSubClient mqtt_client(espClient);
 
@@ -90,14 +90,13 @@ void setup() {
   waveDown(blue, red, 0);
 
   Serial.println("start");
-  // calibrateAruco();
 }
 
 /*
 This function is the standard loop function, it is continuously called by the ESP32.
 
 Output:
-  There is no return value, it calls all the functions when they need to be called and makes sure the MQTT server is connected.
+  There is no return value, it calls all the functions when they need to be called and makes sure the MQTT server stays connected.
 */
 void loop() {
   // Reconnect if not connected
@@ -258,7 +257,8 @@ Input:
   unsigned int length: the length of the received message
 
 Output:
-  There is no return value, but the threshold of the given pin will be set to a good value so goals will be detected.
+  There is no return value, but this function handles incoming messages from the MQTT channel,
+  it will turn all the LEDs white when the camera needs to calibrate.
 */
 void callback(char* topic, byte* message, unsigned int length) {
   Serial.print("Message arrived on topic: ");
