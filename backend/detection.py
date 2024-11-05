@@ -30,6 +30,7 @@ class Detection(DetectionSettings):
             if kicker == "Dennis Bergkamp":
                 playsound('data/fifa/Voicy_Dennis Bergkamp Goal.mp3', block=False)
             print(kicker)
+            self.kicker = kicker #this is called by game for the website
         frame = self.draw_ball_positions(frame)
         self.detect_zone()
         fps = max(int(self.fps), 1)
@@ -410,7 +411,7 @@ class Detection(DetectionSettings):
                 foos_men.append(y + h/2)
 
         if len(foos_men) == 0:
-            return "Impossible"  # No foos_man detected in this zone
+            return "No kicker detected"  # No foos_man detected in this zone
         foos_men = sorted(foos_men)  # Sort the foos_men y-positions large to small
 
         best_y = abs(foos_men[0] - ball_y)

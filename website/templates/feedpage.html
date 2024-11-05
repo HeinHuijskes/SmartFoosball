@@ -4,7 +4,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="css/styles.css">
-    <title> THE SMART FOOSBALL TABLE</title>
+    <title>FOOSBLITZ</title>
     <link href='https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,200;1,14..32,200&display=swap' rel='stylesheet'>
     <style>
         body { font-family: 'Inter'; font-weight: 200; font-size: 22px;
@@ -17,6 +17,46 @@
         #full_screen {text-align: center; color: black; background-color: transparent; text-decoration: transparent; }
         #full_screen:hover { color: grey}
 
+        a { text-decoration: transparent; font-size: 22px} /* information button*/
+
+        #around_kicker{
+            display: flex;
+            flex-direction: row;
+        }
+
+        #kicker{
+            width: 69%;
+            padding: 0;
+            margin: 0;
+        }
+        .info-container{
+            display: inline-flex;
+            width: 25%;
+            padding: 0;
+            padding-left: 5%;
+            margin: 0;
+        }
+
+        .info-text {
+            visibility: hidden;
+            flex-grow: 1;
+            width: 100%;
+        }
+
+        .info-icon {
+            font-size: 16px;
+            font-weight: 200;
+            border: 1px solid grey;
+            border-radius: 86%;
+            width: 20px;
+            height: 20px;
+            text-align: center;
+        }
+
+        .info-icon:hover + .info-text{
+            visibility: visible;
+        }
+        
         .goal3x {
             display: flex;
           flex-direction: row;
@@ -91,11 +131,11 @@
                  $("#video_feed").fadeOut(3500)
 
             // document.getElementsByClassName("goal3x")[0].style.display = "none";
-             }, 8100);
+             }, 5900);
             setTimeout(function (){
                 document.getElementById("live_game").style.visibility = "visible";
                 decreaseScreenSize()
-            }, 9000); //adjust this for amount of time to see replay big, 1000 = 1sec
+            }, 7000); //adjust this for amount of time to see replay big, 1000 = 1sec
         }
 
         //function to enlarge delayed video feed
@@ -201,7 +241,7 @@
 </head>
 <body>
 <!--navigation arrow back-->
-<div style="position: fixed; margin-left: 10%; z-index: 2">
+<div style="position: fixed; margin-left: 10%; z-index: 10">
     <a style="color: black; background-color: transparent; text-decoration: transparent;" href="index.html"> <p>&larr;</p></a>
 </div>
 
@@ -272,6 +312,18 @@
         <p id="score" style="text-align: left; font-weight: 400;"> <span style="color:indianred"> {{scoreL}}</span> - <span style="color: steelblue">{{scoreR}}</span></p>
          <p style="text-align: left">Average FPS </p>
             <p id="speed" style="text-align: left; font-weight: 400;"> {{max_speed}}</p>
+        <p style="text-align: left">Last kicker </p>
+          <div id="around_kicker"> <!-- this places kicker and i next to eachother-->
+            <p id="kicker" style="text-align: left; font-weight: 400;"> {{kicker}}</p>
+             <div class="info-container">
+                <a class="info-icon" href="kickerpage.html">i</a>
+             </div>
+<!--              <div class="info-text" >-->
+<!--              The most recent fooseman that had contact with the ball. Klick to see the foosemen with their corresponding names.-->
+<!--               </div>-->
+            </div>
+
+
     </div>
 </div>
 
@@ -290,6 +342,14 @@
                 $('#speed').html('<p style="text-align: left; font-weight: 400">' + data.max_speed+ '</p>');
             });
         }
-        // Fetch the score every 5 seconds
-        setInterval(fetchSpeed, 500);</script>
+
+     function fetchKicker() {
+            $.getJSON("/update_kicker", function(data) {
+                $('#kicker').html('<p style="text-align: left; font-weight: 400">' + data.kicker+ '</p>');
+            });
+        }
+
+        // Fetch the score and kicker every 5 seconds
+        setInterval(fetchSpeed, 500);
+        setInterval(fetchKicker, 500);</script>
 </html>

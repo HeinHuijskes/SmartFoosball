@@ -13,7 +13,7 @@ class GameSettings:
         self.video_frames = []
         self.video = None
         self.calibration_frames = 10
-        self.fps = 60 #TODO what do we think of these values? will this work with faster fps?
+        self.fps = 75 #TODO what do we think of these values? will this work with faster fps?
         self.delaysec = 5
         self.buffer_max_len = self.fps * self.delaysec #this value determines the delay
         self.buffer = deque(maxlen=(self.fps * self.delaysec))

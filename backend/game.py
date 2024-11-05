@@ -1,3 +1,4 @@
+import os
 import time
 
 import cv2
@@ -81,8 +82,8 @@ class Game(GameSettings):
             nextFrame, frame = self.getFrame(video)
             # Send error image in case video feed does not work
             if not nextFrame:
-                print("No frame")
-                frame = cv2.imread("../website/Error_mirrored.jpg")
+                image_path = os.path.join('website', 'Error.jpg')
+                frame = cv2.imread(image_path)
             frame, fps = self.detector.detect(frame)
             print("fps detect", fps)
             # Encode frame for website
@@ -157,10 +158,6 @@ class Game(GameSettings):
             bframes = self.buffer.copy()
             self.buffer.clear()
             for jpeg, frame_time in bframes:
-                # if len(self.buffer) != 0:
-                #         jpeg, frame_time = self.buffer.popleft()
-                # self.showFrame(jpeg)
-                # print(frame_time, "frame_time")
                 if frame_time > 0:
                     time.sleep(2 * frame_time)
                     # print(jpeg)
@@ -169,20 +166,13 @@ class Game(GameSettings):
                 else:
                     continue
         while True:
-            # print("hello")
-            for i in range(self.buffer_max_len // 2):
-                if len(self.buffer) != 0:
-                    # bframes = self.buffer.copy()
-                    # self.buffer.clear()
-                    # for jpeg, frame_time in bframes:
-                    # if len(self.buffer) != 0:
-                    jpeg, frame_time = self.buffer.popleft()
-                    # self.showFrame(jpeg)
-                    # print(frame_time, "frame_time")
-                    if frame_time > 0:
-                        time.sleep(frame_time)
-                        # print(jpeg)
-                        yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+            for i in range(self.buffer_max_len//2):
+                if len(self.buffer) !=0:
+                        jpeg, frame_time = self.buffer.popleft()
+                        if frame_time > 0 :
+                            time.sleep(frame_time)
+                            # print(jpeg)
+                            yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                                jpeg.tobytes() + b'\r\n')
                 else:
                     continue
@@ -199,6 +189,9 @@ class Game(GameSettings):
         maxspd = self.max_speed
         self.max_speed = [maxspd[-1]]
         return sum(maxspd) / len(maxspd)
+
+    def get_kicker(self):
+        return self.detector.kicker
 
     def reset_max_speed(self):
         self.max_speed = [0]
