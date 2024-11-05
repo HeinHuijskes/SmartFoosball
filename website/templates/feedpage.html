@@ -17,12 +17,39 @@
         #full_screen {text-align: center; color: black; background-color: transparent; text-decoration: transparent; }
         #full_screen:hover { color: grey}
 
+        a { text-decoration: transparent; font-size: 36px} /* information button*/
+
+        #around_kicker{
+            display: flex;
+            flex-direction: row;
+        }
+
+        #kicker{
+            width: 69%;
+            padding: 0;
+            margin: 0;
+        }
+        .info-container{
+            display: inline-flex;
+            width: 25%;
+            padding: 0;
+            padding-left: 5%;
+            margin: 0;
+        }
+
         .info-text {
-            display: none;
+            visibility: hidden;
+            flex-grow: 1;
+            width: 100%;
+        }
+
+        .info-icon {
+            font-size: 20px;
+            font-weight: 200;
         }
 
         .info-icon:hover + .info-text{
-            display: block;
+            visibility: visible;
         }
         
         .goal3x {
@@ -281,13 +308,17 @@
          <p style="text-align: left">Average FPS </p>
             <p id="speed" style="text-align: left; font-weight: 400;"> {{max_speed}}</p>
         <p style="text-align: left">Last kicker </p>
+          <div id="around_kicker"> <!-- this places kicker and i next to eachother-->
             <p id="kicker" style="text-align: left; font-weight: 400;"> {{kicker}}</p>
              <div class="info-container">
-                <span class="info-icon">i</span>
-                <div class="info-text">The most recent fooseman that had contact with the ball. Kick to see the image of the foosemen with their corresponding names.
-
-                </div>
+                <a class="info-icon" href="kickerpage.html">i</a>
              </div>
+<!--              <div class="info-text" >-->
+<!--              The most recent fooseman that had contact with the ball. Klick to see the foosemen with their corresponding names.-->
+<!--               </div>-->
+            </div>
+
+
     </div>
 </div>
 

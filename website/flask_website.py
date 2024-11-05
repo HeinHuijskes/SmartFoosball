@@ -108,7 +108,8 @@ class Website:
 
             @self.app.route('/kickerpage.html')
             def kickerpage():
-                return render_template('kickerpage.html')
+                kicker = self.game.get_kicker()
+                return render_template('kickerpage.html', kicker = kicker)
 
             #function to update the website
             @self.app.route('/score')

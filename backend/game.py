@@ -1,3 +1,4 @@
+import os
 import time
 
 import cv2
@@ -74,8 +75,8 @@ class Game(GameSettings):
             nextFrame, frame = self.getFrame(video)
             # Send error image in case video feed does not work
             if not nextFrame:
-                print("No frame")
-                frame = cv2.imread("../website/Error_mirrored.jpg")
+                image_path = os.path.join('website', 'Error.jpg')
+                frame = cv2.imread(image_path)
             frame, fps = self.detector.detect(frame)
             print("fps detect", fps)
             # Encode frame for website
