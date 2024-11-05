@@ -16,30 +16,27 @@
 //Sensor
 int sensorPinBlue = 35;  //define analog pin 2
 int sensorPinRed = 34;   //define analog pin 3
-// int valueBlue = 0;
 int counterBlue = 0;
 int counterRed = 0;
-int blueGoals = 0;
 int tresholdBlue = 850;
 int tresholdRed = 700;
 OneButton resetButton;
 
 //LEDs
 uint8_t gHue = 0;
-CRGB ledsBlue[NUM_LEDS_BLUE];
-CRGB ledsRed[NUM_LEDS_RED];
-CRGB ledsTop[NUM_LEDS_TOP];
+CRGB ledsBlue[NUM_LEDS_BLUE];  //Initializes an array of CRGB objects(individual LEDs)
+CRGB ledsRed[NUM_LEDS_RED];    //Initializes an array of CRGB objects(individual LEDs)
+CRGB ledsTop[NUM_LEDS_TOP];    //Initializes an array of CRGB objects(individual LEDs)
 
 TaskHandle_t Task1;
 
 //basic colors
-CRGB red = CRGB(255, 0, 0);
-CRGB blue = CRGB(0, 0, 255);
+CRGB red = CRGB(128, 0, 0);
+CRGB blue = CRGB(0, 0, 48);
 CRGB white = CRGB(255, 128, 100);
 CRGB black = CRGB(0, 0, 0);
-CRGB green = CRGB(0, 255, 0);
-CRGB pink = CRGB(255, 0, 64);
-// CRGB pink = CRGB::Pink;
+CRGB green = CRGB(0, 48, 0);
+CRGB pink = CRGB(64, 0, 16);
 
 //wifi connection
 const char* ssid = "IoT Cyberlab Zi2070 experiments";
@@ -50,8 +47,9 @@ WiFiClientSecure client;
 const char* mqtt_server = "192.168.11.121";
 const char* mqtt_user = "voetbal_tafel";
 const char* mqtt_pass = "voetbal_tafel";
-const char* mqtt_topic_red = "sign/foosball/red";    // MQTT topic to publish messages
-const char* mqtt_topic_blue = "sign/foosball/blue";  // MQTT topic to publish messages
+const char* mqtt_topic_red = "sign/foosball/red";              // MQTT topic to publish messages
+const char* mqtt_topic_blue = "sign/foosball/blue";            // MQTT topic to publish messages
+const char* mqtt_topic_calibrate = "sign/foosball/calibrate";  // MQTT topic for calibrating
 WiFiClient espClient;
 PubSubClient mqtt_client(espClient);
 
@@ -59,7 +57,12 @@ PubSubClient mqtt_client(espClient);
 int score_red = 0;
 int score_blue = 0;
 
+/*
+This function is the standard setup function, it is called on startup by the ESP32.
 
+Output:
+  There is no return value, it ensures that all the pins are initialized properly and that the wifi and MQTT server are connected.
+*/
 void setup() {
   Serial.begin(9600);
   resetButton = OneButton(BUTTON_PIN, true, true);
@@ -75,6 +78,8 @@ void setup() {
 
   connect_wifi();
   mqtt_client.setServer(mqtt_server, 1883);  // Port 1883 for non-SSL MQTT
+  mqtt_client.setCallback(callback);
+
   reconnect();
   mqtt_client.publish(mqtt_topic_red, String(score_red).c_str());
   mqtt_client.publish(mqtt_topic_blue, String(score_blue).c_str());
@@ -87,6 +92,12 @@ void setup() {
   Serial.println("start");
 }
 
+/*
+This function is the standard loop function, it is continuously called by the ESP32.
+
+Output:
+  There is no return value, it calls all the functions when they need to be called and makes sure the MQTT server stays connected.
+*/
 void loop() {
   // Reconnect if not connected
   if (!mqtt_client.connected()) {
@@ -97,12 +108,24 @@ void loop() {
   resetButton.tick();
   checkGoal(sensorPinBlue, &counterBlue, "blue", tresholdBlue);
   checkGoal(sensorPinRed, &counterRed, "red", tresholdRed);
-  // Serial.println(analogRead(sensorPinRed));
 }
 
+
+/*
+This function checks whether a goal has been made.
+It does this by measuring whether the sensor output is higher than the threshold for a few measurements in a row.
+
+Input:
+  int sensorPin: the pin to which the sensor is connected
+  int* counter: the counter that belongs to the sensorPin
+  String team: the team that might make a goal
+  int treshold: the threshold belonging to the sensorPin
+
+Output:
+  There is no return value, but the ESP32 will send a message to the MQTT server and activate the LEDs in case a goal is detected.
+*/
 void checkGoal(int sensorPin, int* counter, String team, int treshold) {
   int value = analogRead(sensorPin);
-  // Serial.printf("%s: %d\n", team, value);
   delay(1);
 
   if (value >= treshold) {
@@ -149,6 +172,16 @@ void checkGoal(int sensorPin, int* counter, String team, int treshold) {
   }
 }
 
+/*
+This function sets the threshold above which the ESP32 will detect a goal.
+It does this by taking the average input of 10 measurements and multiplying by 1.1 so random spikes do not trigger a goal.
+
+Input:
+  int sensorPin: the pin of which the program will take the output
+
+Output:
+  There is no return value, but the threshold of the given pin will be set to a good value so goals will be detected.
+*/
 int getTreshold(int sensorPin) {
   int iterations = 10;
   int total = 0;
@@ -166,6 +199,12 @@ int getTreshold(int sensorPin) {
   return treshold;
 }
 
+/*
+This function ensures the ESP32 is connected to the MQTT server.
+
+Output:
+  There is no return value, the ESP32 will be connected to the MQTT server.
+*/
 void reconnect() {
   // Loop until the client is connected
   while (!mqtt_client.connected()) {
@@ -173,6 +212,8 @@ void reconnect() {
     // Try to connect using client ID, username, and password
     if (mqtt_client.connect("ESP32Client", mqtt_user, mqtt_pass)) {
       Serial.println("connected");
+      mqtt_client.subscribe("sign/foosball/calibrate");
+
     } else {
       Serial.print("failed, rc=");
       Serial.print(mqtt_client.state());
@@ -182,6 +223,13 @@ void reconnect() {
   }
 }
 
+
+/*
+This function connects the ESP32 with the wifi.
+
+Output:
+  There is no return value, the ESP32 will be connected to the wifi.
+*/
 void connect_wifi() {
   WiFi.begin(ssid, password);
 
@@ -190,7 +238,6 @@ void connect_wifi() {
     Serial.println("Connecting to WiFi...");
   }
 
-  // Disable SSL certificate validation (Not secure!)
   client.setInsecure();
 
   if (client.connect("your-server.com", 443)) {
@@ -200,14 +247,57 @@ void connect_wifi() {
   }
 }
 
+/*
+This function handles incoming messages from the MQTT server.
+It runs automatically when the server publishes something new
 
+Input:
+  char* topic: the topic the message is from
+  byte* message: the message that is received
+  unsigned int length: the length of the received message
+
+Output:
+  There is no return value, but this function handles incoming messages from the MQTT channel,
+  it will turn all the LEDs white when the camera needs to calibrate.
+*/
+void callback(char* topic, byte* message, unsigned int length) {
+  Serial.print("Message arrived on topic: ");
+  Serial.print(topic);
+  Serial.print(". Message: ");
+  String messageTemp;
+
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)message[i]);
+    messageTemp += (char)message[i];
+  }
+  Serial.println();
+
+  if (String(topic) == "sign/foosball/calibrate") {
+    if (messageTemp == "calibrate") {
+      calibrateAruco();
+    } else if (messageTemp == "stop calibrating") {
+      stopCalibrating();
+    }
+  }
+}
+
+
+/*
+This function resets the score to 0-0 and sets a new threshold for the goal sensors.
+
+Output:
+  There is no return value, but the score will be 0-0.
+*/
 void handleReset() {
   Serial.println("reset");
   score_blue = 0;
   score_red = 0;
   mqtt_client.publish(mqtt_topic_red, String(score_red).c_str());
   mqtt_client.publish(mqtt_topic_blue, String(score_blue).c_str());
-  waveOutwards(white, white, white, 0, 0);
-  waveDown(blue, red, 0);
+
+  fillSolid(black, ledsTop, NUM_LEDS_TOP);
   waveUp(white, white, white);
+  tresholdBlue = getTreshold(sensorPinBlue);
+  tresholdRed = getTreshold(sensorPinRed);
+  waveDown(blue, red, 0);
 }

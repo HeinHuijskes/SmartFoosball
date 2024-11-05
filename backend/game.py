@@ -8,7 +8,11 @@ from backend.gameSettings import GameSettings
 from backend.staticulator import Staticulator
 from backend.misc import *
 from env import *
-from hardware.mqtt_connection import Mqttserver, Team
+
+
+class Team(Enum):
+    RED = 1
+    BLUE = 2
 
 
 class Game(GameSettings):
@@ -16,6 +20,9 @@ class Game(GameSettings):
         super().__init__()
         self.detector = Detection(game=self)
         self.website = website
+        self.score_red = 0
+        self.score_blue = 0
+
         self.staticulator = Staticulator()
 
     def calibrate(self, setup=False):
@@ -26,7 +33,7 @@ class Game(GameSettings):
             # Scale up the width slightly to be able to detect aruco codes.
             # Don't scale up too much, since that severely impacts performance
             height, width, _ = frame.shape
-            width = width*1.3
+            width = width * 1.3
             self.video.set(cv2.CAP_PROP_FRAME_WIDTH, int(width))
             self.video.set(cv2.CAP_PROP_FRAME_HEIGHT, int(height))
 
@@ -167,7 +174,8 @@ class Game(GameSettings):
                             # print(jpeg)
                             yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                                jpeg.tobytes() + b'\r\n')
-                        else: continue
+                else:
+                    continue
 
     def add_goal(self, team, score):
         "pass True if one goal should be added to the score of the left goal (RED), else 1 will be added to the right goal (BLUE)"
@@ -180,7 +188,7 @@ class Game(GameSettings):
         # max speed is now fps
         maxspd = self.max_speed
         self.max_speed = [maxspd[-1]]
-        return sum(maxspd)/ len(maxspd)
+        return sum(maxspd) / len(maxspd)
 
     def get_kicker(self):
         return self.detector.kicker
@@ -188,12 +196,11 @@ class Game(GameSettings):
     def reset_max_speed(self):
         self.max_speed = [0]
 
-
     def get_average_speed(self):
         spd = self.average_speed
         self.average_speed = [spd[-1]]
         print("spd: ", spd, "average_spd", self.average_speed)
-        return sum(spd)/ len(spd)
+        return sum(spd) / len(spd)
 
     def reset_average_speed(self):
         self.average_speed = [0]
@@ -205,4 +212,3 @@ class Game(GameSettings):
         self.score_red = 0
         self.score_blue = 0
 #         maybe also reset max speed
-

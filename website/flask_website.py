@@ -1,4 +1,3 @@
-
 import os
 import logging
 import time
@@ -8,7 +7,9 @@ import cv2
 from flask import request
 import threading
 
-from backend.game import Game
+from matplotlib.pyplot import pause
+
+from backend.game import Game, Team
 # from hardware.hardware import *
 from hardware.mqtt_connection import Mqttserver
 
@@ -16,7 +17,6 @@ global app
 
 
 class Website:
-
         def __init__(self):
             # Initialize the camera and frame buffer
             self.app = Flask(__name__)
@@ -148,10 +148,6 @@ class Website:
                 time.sleep(2)
                 return jsonify(dtext = "new game")
 
-            # @self.app.route('/website/rewind.png')
-            # def rewind_img():
-            #     return send_file("website/rewind.png", mimetype='image/gif')
-
             @self.app.route('/website/rewind.png')
             def rewind():
                 filep = os.path.join(os.getcwd(),'website', 'rewind.png')
@@ -161,5 +157,4 @@ class Website:
             def image_fnames():
                 filep = os.path.join(os.getcwd(), 'website', 'Foosemen_names.png')
                 return send_file(filep, mimetype='image/png')
-
 
