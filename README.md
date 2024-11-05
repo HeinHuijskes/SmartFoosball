@@ -1,42 +1,45 @@
 # SmartFoosball
-Smart Foosball Design Project 1A 2024
+Smart Foosball Design Project 1A 2024, University of Twente. 
 
-To install dependencies, run `poetry install`
+Created by Hein Huijskes, Iris ten Klooster, Mathijs Vogelezang, Melle Ploeg, and Sophie Takken.
 
-# Requirements and installation
+## Requirements
+- Python 3.11
+- Poetry
 
-## Pull this repository
-To get this repository, pull it from github using git or clone it and create your own fork. 
-
-## Install requirements
-
-### Python
-Python 3.11 was used to develop this project, though a lower version is likely fine.
-
-### Use poetry to manage dependencies
-Poetry was used to manage dependencies. Run:
-
+## Dependencies
+The entire project can be installed by and run with poetry. Run the following commands to install poetry along with all dependencies and scripts:
 ```
 pip install poetry
+```
+```
 poetry install
-``` 
-Also run:
-```pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 --upgrade --force-reinstall```
-Good luck.
+```
 
-This should install all necessary dependencies for you, so you can skip the steps below. To add a new dependency, simply run `poetry add package-name`, to add package `package-name`.
+## Commands
+Some scripts were defined to easily run the project. Below is an overview of some scripts and extra parameters/commands.
 
-Poetry uses a virtual environment to run, so precede any command by `poetry run`, e.g. `poetry run python tests/databaseTest.py`.
+#### Run
+To preview the system without running the website or ESPN, use `poetry run demo` or `poetry run demo-2` to run one of the two included demo videos.
 
-To list the dependencies used in poetry, use `poetry show`.
+Additionally add `-d` for debug mode and `-b <amount>` to change the length of the ball tracking line.
 
-## Postgres
-See [POSTGRES.md](info/POSTGRES.md).
+#### Key bindings
+When showing frames locally, some keybinds are available to change the behaviour. They are listed here.
+- `p` pauses the video
+- `c` recalibrates the system, and redetects the corners
+- `q` exits the system
+- `s` resets maximum detected ball speed
 
-# Running the project
+#### Debug
+In debug mode, additional keybinds are available.
+- `r` and `b` change the mode to only show blue or red colours
+- `f` and `n` switch between normal and full-colour
+- `d` is disco mode
+- `z` zooms in on the ball
 
-## Env
-Copy the file `env.example.py` and rename the copy to `env.py`. This sets up the needed variables in a way that is not tracked by git, so that your password is not shared.
-
-## Run
-T.B.D.
+## Other
+#### Train ML
+`train_yolo.py` is used to train or evaluate new Machine Learning models on custom training data. 
+#### Generate images
+`generate_data.py` is used to run through the frames in a video and prepare them for image annotation. It crops and rotates the frames, and saves the frames.

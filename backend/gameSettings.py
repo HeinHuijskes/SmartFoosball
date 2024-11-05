@@ -3,7 +3,7 @@ from backend.misc import Mode
 
 
 class GameSettings:
-    def __init__(self):
+    def __init__(self, debug=False):
         self.score_red = 0
         self.score_blue = 0
         self.mode = Mode.NORMAL
@@ -13,9 +13,10 @@ class GameSettings:
         self.video_frames = []
         self.video = None
         self.calibration_frames = 10
-        self.fps = 40 #TODO what do we think of these values? will this work with faster fps?
+        self.fps = 40
         self.delaysec = 5
-        self.buffer_max_len = self.fps * self.delaysec #this value determines the delay
+        self.buffer_max_len = self.fps * self.delaysec  # This value determines the delay
         self.buffer = deque(maxlen=(self.fps * self.delaysec))
         self.max_speed = [1]
         self.average_speed = [1]
+        self.debug = debug

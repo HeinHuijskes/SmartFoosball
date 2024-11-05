@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "smartfoosball"
-version = "0.1.0"
+name = "SmartFoosball"
+version = "1.0.0"
 description = "Very smart table football table"
-authors = ["Your Name <you@example.com>"]
+authors = ["Hein Huijskes", "Iris ten Klooster", "Mathijs Vogelezang", "Melle Ploeg", "Sophie Takken"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -17,6 +17,9 @@ torch = {version = "^2.5.1+cu118", source = "pytorch-gpu"}
 torchvision = {version = "^0.20.1+cu118", source = "pytorch-gpu"}
 torchaudio = {version = "^2.5.1+cu118", source = "pytorch-gpu"}
 
+[tool.poetry.scripts]
+demo = "SmartFoosball.run:demo_1"
+demo-2 = "SmartFoosball.run:demo_2"
 
 [[tool.poetry.source]]
 name = "pytorch-gpu"

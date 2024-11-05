@@ -5,75 +5,90 @@ import cv2
 
 class DetectionSettings:
     def __init__(self):
+        # Amount of frames Kalman Filter has been used for
         self.kalman_count = 0
+        # Max number of frames to use Kalman Filter for
+        self.kalman_max = 8
+
         # Minimum and maximum amount of pixel area to consider a set of pixels a foos-man
         self.foos_men_min = 500  # px
         self.foos_men_max = 5000  # px
 
-        # Table dimensions
+        ## Table dimensions
         self.table_length = 126  # cm
         self.pixel_width_cm = 0  # cm/px
         self.min_x, self.max_x = 0, 0  # px
         self.min_y, self.max_y = 0, 0  # px
         self.mid_x, self.mid_y = 0, 0  # px
-        # Corner coordinates, [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]. Each corner list [x1,y1] is considered as a list of
-        # detected candidates [[x1,y1], [x1,y1], ...] while calibrating. Afterward the average of this is taken.
+
+        # Corner coordinates detemined by ArUco codes, [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]
         self.corners = [[], [], [], []]  # [[px, px]]
-        # The rotate matrix contains values that re-align the angle of the table to be straight
+        # Matrix of values that rotate the table to correct its angle
         self.rotate_matrix = []
         self.angle = 0
+        # Zoom levels, zooms in centered on the ball
+        self.zoom_levels = [1, 1.5, 2, 4, 6, 8, 10]
+        # Index for current zoom level
+        self.zoom_index = 0
 
-        # Start fps is 1, this is later dynamically determined by measuring time per frame
+        # Current FPS, sampled over multiple frames
         self.fps = 1  # f/s
+        # Time since last frame sample
         self.frame_time = time.perf_counter_ns()  # ns
-        self.zoom_levels = [1, 1.5, 2, 4, 6, 8, 10]  # amount of x zoom in debug mode
-        self.zoom = 0  # index for choosing a zoom level
+        # Amount of frames to wait before sampling FPS again
+        self.fps_update_speed = 60
 
-        # Ball variables
         # Amount of last known ball positions to store
-        self.ball_frames = 100
-        # Last known ball positions, [[x,y], [x,y], ...]
-        self.ball_positions = [[]] * (self.ball_frames + 1)  # [[px, px]]
+        self.ball_frames = 30
         self.max_ball_speed = 0  # m/s
+        # Current ball speed
         self.ball_speed = 0
         self.last_known_position = [0, 0]
+        # Previous ball positions, [[x,y], [x,y], ...]
+        self.ball_positions = [[]]  # [[px, px]]
 
         # Settings for aruco detection
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_1000)
         self.parameters = cv2.aruco.DetectorParameters()
-        self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.parameters)
+        self.aruco_detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.parameters)
+        self.calibrated = False
 
         # Load custom trained YOLO object detection model
         self.model = YOLO("./runs/detect/LaserFog15/weights/best.pt")
         # Set the model to GPU with CUDA to run faster
-        # If this does not work, see README.md for a line on how to recompile/install pytorch with CUDA included
+        self.model.to('cuda')
+        if self.game.debug:
+            # The output of this print statement should be along the lines of "cuda:0", not "cpu"
+            print(f'Model loaded on device: {self.model.device}')
 
-        # self.model.to('cuda')
-        # The output of this print statement should be along the lines of "cuda:0", not "cpu". It indicates success
-        print(self.model.device)
-        # Classnames to detect. Only allow YOLO to detect the "balls" class, which was custom trained in "best.pt".
-        self.classNames = ["ball"]
-
-        # Blue and red mask variables
+        # Blue and red masks, used each frame to segment a frame into specific colours
         self.blue_mask = None
         self.red_mask = None
-        self.calibrated = False
 
-        # Possession zone detection settings
-        self.possession_timer = time.time()
-        self.possession_zone = -1       # Change to current possession zone, -1 for none
-
+        # Different possession zones
         self.zones = 8 * [(0, 0)]
-        rod_distance = 15               # Rods seem to be equidistant from each other
-        zone_range = 6
-        rod_middles = [11]
+        # Rods are equidistant from each other, so the distance is always 15 cm (on the table)
+        rod_distance = 15  # cm
+        # Zone radius, so distance a foosman could still reach the ball from (6 cm)
+        zone_range = 6  # cm
+        # List of positions where the middle of different rods are, starting at 11 cm
+        rod_middles = [11]  # [cm]
+
+        # Initialize zone positions
         for i in range(len(self.zones) - 1):
             rod_middles.append(rod_middles[-1] + rod_distance)
         for i in range(len(self.zones)):
             self.zones[i] = (rod_middles[i] - zone_range, rod_middles[i] + zone_range)
+
+        # Count how long the current zone has the ball, max is 15 seconds (official rules)
+        self.possession_timer = time.time()
+        # Current possession zone, -1 for none
+        self.possession_zone = -1
         # Timer for possession times by each rod
         self.possessions = 8 * [0.0]
         # Last rod to kick the ball
         self.last_kick_position = None
-        self.kickers = []  # TODO: Empty when a goal is made
+        # List of past foosman who have kicked the ball
+        self.kickers = []
         self.kicker = "No kicker detected" #the most recent kicker for the website
+

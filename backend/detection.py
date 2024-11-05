@@ -12,8 +12,8 @@ class Detection(DetectionSettings):
     """Class for object detection in a frame, based on colour differences."""
 
     def __init__(self, game):
-        super().__init__()
         self.game = game
+        super().__init__()
 
     def detect(self, frame):
         """
@@ -21,65 +21,55 @@ class Detection(DetectionSettings):
         Apply YOLO to find the ball, draw all last known ball positions as a line, display text information and scale.
         Works best with a pre-cropped frame displaying only a foosball table, though not strictly required.
         """
-        fps = self.updateTime()
-        frame = self.ballDetectionYOLO(frame)
+        self.update_time()
+        self.ball_detection_YOLO(frame)
         self.detect_zone()
-        kicked = self.detect_kick()
-        if kicked:
-            kicker = self.find_kicker(frame)
-            if kicker == "Dennis Bergkamp":
-                playsound('data/fifa/Voicy_Dennis Bergkamp Goal.mp3', block=False)
 
-            self.kicker = kicker #this is called by game for the website
-        frame = self.draw_ball_positions(frame)
-        self.detect_zone()
-        fps = max(int(self.fps), 1)
-        return frame,fps
+        # If the ball changes direction, find out if a foosman kicked it
+        if self.detect_kick():
+            self.kicker = self.find_kicker(frame)
+            if self.kicker == "Dennis Bergkamp":
+                playsound('data/fifa/Voicy_Dennis Bergkamp Goal.mp3', block=False)
+        else:
+            self.kicker = None
+
+        self.draw_ball_positions(frame)
+        return frame
 
     def detect_debug(self, frame, mode=Mode.NORMAL):
         """Run basic detection with added debug features. See also `Detection.detect()`."""
         if mode == Mode.DISCO:
             mode = random.choice([Mode.BLUE, Mode.RED, Mode.FUNK, Mode.NORMAL])
-        # cv2.rotate(frame, cv2.ROTATE_180, frame)
         self.blue_mask = self.colour_mask(frame, Colour.BLUE)
         self.red_mask = self.colour_mask(frame, Colour.RED)
-        mask = self.selectMask(mode)
+        mask = self.select_mask(mode)
 
         # Run regular ball detection
-        frame, fps = self.detect(frame)
+        frame = self.detect(frame)
+        if self.kicker:
+            print(f"Kicked by: {self.kicker}")
 
-        # Temporary possession zone stuff
-        # height, width, _ = frame.shape
-        # for i in self.rod_middles:
-        #     frame = cv2.line(frame, (int(i / self.pixel_width_cm), 0),
-        #                      (int(i / self.pixel_width_cm), height), Colour.BLACK, 5)
-        # for i in self.zones:
-        #     frame = cv2.line(frame, (int(i[0] / self.pixel_width_cm), 0),
-        #                      (int(i[0] / self.pixel_width_cm), height), Colour.BLACK, 5)
-        #     frame = cv2.line(frame, (int(i[1] / self.pixel_width_cm), 0),
-        #                      (int(i[1] / self.pixel_width_cm), height), Colour.BLACK, 5)
-
-        # Apply the colour mask to the frame
         frame = cv2.bitwise_and(frame, frame, mask=mask)
-        frame, _ = self.foosMenDetection(frame, mode)
+        frame, _ = self.foos_men_detection(frame, mode)
+        frame = self.draw_texts(frame)
         frame = self.zoom_in(frame)
         frame = self.scale(frame, 0.5)
 
         return frame
 
-    def updateTime(self):
+    def update_time(self):
         """Update the current FPS every 60 frames. Calculates the average FPS over the elapsed time."""
-        if self.game.time % 60 != 0:
+        # Only update the FPS after a specified number of frames have passed
+        if self.game.time % self.fps_update_speed != 0:
             return
-        time_elapsed = time.perf_counter_ns() - self.frame_time
-        # time_elapsed is in nanoseconds, so divide by 10^9, and by 60 for the past 60 frames
-        fps = 1 / (time_elapsed / 1000000000 / 60)
-        self.fps = fps
-        # Update latest current time
-        self.frame_time = self.frame_time + time_elapsed
-        return fps
 
-    def selectMask(self, mode):
+        time_elapsed = time.perf_counter_ns() - self.frame_time
+        # time_elapsed is in nanoseconds, so divide by 10^9, and by amount of passed frames
+        self.fps = 1 / (time_elapsed / 1000000000 / self.fps_update_speed)
+        self.frame_time = self.frame_time + time_elapsed
+        return
+
+    def select_mask(self, mode):
         """Create different colour masks for the frame. Options are BLUE, RED, FUNK, and NORMAL"""
         if mode == Mode.BLUE:
             # Get the blue colour mask
@@ -97,19 +87,20 @@ class Detection(DetectionSettings):
 
     def aruco(self, frame):
         """Find the ArUco corners on a frame and store them"""
-        # Convert to grayscale, invert colours
+        # Convert to grayscale, invert colours, and up the contrast to detect ArUco more easily
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         inverted = cv2.bitwise_not(gray)
-        # Up the contrast
         cv2.convertScaleAbs(inverted, inverted, 3)
-        # Detect ArUco markers
-        (corners, ids, rejected) = self.detector.detectMarkers(inverted)
+
+        (corners, ids, rejected) = self.aruco_detector.detectMarkers(inverted)
         cv2.aruco.drawDetectedMarkers(frame, corners, ids)
+
         height, width, _ = frame.shape
         mid_x, mid_y = width / 2, height / 2
         if ids is not None:
             ids = ids.flatten()
 
+            # Iterate over detected corners
             for (marker, marker_id) in zip(corners, ids):
                 corner = marker.reshape((4, 2))
                 # Reshape corner to a usable array of 4 corners, each with 2 coordinates (x,y)
@@ -121,6 +112,7 @@ class Detection(DetectionSettings):
                         maximum = distance
                         cx = x
                         cy = y
+                # Check that there are 4 corners detected, and store each corner in the correct spot
                 if len(corners[0][0]) == 4:
                     self.corners[marker_id] = [cx, cy]
 
@@ -139,10 +131,11 @@ class Detection(DetectionSettings):
         if not self.calculateCorners():
             return
 
-        # Calculate a rotation matrix according to the rotation angle
+        # Calculate a rotation matrix according to the rotation angle, then rotate
         self.rotate_matrix = cv2.getRotationMatrix2D((self.mid_x, self.mid_y), -math.degrees(self.angle), 1)
         frame = cv2.warpAffine(frame, self.rotate_matrix, frame.shape[1::-1])
-        # Crop frame
+
+        # Crop the frame
         frame = frame[self.min_y:self.max_y, self.min_x:self.max_x]
         height, width, _ = frame.shape
         self.pixel_width_cm = self.table_length / width
@@ -203,10 +196,10 @@ class Detection(DetectionSettings):
 
         return
 
-    def ballDetectionYOLO(self, frame):
+    def ball_detection_YOLO(self, frame):
         """Use Yolo model and save predicted ball location"""
         result = self.model.predict(frame, verbose=False)
-        # Get the result with the highest confidence
+        # Get the result with the highest confidence (so the first one)
         if result and result[0].boxes:
             boxes = result[0].boxes
             box = boxes[0]
@@ -216,17 +209,17 @@ class Detection(DetectionSettings):
             position = [x1 + w // 2, y1 + h // 2]
             self.kalman_count = 0
         else:
-            # If there is no result with reasonable confidence, use Kalman filter
+            # If there are no results, use Kalman filter
             position = self.kalman()
         self.add_ball_position(position)
-        return frame
+        return
 
     def kalman(self):
         """Use Kalman filter to predict a new ball position"""
         last_position = self.ball_positions[-1]
         # Check if there are enough recent ball positions to predict,
         # and there have not been too many Kalman predictions in a row
-        if len(last_position) < 3 or self.kalman_count > 8:
+        if len(last_position) < 3 or self.kalman_count > self.kalman_max:
             return []
         speed_vector = last_position[3]
         prediction = [last_position[0] + speed_vector[0], last_position[1] + speed_vector[1], last_position[2],
@@ -248,45 +241,48 @@ class Detection(DetectionSettings):
             position.append(pixel_speed)
             if speed > self.max_ball_speed and self.pixel_width_cm != 0:
                 self.max_ball_speed = speed
+                if self.game.debug:
+                    print(f"Updated max speed to {self.max_ball_speed}")
             # extra line to get speed
             if self.pixel_width_cm != 0:
-                self.ball_speed = speed * 100 // 1 / 100 #m/s
+                self.ball_speed = round(speed, 2)  # m/s
             position.append((position[0]-old_position[0], position[1]-old_position[1]))
         self.ball_positions.append(position)
         return
 
     def draw_ball_positions(self, frame):
         """Draw a line following the recent ball positions"""
-        old_position = self.ball_positions[-self.ball_frames]
-        for position in self.ball_positions[-self.ball_frames:]:
+        index = min(len(self.ball_positions), self.ball_frames)
+        old_position = self.ball_positions[-index]
+        for position in self.ball_positions[-index:]:
             if len(position) == 0 or len(old_position) == 0:
+                old_position = position
                 continue
             colour = Contour.BLACK
             frame = cv2.line(frame, old_position[:2], position[:2], colour, 2)
             old_position = position
+        return
+
+    def draw_texts(self, frame):
+        """Draws FPS and maximum speed on the frame"""
+        self.fps = max(int(self.fps), 1)
+
+        height, width, _ = frame.shape
+        speed = self.max_ball_speed * 100 // 1 / 100
+        speed_kmh = speed*3.6*100//1/100
+        cv2.putText(frame, f'Max speed: {speed} m/s ({speed_kmh} km/h)', (0, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
+        cv2.putText(frame, f'FPS: {self.fps}', (width//4*3, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
         return frame
 
-    # def drawTexts(self, frame):
-        # """Draws FPS and maximum speed on the frame"""
-        # self.fps = max(int(self.fps), 1)
-        #
-        # height, width, _ = frame.shape
-        # speed = self.max_ball_speed * 100 // 1 / 100
-        # speed_kmh = speed*3.6*100//1/100
-        # cv2.putText(frame, f'Max speed: {speed} m/s ({speed_kmh} km/h)', (0, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
-        # cv2.putText(frame, f'FPS: {self.fps}', (width//4*3, 50), 1, 1, Contour.BLACK, 2, cv2.LINE_AA)
-        # return frame
-
-    
     def zoom_in(self, frame):
         """Zooms in on the ball with specified zoom level"""
-        if self.zoom == 0:
+        if self.zoom_index == 0:
             return frame
 
         height, width, _ = frame.shape
         coords = self.last_known_position
         # Calculates window size
-        size = int(width / self.zoom_levels[self.zoom])
+        size = int(width / self.zoom_levels[self.zoom_index])
         # Calculates x and y coordinates of window based on ball coordinates
         min_x, max_x = coords[0] - size, coords[0] + size
         min_x = max(min(min_x, max_x - size * 2), 0)
@@ -297,10 +293,10 @@ class Detection(DetectionSettings):
         max_y = min(max(max_y, min_y + size * 2), height)
 
         frame = frame[min_y:max_y, min_x:max_x]
-        frame = self.scale(frame, self.zoom_levels[self.zoom] / 3)
+        frame = self.scale(frame, self.zoom_levels[self.zoom_index] / 3)
         return frame
 
-    def foosMenDetection(self, frame, mode):
+    def foos_men_detection(self, frame, mode):
         """Looks for blue and red, and returns their outlines on the frame."""
         contoured_frame = frame.copy()
         if not mode == Mode.RED:
@@ -342,18 +338,21 @@ class Detection(DetectionSettings):
 
     def detect_zone(self):
         """Detect whether the ball is currently in a possession zone, and whether it has been for too long"""
-        if not self.last_known_position == [0, 0]:
-            new_zone = self.get_zone()
-            # If in a new zone, reset possession timer and note statistics
-            if new_zone != self.possession_zone or new_zone == -1:
-                if self.possession_zone != -1:
-                    self.possessions[self.possession_zone] += time.time() - self.possession_timer
-                self.possession_timer = time.time()
-            else:
-                # If not in a new zone, check for possession violation
-                if time.time() - self.possession_timer > 15.0:
-                    print("Let go of that ball!!!")
-            self.possession_zone = new_zone
+        if self.last_known_position == [0, 0]:
+            return
+
+        new_zone = self.get_zone()
+        # If in a new zone, reset possession timer and note statistics
+        if new_zone != self.possession_zone or new_zone == -1:
+            if self.possession_zone != -1:
+                self.possessions[self.possession_zone] += time.time() - self.possession_timer
+            self.possession_timer = time.time()
+        else:
+            # If not in a new zone, check for possession violation
+            if 16.0 > time.time() - self.possession_timer > 15.0:
+                if self.game.debug:
+                    print("More than 15 seconds of possession! Let go of that ball!")
+        self.possession_zone = new_zone
 
     def get_zone(self):
         """Detect what possession zone the ball is currently in (-1 if none)"""
@@ -378,7 +377,6 @@ class Detection(DetectionSettings):
             y_diff = abs((y - old_y) / y)
             # Return true if significant difference in vectors
             if (x_diff > 4.0 or y_diff > 4.0) and self.possession_zone != -1:
-                print(self.possession_zone)
                 self.last_kick_position = self.ball_positions[-1]
                 return True
         return False
@@ -395,7 +393,7 @@ class Detection(DetectionSettings):
         else:
             mode = Mode.RED
             self.red_mask = self.colour_mask(frame, Colour.RED)
-        _, contours = self.foosMenDetection(frame, mode)
+        _, contours = self.foos_men_detection(frame, mode)
         self.red_mask, self.blue_mask = None, None
 
         foos_men = []

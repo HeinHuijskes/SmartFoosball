@@ -13,11 +13,12 @@ from env import *
 class Team(Enum):
     RED = 1
     BLUE = 2
+from hardware.mqtt_connection import Mqttserver, Team
 
 
 class Game(GameSettings):
-    def __init__(self, website) -> None:
-        super().__init__()
+    def __init__(self, website, debug=False) -> None:
+        super().__init__(debug=debug)
         self.detector = Detection(game=self)
         self.website = website
         self.score_red = 0
@@ -42,7 +43,8 @@ class Game(GameSettings):
         for i in range(0, self.calibration_frames):
             nextFrame, frame = self.video.read()
             self.detector.aruco(frame)
-            self.showFrame(frame)
+            if self.debug:
+                self.showFrame(frame)
         self.detector.calibrate(frame)
 
     def run(self, video):
@@ -62,10 +64,10 @@ class Game(GameSettings):
                 self.skip_frame = False
             nextFrame, frame = self.getFrame(video)
 
-            if DEBUG:
+            if self.debug:
                 frame = self.detector.detect_debug(frame, self.mode)
             else:
-                frame, fps = self.detector.detect(frame)
+                frame = self.detector.detect(frame)
 
             self.showFrame(frame)
 
@@ -84,7 +86,7 @@ class Game(GameSettings):
             if not nextFrame:
                 image_path = os.path.join('website', 'Error.jpg')
                 frame = cv2.imread(image_path)
-            frame, fps = self.detector.detect(frame)
+            frame = self.detector.detect(frame)
             # Encode frame for website
             ret, jpeg = cv2.imencode('.jpg', frame)
             self.buffer.append((jpeg, frame_time))
@@ -93,7 +95,7 @@ class Game(GameSettings):
                        jpeg.tobytes() + b'\r\n')
 
                 # self.average_speed.append(average_ball_speed)
-                self.max_speed.append(fps)
+                self.max_speed.append(self.detector.fps)
             end = time.time()
 
     def getFrame(self, video):
@@ -142,9 +144,9 @@ class Game(GameSettings):
                 self.detector.corners = [[], [], [], []]
                 self.calibrate()
             case 122:  # pressed 'z'
-                self.detector.zoom += 1
-                if self.detector.zoom >= len(self.detector.zoom_levels):
-                    self.detector.zoom = 0
+                self.detector.zoom_index += 1
+                if self.detector.zoom_index >= len(self.detector.zoom_levels):
+                    self.detector.zoom_index = 0
             case 112:  # pressed 'p'
                 self.paused = not self.paused
             case 61:  # pressed '='
