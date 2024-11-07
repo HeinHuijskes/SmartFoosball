@@ -131,11 +131,11 @@
                  $("#video_feed").fadeOut(3500)
 
             // document.getElementsByClassName("goal3x")[0].style.display = "none";
-             }, 5900);
+             }, 6100);
             setTimeout(function (){
                 document.getElementById("live_game").style.visibility = "visible";
                 decreaseScreenSize()
-            }, 7000); //adjust this for amount of time to see replay big, 1000 = 1sec
+            }, 7200); //adjust this for amount of time to see replay big, 1000 = 1sec
         }
 
         //function to enlarge delayed video feed
@@ -229,14 +229,6 @@
         setInterval(fetchScore, 500);
         // to update speed
 
-        //function when new game button is pressed
-        function newgame(){
-            document.getElementById("but_new_game").innerHTML = "new game starting ..."; //TODO change
-            $.getJSON("/calibrate", function(data) {
-                $('#but_new_game').html(data.dtext);
-            });
-
-        }
     </script>
 </head>
 <body>
@@ -292,7 +284,7 @@
         <div id="delayed_box" style="background-color: transparent; padding :20px">
         <img id="delayed_feed" src="{{ url_for('delayed_video_feed') }}" alt="Delayed Video Feed" style="object-fit: contain">
         </div>
-        <p id="but_new_game" onclick="newgame()">New game</p>
+        <p id="but_new_game" onclick="newgame()">Calibrate</p>
         <a id="full_screen" href="fullpage.html" >Full screen</a>
     </div>
 
@@ -347,6 +339,14 @@
             $.getJSON("/update_kicker", function(data) {
                 $('#kicker').html('<p style="text-align: left; font-weight: 400">' + data.kicker+ '</p>');
             });
+        }
+     //function when new game button is pressed
+    function newgame(){
+            document.getElementById("but_new_game").innerHTML = "Calibrating ..."; //TODO change
+            $.getJSON("/calibrate", function(data) {
+                $('#but_new_game').html(data.dtext);
+            });
+
         }
 
         // Fetch the score and kicker every 5 seconds

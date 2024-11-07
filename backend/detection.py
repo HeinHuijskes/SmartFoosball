@@ -29,12 +29,11 @@ class Detection(DetectionSettings):
             kicker = self.find_kicker(frame)
             if kicker == "Dennis Bergkamp":
                 playsound('data/fifa/Voicy_Dennis Bergkamp Goal.mp3', block=False)
-            print(kicker)
+
             self.kicker = kicker #this is called by game for the website
         frame = self.draw_ball_positions(frame)
         self.detect_zone()
         fps = max(int(self.fps), 1)
-        print("FPS : ",fps)
         return frame,fps
 
     def detect_debug(self, frame, mode=Mode.NORMAL):
@@ -76,7 +75,6 @@ class Detection(DetectionSettings):
         # time_elapsed is in nanoseconds, so divide by 10^9, and by 60 for the past 60 frames
         fps = 1 / (time_elapsed / 1000000000 / 60)
         self.fps = fps
-        print("updateTime", self.fps)
         # Update latest current time
         self.frame_time = self.frame_time + time_elapsed
         return fps
@@ -250,11 +248,9 @@ class Detection(DetectionSettings):
             position.append(pixel_speed)
             if speed > self.max_ball_speed and self.pixel_width_cm != 0:
                 self.max_ball_speed = speed
-                print("max_speed", self.max_ball_speed)
             # extra line to get speed
             if self.pixel_width_cm != 0:
                 self.ball_speed = speed * 100 // 1 / 100 #m/s
-                print("ball_speed", self.ball_speed)
             position.append((position[0]-old_position[0], position[1]-old_position[1]))
         self.ball_positions.append(position)
         return

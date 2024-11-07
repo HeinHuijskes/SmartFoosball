@@ -85,7 +85,6 @@ class Game(GameSettings):
                 image_path = os.path.join('website', 'Error.jpg')
                 frame = cv2.imread(image_path)
             frame, fps = self.detector.detect(frame)
-            print("fps detect", fps)
             # Encode frame for website
             ret, jpeg = cv2.imencode('.jpg', frame)
             self.buffer.append((jpeg, frame_time))
@@ -199,7 +198,6 @@ class Game(GameSettings):
     def get_average_speed(self):
         spd = self.average_speed
         self.average_speed = [spd[-1]]
-        print("spd: ", spd, "average_spd", self.average_speed)
         return sum(spd) / len(spd)
 
     def reset_average_speed(self):

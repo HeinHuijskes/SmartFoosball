@@ -78,7 +78,6 @@ class Website:
 
             @self.app.route('/delayed_video_feed')
             def delayed_video_feed():
-                print("error")
                 return Response(self.game.buffer_frames(),
                                 mimetype='multipart/x-mixed-replace; boundary=frame')
 
@@ -86,8 +85,6 @@ class Website:
             @self.app.route('/feedpage.html')
             def feedpage():
                 kicker = self.game.get_kicker()
-                print(kicker)
-                print("feedpage in website")
                 return render_template('feedpage.html', scoreL = self.game.score_red, scoreR= self.game.score_blue, max_speed = self.max_speed, kicker =kicker)
 
             @self.app.route('/index.html')
@@ -135,23 +132,21 @@ class Website:
             @self.app.route('/update_kicker')
             def update_kicker():
                 kicker = self.game.get_kicker()
-                print("kicke ri s", kicker)
                 return jsonify(kicker= kicker)
 
-            @self.app.route('/new_game')
-            def newgame(): #TODO check ball tracking side no infinite loops
-                #TODO delete this because you do not want remote people to reset the game
-                print("new game")
-                # self.scoreL = 0
-                # self.scoreR = 0
-                self.game.reset_max_speed()
-                time.sleep(2)
-                return jsonify(dtext = "new game")
+            @self.app.route('/calibrate')
+            def calibrate():
+                self.mqttserver.send_message('calibrate', 'calibrate')
+                self.game.calibrate()
+                self.mqttserver.send_message('calibrate', 'stop calibrating')
+                time.sleep(1)
+                return jsonify(dtext="Calibrate")
+
 
             @self.app.route('/website/rewind.png')
             def rewind():
-                filep = os.path.join(os.getcwd(),'website', 'rewind.png')
-                return send_file(filep, mimetype='image/png')
+                    filep = os.path.join(os.getcwd(),'website', 'rewind.png')
+                    return send_file(filep, mimetype='image/png')
 
             @self.app.route('/website/Foosemen_names.png')
             def image_fnames():
