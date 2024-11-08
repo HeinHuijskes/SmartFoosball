@@ -30,8 +30,8 @@ class Detection(DetectionSettings):
             self.kicker = self.find_kicker(frame)
             if self.kicker == "Dennis Bergkamp":
                 playsound('data/fifa/Voicy_Dennis Bergkamp Goal.mp3', block=False)
-        else:
-            self.kicker = None
+            if self.game.debug:
+                print(f"Kicked by: {self.kicker}")
 
         self.draw_ball_positions(frame)
         return frame
@@ -46,8 +46,6 @@ class Detection(DetectionSettings):
 
         # Run regular ball detection
         frame = self.detect(frame)
-        if self.kicker:
-            print(f"Kicked by: {self.kicker}")
 
         frame = cv2.bitwise_and(frame, frame, mask=mask)
         frame, _ = self.foos_men_detection(frame, mode)
