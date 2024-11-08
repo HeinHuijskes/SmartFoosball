@@ -7,7 +7,6 @@ from backend.detection import Detection
 from backend.gameSettings import GameSettings
 from backend.staticulator import Staticulator
 from backend.misc import *
-from env import *
 
 
 class Team(Enum):
@@ -64,6 +63,9 @@ class Game(GameSettings):
                 self.skip_frame = False
             nextFrame, frame = self.getFrame(video)
 
+            if not nextFrame:
+                self.exitSystem()
+
             if self.debug:
                 frame = self.detector.detect_debug(frame, self.mode)
             else:
@@ -115,10 +117,9 @@ class Game(GameSettings):
                 yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
                        jpeg.tobytes() + b'\r\n')
 
-    # def add_goal(self, Left):
-    #     """pass True if one goal should be added to the score of the left goal,
-    #     else 1 will be added to the right goal"""
-    #     self.website.add_goal(Left)
+    def exitSystem(self):
+        self.staticulator.calculate_statistics(detector=self.detector)
+        exit('YOU EXITED?!')
 
     def showFrame(self, frame):
         """Show a frame in the backend, and detect any key presses to change the behaviour of the frame."""
@@ -126,8 +127,7 @@ class Game(GameSettings):
         key = cv2.waitKey(1)
         match key:
             case 113:  # pressed 'q'
-                self.staticulator.calculate_statistics(detector=self.detector)
-                exit('YOU EXITED?!')
+                self.exitSystem()
             case 114:  # pressed 'r'
                 self.mode = Mode.RED
             case 98:  # pressed 'b'
