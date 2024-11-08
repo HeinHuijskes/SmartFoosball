@@ -12,7 +12,7 @@ class GameSettings:
         self.time = 0
         self.video_frames = []
         self.video = None
-        self.calibration_frames = 10
+        self.calibration_frames = 60
         self.fps = 40
         self.delaysec = 5
         self.buffer_max_len = self.fps * self.delaysec  # This value determines the delay
