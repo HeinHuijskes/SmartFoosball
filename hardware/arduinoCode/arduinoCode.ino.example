@@ -1,3 +1,7 @@
+// COPY THIS FILE AND CHANGE THE NAME TO `arduinoCode.ino` //
+// THEN CHANGE THE PASSWORD //
+// THIS WAY IT WILL NOT BE COMMITTED TO GIT //
+
 #include <OneButton.h>
 #include "FastLED.h"
 #include <WiFi.h>
@@ -40,7 +44,8 @@ CRGB pink = CRGB(64, 0, 16);
 
 //wifi connection
 const char* ssid = "IoT Cyberlab Zi2070 experiments";
-const char* password = "Kr83AkM3n03@";
+// Change this to the correct password, check that this file is not in the git
+const char* password = "<ADD PASSWORD HERE>";
 WiFiClientSecure client;
 
 //MQTT connection

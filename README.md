@@ -22,6 +22,9 @@ Some scripts were defined to easily run the project. Below is an overview of som
 #### Run
 To preview the system without running the website or ESPN, use `poetry run demo` or `poetry run demo-2` to run one of the two included demo videos.
 
+To run the system with website and ESPN, run the `run_system.py` file. To do so, you must be connected to the local network of the IoT lab, to which the ESPN is also connected. Make sure to copy the `arduinoCode.ino.example` file beforehand, change the copy's name to `arduinoCode.ino`, 
+and change the password line in it to the correct password.
+
 Additionally add `-d` for debug mode and `-b <amount>` to change the length of the ball tracking line.
 
 #### Key bindings
