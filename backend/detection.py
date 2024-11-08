@@ -5,7 +5,7 @@ import numpy as np
 from backend.detectionSettings import DetectionSettings
 import time
 from backend.misc import Mode, Contour, Colour
-from playsound import playsound
+# from playsound import playsound
 
 
 class Detection(DetectionSettings):
@@ -28,8 +28,8 @@ class Detection(DetectionSettings):
         # If the ball changes direction, find out if a foosman kicked it
         if self.detect_kick():
             self.kicker = self.find_kicker(frame)
-            if self.kicker == "Dennis Bergkamp":
-                playsound('data/fifa/Voicy_Dennis Bergkamp Goal.mp3', block=False)
+            # if self.kicker == "Dennis Bergkamp":
+            #     playsound('data/fifa/Voicy_Dennis Bergkamp Goal.mp3', block=False)
             if self.game.debug:
                 print(f"Kicked by: {self.kicker}")
 
