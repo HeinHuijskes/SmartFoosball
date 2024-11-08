@@ -13,3 +13,4 @@ runs/detect/*
 !runs/detect/LaserFog15
 datasets
 /yolo11n.pt
+hardware/arduinoCode/arduinoCode.ino
