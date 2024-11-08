@@ -1,0 +1,13 @@
+__pycache__/
+.idea
+data/video/*
+!data/video/README.md
+!data/video/cork_ball_demo.mp4
+!data/video/white_ball_demo.mp4
+yolov8n.pt
+runs/detect/*
+!runs/detect/LaserFog15
+./datasets
+!datasets/README.md
+/yolo11n.pt
+hardware/arduinoCode/arduinoCode.ino

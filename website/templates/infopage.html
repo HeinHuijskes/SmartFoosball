@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+    <title>FOOSBLITZ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href='https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,200;1,14..32,200&display=swap' rel='stylesheet'>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        body { font-family: 'Inter'; font-weight: 200; font-size: 22px;
+        margin: 0; padding: 0;}
+        h1 { font-weight: 200; text-align: center}
+        p {text-align: center}
+        .H2{text-align: left; font-weight: 400}
+        .H2sub { text-align: left}
+        .H3 {
+            font-weight: 300;
+            text-align: left;
+            padding: 0;
+            font-style: italic;
+        }
+        .features{
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div style="background-color: rgba(255, 255, 255, 0.75);position: fixed;max-width: 100%; width: 100%; height: 150px">
+    <h1 style=" background-color: rgba(255, 255, 255, 0.5);padding: 20px;max-width: 100%; font-weight: 200; text-align: center">
+        Information page</h1>
+</div>
+<div style="position: fixed; margin-left: 10%">
+    <a style="color: black; background-color: transparent; text-decoration: transparent;" href="index.html"> <p>&larr;</p></a>
+
+</div>
+<p style="height: 150px">
+<!--    white space so it doesnt display unvisible text under header-->
+</p>
+<div style="padding: 10%; padding-top: 0">
+    <p class="H2">The smart foosball table</p>
+<p class="H2sub"> This website is connected to the smart foosball table. On the smart foosball table a match of table foosball can be played as on a normal
+foosball table. However, this foosball table is made smart and can collect and display data on the foosball match. The smart foosball table displays
+a camera feed with ball tracking on this website, as well as the last kicker taken from this. In addition, with distance sensors the foosball table is
+able to detect goals being scored and display the score on the website. </p>
+<!--    TODO make text-->
+    <p class="H2">Starting a match</p>
+    <p class="H2sub">To start a match using the smart foosball table, the system has to be running. The system is started if the
+    website is running and the ESP32 and LEDs are plugged in. The 'calibrate' button can be found on the 'live game' page, which can be navigated to by pressing 'watch match' on the starting screen of the website. This calibrate button
+    aids the detection of the foosball field on the camera feed, allowing it to detect the ArUco markers in order to crop and rotate the live camera feed. The calibrate button will briefly set the
+    LED light to white in order to make the ArUco markers better detectable.
+
+    On the foosball table there is a new game button, which can reset the scores. This is a physical red button placed on the right side of both goals of the foosball table.
+    </p>
+<p class="H2">How it works</p>
+<p class="H2sub">When playing on this table, the score is kept by the smart foosball table. Distance sensors in both of the goals of the foosball table are
+installed to detect movement. This movement in the goal is registered as a scored point. The smart foosball table keeps track of the score of a match and
+displays this on the website, the IoT lab sign and LED strip. On the website the score, camera feed, delayed camera feed, fps and last kicker are displayed.
+    The camera is place directly above the table and the codes on all four corners of the foosball table are used to detect
+the foosball field. With the use of these codes, called the ArUco markers, the video captured by the camera can be cropped and tilted
+to display to foosball field on the website. The camera along with the other hardware as the sensors are connected to the ESP32 which is located underneath the foosball table.
+
+    <p class="H2">Overview features</p>
+    <p class="H2sub">
+    An overview of the information displayed on the website:
+    </p>
+
+    <div class="features">
+    <p class="H3">Score </p>
+    The score correlates to the score of a ongoing match on the foosball table. When the ball falls into the goal with a red foosman as keeper the score displayed in blue for the BLUE team is increased and vice versa for the RED team.
+    <p class="H3">Camera feed </p>
+    The camera feed is displayed live from the camera hanging above the foosball field.
+    <p class="H3">Delayed camera feed </p>
+    The delayed camera feed displays the camera feed with a slight delay, such that footage can be rewatched from the camera feed.
+    <p class="H3">FPS </p>
+    The FPS corresponds to the average frames per second that the camera captures and is displayed on the website.
+    <p class="H3">Last kicker </p>
+    The last kicker corresponds to the last detected foosman to kick the ball.
+    </div>
+
+    <p class="H2sub"> There are also three buttons on the website:</p>
+    <div class="features">
+    <p class="H3">Full screen </p>
+    By clicking this button, the website redirects to a different page on which the camera feed is displayed larger. The camera feed is set to take up maximum space on the page without losing its original ratios.
+    In addition, the match score is displayed on the full screen page. This box with the match score can be dragged and placed across the screen.
+    <p class="H3">Calibrate </p>
+    The calibrate button briefly sets the LED lights to white lights. With these white lights the ArUco markers are better visible to the camera. The visibility of the ArUco markers are important for the data extraction and resizing of the camera feed.
+    <p class="H3">Information </p>
+    Next to the name of the last kicker is a circled i. When clicking this it redirects to a page where the last kicker is explained. This explanation includes an image on which
+    the names of the foosmen are displayed, these names are important to identify the foosmen as last kicker.
+    </div>
+.</p>
+<!--    TODO average or max speed? -->
+    <p class="H2">De-assembling the smart foosball table</p>
+<p class="H2sub">The smart foosball table consists of  wooden frame which holds the camera, this can be taken off. The wooden
+frame consists of three components. These three components are connected with threaded inserts which can be unscrewed and re-screwed. The first component
+is the wooden plank that holds the camera, this can be unscrewed and taken off. (This consists of unscrewing two threaded inserts.) Then two components remain which are no longer connected, but are similar in structure.
+    The structure has two threaded inserts on either side of the table, four per component. After unscrewing all 8 threaded inserts the second and third component can also be removed.
+    Note that while the structure of the second and third component are similar, the components can only be placed on one side of the foosball table and will not fit on the other side.
+    When taking apart the wood structure above the table, it is important to keep the attached LEDs and cables in mind. These have connectors at all the points where the structure can be taken apart, so no damage is done and the table can be disassembled easily.
+</p>
+     <p class="H2">Data usage</p>
+<p class="H2sub"> The IR distance sensors as well as the camera capture data. The IR distance sensors are located within the goals and detect whether a ball falls into the goal.
+    This detection is used by the ESPN to update the score and the data is not used further. The camera is located above the foosball field, it is intended to capture the foosball field for the live camera feed on the website.
+    The camera footage is also used for the delayed camera feed. The camera footage is cropped based on the ArUco markers and data is extracted to apply ball tracking and game logic.
+    The 'last kicker', ball tracking and 'fps' which are given on the website are extracted from the camera footage.
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FOOSBLITZ</title>
+    <style>
+        body {
+            font-family: 'Inter';
+            font-weight: 200;
+            font-size: 22px;
+            margin: 0;
+            padding: 0;}
+
+        .top_bar{
+            display: flex;
+            flex-direction: row;
+            margin-top: 80px;
+        }
+
+
+        a { margin:0;
+            padding:0;
+            color: black;
+            background-color: transparent;
+            text-decoration: transparent;}
+
+        #arrow {
+            z-index: 7;
+            position: fixed;
+            left: 30px;
+            top: 30px;
+            width: 10%;
+        }
+        #behind_arrow{
+            width: 10%;
+        }
+        #around_kicker {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 20%;
+        }
+
+        .info-text {
+            font-family: 'Inter';
+            width: 69%;
+            height: 100%;
+        }
+        p {
+            margin: 0;
+            text-align: left;
+        }
+        #kicker{
+            font-family: 'Inter';
+            font-weight: 400;
+        }
+    </style>
+</head>
+<body>
+    <div class="top_bar">
+         <div id="behind_arrow">
+              <div id="arrow" >
+                <a href="feedpage.html"> <p>&larr;</p></a>
+              </div>
+         </div>
+         <div id="around_kicker">
+             <p >Last kicker </p>
+             <p id="kicker" > {{kicker}}</p>
+         </div>
+         <div class="info-text" >
+                  The last kicker corresponds to the last detected fooseman to kick the ball. The images shows the foosemen with their corresponding names.
+         </div>
+     </div>
+
+     <img style="width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;" src="/website/Foosemen_names.png" alt="names of foosemen">
+</body>
+<script>
+        function fetchKicker() {
+                    $.getJSON("/update_kicker", function(data) {
+                        $('#kicker').html('<p style="text-align: left; font-weight: 400">' + data.kicker+ '</p>');
+                    });
+                }
+
+        // Fetch the score and kicker every 5 seconds
+        setInterval(fetchKicker, 500);
+</script>
+</html>
